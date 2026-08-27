@@ -25,7 +25,7 @@ func main() {
 	http.HandleFunc("/api/request-service", handleServiceRequest)
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Mfumo wa Back-end unafanya kazi vizuri kabisa!")
+		fmt.Fprintf(w, "index.html")
 	})
 
 	log.Printf("Server inaanza kusikiliza kwenye port %s...\n", port)
