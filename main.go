@@ -7,8 +7,8 @@ import (
 )
 
 type AuthRequest struct {
-	Username string `json:"username"d
-	Password string `json:"password"d
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
 func main() {
@@ -62,3 +62,4 @@ func handleRegister(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Akaunti imetengenezwa salama kabisa!"})
 }
+
