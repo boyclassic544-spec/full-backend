@@ -1,0 +1,230 @@
+ <!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamati App - Mfumo wa Ahadi na Malipo</title>
+    <style>
+        :root {
+            --primary: #25d366;
+            --primary-hover: #20ba5a;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --input-bg: #334155;
+            --border-color: #475569;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #38bdf8;
+            font-size: 22px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: var(--primary-hover);
+        }
+        .hidden {
+            display: none;
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 12px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- Sehemu ya Login -->
+    <div id="login-section">
+        <h2>Kamati Login</h2>
+        <div class="input-group">
+            <label>Jina la Mtumiaji (Username)</label>
+            <input type="text" id="username" placeholder="Weka username yako">
+        </div>
+        <div class="input-group">
+            <label>Neno la Siri (Password)</label>
+            <input type="password" id="password" placeholder="Weka password">
+        </div>
+        <button onclick="login()" style="background: #4f46e5;">Ingia Kwenye App</button>
+        <div class="footer-note">Mfumo wa Uongozi na Malipo</div>
+    </div>
+
+    <!-- Dashboard ya Kuweka Ahadi na WhatsApp -->
+    <div id="dashboard-section" class="hidden">
+        <h2>Weka Taarifa za Mwanakamati</h2>
+        <div class="input-group">
+            <label>Jina Kamili la Mwanakamati</label>
+            <input type="text" id="name" placeholder="Mf: Juma Ally">
+        </div>
+        <div class="input-group">
+            <label>Namba ya Simu ya WhatsApp (Mf: 2557...)</label>
+            <input type="text" id="phone" placeholder="Mf: 255712345678">
+        </div>
+        <div class="input-group">
+            <label>Kiasi cha Fedha (TZS)</label>
+            <input type="text" id="amount" placeholder="Mf: 50,000">
+        </div>
+        <div class="input-group">
+            <label>Hali ya Malipo</label>
+            <select id="status">
+                <option value="Ahadi">Ana Ahadi (Bado hajalipa)</option>
+                <option value="Amelipa Nusu">Amelipa Nusu (Ana salio)</option>
+                <option value="Amelipa Kamili">Amelipa Kamili</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Tarehe ya Mwisho / Malipo</label>
+            <input type="text" id="deadline" placeholder="Mf: 30/09/2026">
+        </div>
+        <button onclick="addMemberAndWhatsApp()">Hifadhi na Tuma WhatsApp</button>
+        <button onclick="logout()" style="background: #ef4444; margin-top: 10px;">Toka (Logout)</button>
+    </div>
+</div>
+
+<script>
+    async function login() {
+        const u = document.getElementById('username').value.trim();
+        const p = document.getElementById('password').value.trim();
+        
+        if(!u || !p) {
+            alert("Tafadhali jaza username na password!");
+            return;
+        }
+
+        try {
+            const res = await fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: u, password: p })
+            });
+
+            if (res.ok) {
+                alert("Login imekubaliwa kikamilifu!");
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+            } else {
+                alert("Imeshindikana! Angalia vizuri username au password yako.");
+            }
+        } catch (err) {
+            alert("Kuna hitilafu ya mtandao imetokea.");
+        }
+    }
+
+    async function addMemberAndWhatsApp() {
+        const name = document.getElementById('name').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const amount = document.getElementById('amount').value.trim();
+        const status = document.getElementById('status').value;
+        const deadline = document.getElementById('deadline').value.trim();
+
+        if(!name || !phone || !amount || !deadline) {
+            alert("Tafadhali jaza taarifa zote zinazohitajika!");
+            return;
+        }
+
+        const data = { name, phone, amount, status, deadline };
+
+        try {
+            const res = await fetch('/add-member', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                alert("Taarifa zimehifadhiwa kwenye database! Sasa inafungua WhatsApp...");
+                
+                let message = "";
+                if (status === "Amelipa Kamili") {
+                    message = `Habari za leo ${name}! 🤝 Tunapenda kukushukuru sana kwa kufanya malipo kamili ya kiasi cha TZS ${amount}. Malipo yako yamethibitishwa na kusajiliwa rasmi kwenye mfumo wa Kamati. Barikiwa sana! 🙏✨`;
+                } else if (status === "Amelipa Nusu") {
+                    message = `Habari za leo ${name}! 🤝 Tumepokea malipo yako ya nusu ya TZS ${amount} kwenye mfumo wa Kamati. Tunashukuru sana! Tunakukumbusha kumalizia salio linalosalia ili ukamilishe ahadi yako ifikapo tarehe ${deadline}. Barikiwa sana! 🙏✨`;
+                } else {
+                    message = `Habari za leo ${name}! 🤝 Unataarifiwa kuwa umesajiliwa rasmi kwenye mfumo wa Ahadi za Kamati. Ahadi yako ya kiasi cha TZS ${amount} imepokelewa, na tarehe yako ya mwisho ya malipo ni ${deadline}. Tunashukuru sana kwa ushirikiano wako! 🙏✨`;
+                }
+                
+                const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+
+                document.getElementById('name').value = '';
+                document.getElementById('phone').value = '';
+                document.getElementById('amount').value = '';
+                document.getElementById('deadline').value = '';
+            } else {
+                alert("Kosa limetokea wakati wa kuhifadhi data.");
+            }
+        } catch (err) {
+            alert("Hitilafu ya kimtandao imetokea.");
+        }
+    }
+
+    function logout() {
+        document.getElementById('dashboard-section').classList.add('hidden');
+        document.getElementById('login-section').classList.remove('hidden');
+        document.getElementById('username').value = '';
+        document.getElementById('password').value = '';
+    }
+</script>
+
+</body>
+</html>
