@@ -14,9 +14,16 @@ type User struct {
 	Password    string `json:"password"`
 }
 
+type ServiceReq struct {
+	Service string `json:"service"`
+	Message string `json:"message"`
+	Email   string `json:"email"`
+}
+
 var (
-	mu    sync.Mutex
-	users = make(map[string]User)
+	mu       sync.Mutex
+	users    = make(map[string]User)
+	requests = []ServiceReq{}
 )
 
 func main() {
@@ -36,72 +43,67 @@ func main() {
 	http.HandleFunc("/api/signup", handleSignup)
 	http.HandleFunc("/api/login", handleLogin)
 	http.HandleFunc("/api/service-requests", handleService)
+	http.HandleFunc("/api/admin/users", handleGetUsers)
+	http.HandleFunc("/api/admin/requests", handleGetRequests)
 
 	http.ListenAndServe(":"+port, nil)
 }
 
 func handleSignup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Method not allowed"})
-		return
-	}
-
 	var u User
-	err := json.NewDecoder(r.Body).Decode(&u)
-	if err != nil || u.Email == "" || len(u.Password) < 6 {
+	_ = json.NewDecoder(r.Body).Decode(&u)
+	if u.Email == "" || len(u.Password) < 6 {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Jaza taarifa sahihi au password iwe na herufi 6+"})
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Jaza taarifa sahihi"})
 		return
 	}
-
 	mu.Lock()
-	if _, exists := users[u.Email]; exists {
-		mu.Unlock()
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Akaunti tayari ipo, nenda ukalogin!"})
-		return
-	}
 	users[u.Email] = u
 	mu.Unlock()
-
-	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Usajili umekamilika! Sasa unaweza kulogin."})
+	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Imefaulu!"})
 }
 
 func handleLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Method not allowed"})
-		return
-	}
-
-	var creds struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-	err := json.NewDecoder(r.Body).Decode(&creds)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Taarifa mbovu za login"})
-		return
-	}
-
+	var creds User
+	_ = json.NewDecoder(r.Body).Decode(&creds)
 	mu.Lock()
 	u, exists := users[creds.Email]
 	mu.Unlock()
-
 	if !exists || u.Password != creds.Password {
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Hujajisajili au umekosea password! Tafadhali create account kwanza."})
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Umekosea taarifa au hujajisajili!"})
 		return
 	}
-
-	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Umeingia kwa mafanikio!"})
+	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Umefanikiwa kuingia!"})
 }
 
 func handleService(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Ombi limepokelewa!"})
+	var req ServiceReq
+	_ = json.NewDecoder(r.Body).Decode(&req)
+	mu.Lock()
+	requests = append(requests, req)
+	mu.Unlock()
+	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Ombi limetumwa!"})
+}
+
+func handleGetUsers(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	mu.Lock()
+	list := []User{}
+	for _, u := range users {
+		list = append(list, User{FullName: u.FullName, Email: u.Email, PhoneNumber: u.PhoneNumber})
+	}
+	mu.Unlock()
+	json.NewEncoder(w).Encode(list)
+}
+
+func handleGetRequests(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	mu.Lock()
+	list := requests
+	mu.Unlock()
+	json.NewEncoder(w).Encode(list)
 }
