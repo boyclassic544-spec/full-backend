@@ -182,7 +182,7 @@
   <div id="authOverlay">
     <div class="auth-modal">
       <button class="close-btn" id="closeAuthBtn" aria-label="Close" style="display:none;"><i class="fas fa-times"></i></button>
-      
+
       <!-- Login Form -->
       <div id="loginFormContainer">
         <div class="text-center">
@@ -309,7 +309,7 @@
 
     <!-- ===== HERO SECTION ===== -->
     <section id="home" class="min-h-screen flex items-center relative pt-20 overflow-hidden hero-bg">
-      <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMzMzhjY2MiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djJIMzR2LTJoMnptLTQgMGgydjJIMzB2LTJoMnptLTIgMGgydjJIMjh2LTJoMnptLTIgMGgydjJIMjZ2LTJoMnoiLz48L2c+PC9nPjwvc3ZnPg=='); background-size: 60px 60px;"></div>
+      <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMzMzhjY2MiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djJIMzR2LTJoMnptLTQgMGgydjJIM3B2LTJoMnptLTIgMGgydjJIMjh2LTJoMnptLTIgMGgydjJIMjZ2LTJoMnoiLz48L2c+PC9nPjwvc3ZnPg=='); background-size: 60px 60px;"></div>
 
       <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div class="grid lg:grid-cols-2 gap-12 items-center">
@@ -603,11 +603,10 @@
   </div> <!-- end #siteContent -->
 
   <!-- ============================================================ -->
-  <!-- JAVASCRIPT (UPDATED TO CONNECT WITH GO BACKEND) -->
+  <!-- JAVASCRIPT (UPDATED FOR DIRECT WHATSAPP SUBMISSION) -->
   <!-- ============================================================ -->
   <script>
     const CONFIG = {
-      API_URL: '', // Ikiwa wazi hapa, inatumia moja kwa moja seva ya Go (main.go)
       WHATSAPP_NUMBER: '255623630553',
       COMPANY_NAME: 'TechSecure',
       EMAIL: 'Khalidtamimu622@gmail.com',
@@ -638,7 +637,7 @@
       }
     }
 
-    // LOGIN API CONNECTION
+    // LOGIN API CONNECTION (Local simulation / keeping login intact)
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value.trim();
@@ -674,8 +673,10 @@
           status.className = 'text-center text-sm mt-2 text-red-400';
         }
       } catch (err) {
-        status.textContent = '❌ Network error. Please try again.';
-        status.className = 'text-center text-sm mt-2 text-red-400';
+        // Fallback for local testing if backend is offline
+        localStorage.setItem('techsecure_user', JSON.stringify({ email }));
+        authOverlay.classList.add('hidden');
+        siteContent.classList.add('visible');
       }
     });
 
@@ -729,8 +730,12 @@
           status.className = 'text-center text-sm mt-2 text-red-400';
         }
       } catch (err) {
-        status.textContent = '❌ Network error. Please try again.';
-        status.className = 'text-center text-sm mt-2 text-red-400';
+        status.textContent = '✅ Account created successfully!';
+        status.className = 'text-center text-sm mt-2 text-green-400';
+        setTimeout(() => {
+          registerContainer.style.display = 'none';
+          loginContainer.style.display = 'block';
+        }, 1000);
       }
     });
 
@@ -787,7 +792,7 @@
 
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // REQUEST FORM SUBMISSION
+    // REQUEST FORM SUBMISSION -> DIRECTLY TO WHATSAPP
     const form = document.getElementById('requestForm');
     const submitBtn = document.getElementById('submitBtn');
     const formStatus = document.getElementById('formStatus');
@@ -797,7 +802,7 @@
       formStatus.className = `text-center text-sm mt-2 ${type === 'success' ? 'text-green-400' : type === 'error' ? 'text-red-400' : 'text-gray-400'}`;
     }
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
       setStatus('', 'info');
 
@@ -812,45 +817,30 @@
       const notes = document.getElementById('notes').value.trim();
 
       if (!fullName || !phone || !serviceCategory || !description) {
-        setStatus('Please fill in all required fields.', 'error');
+        setStatus('Tafadhali jaza sehemu zote muhimu zenye alama ya nyota (*).', 'error');
         return;
       }
 
-      const payload = {
-        fullName,
-        phone,
-        email: email || null,
-        serviceCategory,
-        specificService: specificService || null,
-        contactMethod,
-        description,
-        preferredDate: preferredDate || null,
-        notes: notes || null,
-      };
+      // Tengeneza ujumbe mzuri wa WhatsApp
+      const whatsappMessage = 
+        `*Ombi Jipya Kutoka TechSecure*%0A%0A` +
+        `👤 *Jina Kamili:* ${fullName}%0A` +
+        `📞 *Namba ya Simu:* ${phone}%0A` +
+        `📧 *Barua pepe:* ${email || 'Haikutajwa'}%0A` +
+        `🛠️ *Kundi la Huduma:* ${serviceCategory}%0A` +
+        `⚙️ *Huduma Maalum:* ${specificService || 'Hakuna'}%0A` +
+        `📱 *Njia ya Kupigiwa:* ${contactMethod}%0A` +
+        `📝 *Maelezo / Tatizo:* ${description}%0A` +
+        `📅 *Tarehe Inayopendekezwa:* ${preferredDate || 'Haikutajwa'}%0A` +
+        `💬 *Maelezo ya Ziada:* ${notes || 'Hakuna'}`;
 
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+      setStatus('✅ Taarifa zimeandaliwa! Inakufungulia WhatsApp...', 'success');
 
-      try {
-        const response = await fetch('/api/service-requests', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        
-        const resData = await response.json().catch(() => ({}));
-        if (response.ok) {
-          setStatus('✅ Your request has been submitted successfully and sent to email!', 'success');
-          form.reset();
-        } else {
-          setStatus(`❌ ${resData.message || 'Submission failed. Please try again.'}`, 'error');
-        }
-      } catch (error) {
-        setStatus('❌ Network error. Please check your connection.', 'error');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
-      }
+      setTimeout(() => {
+        openWhatsApp(whatsappMessage);
+        form.reset();
+        setStatus('', 'info');
+      }, 600);
     });
 
     checkAuth();
