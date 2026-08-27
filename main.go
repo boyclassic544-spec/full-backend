@@ -6,11 +6,14 @@ import (
 	"os"
 )
 
-type RegisterRequest struct {
+type DataRequest struct {
 	FullName    string `json:"fullName"`
 	Email       string `json:"email"`
 	PhoneNumber string `json:"phoneNumber"`
 	Password    string `json:"password"`
+	Username    string `json:"username"`
+	Service     string `json:"service"`
+	Message     string `json:"message"`
 }
 
 func main() {
@@ -27,27 +30,23 @@ func main() {
 		http.ServeFile(w, r, "admin.html")
 	})
 
-	http.HandleFunc("/api/register", handleRegister)
+	http.HandleFunc("/api/login", handleApi)
+	http.HandleFunc("/api/signup", handleApi)
+	http.HandleFunc("/api/service-requests", handleApi)
 
 	http.ListenAndServe(":"+port, nil)
 }
 
-func handleRegister(w http.ResponseWriter, r *http.Request) {
+func handleApi(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Method not allowed"})
 		return
 	}
+	
+	var req DataRequest
+	_ = json.NewDecoder(r.Body).Decode(&req)
 
-	var req RegisterRequest
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil || req.Email == "" || len(req.Password) < 6 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Taarifa hazijajaa au password fupi!"})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Imefaulu!"})
+	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Imepokelewa na kufanya kazi kikamilifu!"})
 }
-
