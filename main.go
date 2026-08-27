@@ -9,7 +9,6 @@ import (
 	"os"
 )
 
-// Muundo wa data inayopokelewa kutoka kwa mteja (Frontend)
 type ServiceRequest struct {
 	FullName        string `json:"full_name"`
 	Phone           string `json:"phone"`
@@ -18,16 +17,13 @@ type ServiceRequest struct {
 }
 
 func main() {
-	// Weka port ya kusikiliza maombi (Railway inatumia PORT environment variable)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	// Route ya kupokea maombi ya huduma
 	http.HandleFunc("/api/request-service", handleServiceRequest)
 
-	// Route ya kawaida ya kupima kama server ipo hai
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Mfumo wa Back-end unafanya kazi vizuri kabisa!")
 	})
@@ -39,7 +35,6 @@ func main() {
 }
 
 func handleServiceRequest(w http.ResponseWriter, r *http.Request) {
-	// Ruhusu CORS kwa ajili ya frontend yako
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
@@ -64,16 +59,15 @@ func handleServiceRequest(w http.ResponseWriter, r *http.Request) {
 	// Tuma email notification kupitia Resend API
 	go sendEmailNotification(req)
 
-	// Mjulishe mteja kuwa ombi limepokelewa
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w.Encode(map[string]string{
+	// Hapa ndipo palikuwa na kosa la w.Encode, tumesahihisha kuwa json.NewEncoder(w).Encode
+	json.NewEncoder(w).Encode(map[string]string{
 		"status":  "success",
 		"message": "Ombi lako limepokelewa kikamilifu na limetumwa kwa uongozi!",
-	}))
+	})
 }
 
 func sendEmailNotification(req ServiceRequest) {
-	// Inachukua Resend API Key kwa usalama kutoka kwenye System Environment
 	apiKey := os.Getenv("RESEND_API_KEY")
 	if apiKey == "" {
 		log.Println("Hitilafu: RESEND_API_KEY haijawekwa kwenye environment variables!")
@@ -113,7 +107,7 @@ func sendEmailNotification(req ServiceRequest) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		log.Println("Barua pepe imetumwa kwa mafanikio makubwa kupitia Resend API!")
+		log.Println("Email imetumwa kwa mafanikio kupitia Resend API!")
 	} else {
 		log.Println("Resend imerudisha hitilafu, Status code:", resp.StatusCode)
 	}
