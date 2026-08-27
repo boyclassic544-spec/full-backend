@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"sync"
+	"time"
 )
 
 type User struct {
@@ -15,9 +16,11 @@ type User struct {
 }
 
 type ServiceReq struct {
-	Service string `json:"service"`
-	Message string `json:"message"`
-	Email   string `json:"email"`
+	FullName    string `json:"fullName"`
+	PhoneNumber string `json:"phoneNumber"`
+	Service     string `json:"service"`
+	Message     string `json:"message"`
+	CreatedAt   string `json:"createdAt"`
 }
 
 var (
@@ -83,10 +86,15 @@ func handleService(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var req ServiceReq
 	_ = json.NewDecoder(r.Body).Decode(&req)
+	
+	// Weka tarehe ya sasa moja kwa moja isisome "Invalid Date"
+	req.CreatedAt = time.Now().Format("02 Jan 2006, 15:04")
+
 	mu.Lock()
 	requests = append(requests, req)
 	mu.Unlock()
-	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Ombi limetumwa!"})
+
+	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Ombi limepokelewa na kuhifadhiwa vizuri!"})
 }
 
 func handleGetUsers(w http.ResponseWriter, r *http.Request) {
