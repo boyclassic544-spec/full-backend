@@ -9,14 +9,17 @@ import (
 )
 
 type User struct {
-	FullName string `json:"fullName"`
-	Name     string `json:"name"`
-	Email    string `json:"email"`
+	FullName    string `json:"fullName"`
+	Name        string `json:"name"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phoneNumber"`
+	Phone       string `json:"phone"`
 }
 
 type ServiceReq struct {
 	FullName        string `json:"fullName"`
 	Full_Name       string `json:"full_name"`
+	Name            string `json:"name"`
 	Phone           string `json:"phone"`
 	PhoneNumber     string `json:"phoneNumber"`
 	Service         string `json:"service"`
@@ -61,12 +64,10 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
 	var u User
 	_ = json.NewDecoder(r.Body).Decode(&u)
 	
-	if u.FullName == "" && u.Name != "" {
-		u.FullName = u.Name
+	if u.FullName == "" {
+		if u.Name != "" { u.FullName = u.Name } else { u.FullName = "Mteja Aliyejisajili" }
 	}
-	if u.Name == "" && u.FullName != "" {
-		u.Name = u.FullName
-	}
+	if u.Email == "" { u.Email = "haijulikani@domain.com" }
 
 	mu.Lock()
 	users = append(users, u)
@@ -85,20 +86,42 @@ func handleService(w http.ResponseWriter, r *http.Request) {
 	var req ServiceReq
 	_ = json.NewDecoder(r.Body).Decode(&req)
 	
-	// Hakikisha majina yanasomeka bila kujali yalitoka wapi
-	if req.FullName == "" { req.FullName = req.Full_Name }
-	if req.Full_Name == "" { req.Full_Name = req.FullName }
-	
-	if req.Phone == "" { req.Phone = req.PhoneNumber }
-	if req.PhoneNumber == "" { req.PhoneNumber = req.Phone }
+	// Safisha majina ili yasikosekane kwenye Dashboard
+	if req.FullName == "" {
+		if req.Full_Name != "" {
+			req.FullName = req.Full_Name
+		} else if req.Name != "" {
+			req.FullName = req.Name
+		} else {
+			req.FullName = "Mteja"
+		}
+	}
+	req.Full_Name = req.FullName
 
-	if req.Service == "" { req.Service = req.ServiceCategory }
-	if req.ServiceCategory == "" { req.ServiceCategory = req.Service }
+	if req.Phone == "" {
+		if req.PhoneNumber != "" { req.Phone = req.PhoneNumber } else { req.Phone = "Namba haipo" }
+	}
+	req.PhoneNumber = req.Phone
 
-	if req.Message == "" { req.Message = req.Description }
-	if req.Description == "" { req.Description = req.Message }
+	if req.Service == "" {
+		if req.ServiceCategory != "" {
+			req.Service = req.ServiceCategory
+		} else {
+			req.Service = "Huduma ya Jumla"
+		}
+	}
+	req.ServiceCategory = req.Service
 
-	nowStr := time.Now().Format("8/2/2026, 3:04:00 PM")
+	if req.Message == "" {
+		if req.Description != "" {
+			req.Message = req.Description
+		} else {
+			req.Message = "Hakuna maelezo ya ziada"
+		}
+	}
+	req.Description = req.Message
+
+	nowStr := time.Now().Format("02 Jan 2006, 03:04 PM")
 	req.CreatedAt = nowStr
 	req.Created_At = nowStr
 
@@ -106,7 +129,7 @@ func handleService(w http.ResponseWriter, r *http.Request) {
 	requests = append(requests, req)
 	mu.Unlock()
 
-	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Imepokelewa!"})
+	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Ombi limepokelewa!"})
 }
 
 func handleGetUsers(w http.ResponseWriter, r *http.Request) {
