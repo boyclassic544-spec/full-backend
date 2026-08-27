@@ -9,21 +9,27 @@ import (
 )
 
 type User struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	FullName string `json:"fullName"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
 }
 
 type ServiceReq struct {
-	FullName        string `json:"full_name"`
+	FullName        string `json:"fullName"`
+	Full_Name       string `json:"full_name"`
 	Phone           string `json:"phone"`
+	PhoneNumber     string `json:"phoneNumber"`
+	Service         string `json:"service"`
 	ServiceCategory string `json:"service_category"`
+	Message         string `json:"message"`
 	Description     string `json:"description"`
-	CreatedAt       string `json:"created_at"`
+	CreatedAt       string `json:"createdAt"`
+	Created_At      string `json:"created_at"`
 }
 
 var (
 	mu       sync.Mutex
-	users    = make(map[string]User)
+	users    = []User{}
 	requests = []ServiceReq{}
 )
 
@@ -54,29 +60,23 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var u User
 	_ = json.NewDecoder(r.Body).Decode(&u)
-	if u.Email == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Jaza email"})
-		return
+	
+	if u.FullName == "" && u.Name != "" {
+		u.FullName = u.Name
 	}
+	if u.Name == "" && u.FullName != "" {
+		u.Name = u.FullName
+	}
+
 	mu.Lock()
-	users[u.Email] = u
+	users = append(users, u)
 	mu.Unlock()
+
 	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Imefaulu!"})
 }
 
 func handleLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var creds User
-	_ = json.NewDecoder(r.Body).Decode(&creds)
-	mu.Lock()
-	_, exists := users[creds.Email]
-	mu.Unlock()
-	if !exists {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Hujajisajili!"})
-		return
-	}
 	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Umefanikiwa!"})
 }
 
@@ -85,7 +85,22 @@ func handleService(w http.ResponseWriter, r *http.Request) {
 	var req ServiceReq
 	_ = json.NewDecoder(r.Body).Decode(&req)
 	
-	req.CreatedAt = time.Now().Format("02 Jan 2006, 15:04")
+	// Hakikisha majina yanasomeka bila kujali yalitoka wapi
+	if req.FullName == "" { req.FullName = req.Full_Name }
+	if req.Full_Name == "" { req.Full_Name = req.FullName }
+	
+	if req.Phone == "" { req.Phone = req.PhoneNumber }
+	if req.PhoneNumber == "" { req.PhoneNumber = req.Phone }
+
+	if req.Service == "" { req.Service = req.ServiceCategory }
+	if req.ServiceCategory == "" { req.ServiceCategory = req.Service }
+
+	if req.Message == "" { req.Message = req.Description }
+	if req.Description == "" { req.Description = req.Message }
+
+	nowStr := time.Now().Format("8/2/2026, 3:04:00 PM")
+	req.CreatedAt = nowStr
+	req.Created_At = nowStr
 
 	mu.Lock()
 	requests = append(requests, req)
@@ -97,10 +112,7 @@ func handleService(w http.ResponseWriter, r *http.Request) {
 func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	mu.Lock()
-	list := []User{}
-	for _, u := range users {
-		list = append(list, u)
-	}
+	list := users
 	mu.Unlock()
 	json.NewEncoder(w).Encode(list)
 }
