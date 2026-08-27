@@ -9,18 +9,16 @@ import (
 )
 
 type User struct {
-	FullName    string `json:"fullName"`
-	Email       string `json:"email"`
-	PhoneNumber string `json:"phoneNumber"`
-	Password    string `json:"password"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
 type ServiceReq struct {
-	FullName    string `json:"fullName"`
-	PhoneNumber string `json:"phoneNumber"`
-	Service     string `json:"service"`
-	Message     string `json:"message"`
-	CreatedAt   string `json:"createdAt"`
+	FullName        string `json:"full_name"`
+	Phone           string `json:"phone"`
+	ServiceCategory string `json:"service_category"`
+	Description     string `json:"description"`
+	CreatedAt       string `json:"created_at"`
 }
 
 var (
@@ -56,9 +54,9 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var u User
 	_ = json.NewDecoder(r.Body).Decode(&u)
-	if u.Email == "" || len(u.Password) < 6 {
+	if u.Email == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Jaza taarifa sahihi"})
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Jaza email"})
 		return
 	}
 	mu.Lock()
@@ -72,14 +70,14 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 	var creds User
 	_ = json.NewDecoder(r.Body).Decode(&creds)
 	mu.Lock()
-	u, exists := users[creds.Email]
+	_, exists := users[creds.Email]
 	mu.Unlock()
-	if !exists || u.Password != creds.Password {
+	if !exists {
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Umekosea taarifa au hujajisajili!"})
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Hujajisajili!"})
 		return
 	}
-	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Umefanikiwa kuingia!"})
+	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Umefanikiwa!"})
 }
 
 func handleService(w http.ResponseWriter, r *http.Request) {
@@ -87,14 +85,13 @@ func handleService(w http.ResponseWriter, r *http.Request) {
 	var req ServiceReq
 	_ = json.NewDecoder(r.Body).Decode(&req)
 	
-	// Weka tarehe ya sasa moja kwa moja isisome "Invalid Date"
 	req.CreatedAt = time.Now().Format("02 Jan 2006, 15:04")
 
 	mu.Lock()
 	requests = append(requests, req)
 	mu.Unlock()
 
-	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Ombi limepokelewa na kuhifadhiwa vizuri!"})
+	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Imepokelewa!"})
 }
 
 func handleGetUsers(w http.ResponseWriter, r *http.Request) {
@@ -102,7 +99,7 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 	mu.Lock()
 	list := []User{}
 	for _, u := range users {
-		list = append(list, User{FullName: u.FullName, Email: u.Email, PhoneNumber: u.PhoneNumber})
+		list = append(list, u)
 	}
 	mu.Unlock()
 	json.NewEncoder(w).Encode(list)
