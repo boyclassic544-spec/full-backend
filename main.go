@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"net"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 )
@@ -30,19 +32,78 @@ type ServiceReq struct {
 	Created_At      string `json:"created_at"`
 }
 
-// Muundo mpya wa data zinazokuja wakati wa Login
 type LoginReq struct {
 	Email string `json:"email"`
 	Phone string `json:"phone"`
 }
 
+// Muundo wa kumbukumbu za mashambulizi kwa ajili ya Admin Dashboard
+type SecurityLog struct {
+	IP        string `json:"ip"`
+	Endpoint  string `json:"endpoint"`
+	Payload   string `json:"payload"`
+	Reason    string `json:"reason"`
+	Timestamp string `json:"timestamp"`
+}
+
 var (
-	mu       sync.Mutex
-	users    = []User{}
-	requests = []ServiceReq{}
+	mu           sync.Mutex
+	users        = []User{}
+	requests     = []ServiceReq{}
+	securityLogs = []SecurityLog{} // Hapa ndipo tunatunza kumbukumbu za majaribio mabaya
 )
 
-// secureHeaders Middleware ya kulinda tovuti na kuongeza Security Headers zote za A+
+// Kazi ya kuchunguza kama kuna dalili za mashambulizi (SQLi au XSS)
+func detectAndLogAttack(r *http.Request, inputData string) bool {
+	inputLower := strings.ToLower(inputData)
+	dangerousPatterns := []string{
+		"union select",
+		"drop table",
+		"<script>",
+		"or 1=1",
+		"exec(",
+		"../",
+	}
+
+	detected := false
+	reason := ""
+	for _, pattern := range dangerousPatterns {
+		if strings.Contains(inputLower, pattern) {
+			detected = true
+			reason = "Zana hatarishi imetundikwa: " + pattern
+			break
+		}
+	}
+
+	if detected {
+		// Pata IP ya mshambulizi
+		ip := r.Header.Get("X-Forwarded-For")
+		if ip == "" {
+			ip, _, _ = net.SplitHostPort(r.RemoteAddr)
+		}
+		if ip == "" {
+			ip	= "127.0.0.1"
+		}
+		if idx := strings.Index(ip, ","); idx != -1 {
+			ip = ip[:idx]
+		}
+
+		// Hifadhi kwenye kumbukumbu zetu za ndani
+		mu.Lock()
+		securityLogs = append(securityLogs, SecurityLog{
+			IP:        ip,
+			Endpoint:  r.URL.Path,
+			Payload:   inputData,
+			Reason:    reason,
+			Timestamp: time.Now().Format("02 Jan 2006, 03:04:05 PM"),
+		})
+		mu.Unlock()
+	}
+
+	return detected
+}
+
+// Security Headers ya kupandisha grade iwe A
 func secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
@@ -65,10 +126,18 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
 		http.ServeFile(w, r, "index.html")
 	})
 
 	mux.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
 		http.ServeFile(w, r, "admin.html")
 	})
 
@@ -77,17 +146,36 @@ func main() {
 	mux.HandleFunc("/api/service-requests", handleService)
 	mux.HandleFunc("/api/admin/users", handleGetUsers)
 	mux.HandleFunc("/api/admin/requests", handleGetRequests)
+	mux.HandleFunc("/api/admin/security-logs", handleGetSecurityLogs) // Route mpya ya kuonyesha mashambulizi kwenye Admin
 
-	// Tumeifunga router yetu yote kwenye secureHeaders middleware
 	securedHandler := secureHeaders(mux)
 
 	http.ListenAndServe(":"+port, securedHandler)
 }
 
 func handleSignup(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
+	r.Body = http.MaxBytesReader(w, r.Body, 10240)
+
 	var u User
-	_ = json.NewDecoder(r.Body).Decode(&u)
+	err := json.NewDecoder(r.Body).Decode(&u)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Data si sahihi!"})
+		return
+	}
+
+	// Kagua kama kuna shambulio kwenye maandishi yaliyoingizwa
+	rawJSON, _ := json.Marshal(u)
+	if detectAndLogAttack(r, string(rawJSON)) {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Shambulio limegunduliwa na kuzuiwa!"})
+		return
+	}
 
 	if u.FullName == "" {
 		if u.Name != "" {
@@ -107,11 +195,28 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Imefaulu!"})
 }
 
-// handleLogin iliyorekebishwa: Inakagua kama mtumiaji yupo kwenye database kabla ya kumruhusu kuingia
 func handleLogin(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
+	r.Body = http.MaxBytesReader(w, r.Body, 10240)
+
 	var loginData LoginReq
-	_ = json.NewDecoder(r.Body).Decode(&loginData)
+	err := json.NewDecoder(r.Body).Decode(&loginData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Imeshindikana kusoma data ya kuingia!"})
+		return
+	}
+
+	rawJSON, _ := json.Marshal(loginData)
+	if detectAndLogAttack(r, string(rawJSON)) {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Shambulio limegunduliwa na kuzuiwa!"})
+		return
+	}
 
 	mu.Lock()
 	found := false
@@ -133,11 +238,28 @@ func handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleService(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
-	var req ServiceReq
-	_ = json.NewDecoder(r.Body).Decode(&req)
+	r.Body = http.MaxBytesReader(w, r.Body, 20480)
 
-	// Safisha majina ili yasikosekane kwenye Dashboard
+	var req ServiceReq
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Ombi kubwa mno!"})
+		return
+	}
+
+	rawJSON, _ := json.Marshal(req)
+	if detectAndLogAttack(r, string(rawJSON)) {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Shambulio limegunduliwa na kuzuiwa!"})
+		return
+	}
+
 	if req.FullName == "" {
 		if req.Full_Name != "" {
 			req.FullName = req.Full_Name
@@ -188,6 +310,10 @@ func handleService(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetUsers(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	mu.Lock()
 	list := users
@@ -196,9 +322,26 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetRequests(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	mu.Lock()
 	list := requests
 	mu.Unlock()
 	json.NewEncoder(w).Encode(list)
+}
+
+// Hii inatuma orodha ya mashambulizi yaliyozuiwa kwenda kwenye Admin Dashboard
+func handleGetSecurityLogs(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	mu.Lock()
+	logs := securityLogs
+	mu.Unlock()
+	json.NewEncoder(w).Encode(logs)
 }
