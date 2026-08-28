@@ -1,1072 +1,448 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sw">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TechSecure | Technical Services &amp; Cybersecurity</title>
-  <!-- Google Fonts + Font Awesome (Icons only) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  
-  <style>
-    /* ===== GLOBAL RESET & BASE =====  */
-    * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; background: #0b0f19; color: #e5e7eb; line-height: 1.6; }
-    a { text-decoration: none; color: inherit; }
-    ul { list-style: none; }
-    img { max-width: 100%; display: block; }
-
-    /* ===== SCROLLBAR =====  */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #0b0f19; }
-    ::-webkit-scrollbar-thumb { background: #22d3ee; border-radius: 10px; }
-
-    /* ===== LAYOUT & UTILITIES ===== */
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 1.5rem; }
-    .flex { display: flex; }
-    .flex-col { flex-direction: column; }
-    .items-center { align-items: center; }
-    .justify-between { justify-content: space-between; }
-    .justify-center { justify-content: center; }
-    .gap-2 { gap: 0.5rem; }
-    .gap-3 { gap: 0.75rem; }
-    .gap-4 { gap: 1rem; }
-    .gap-6 { gap: 1.5rem; }
-    .gap-8 { gap: 2rem; }
-    .grid { display: grid; }
-    .text-center { text-align: center; }
-    .text-cyan { color: #22d3ee; }
-    .text-red { color: #f87171; }
-    .text-green { color: #4ade80; }
-    .text-gray { color: #9ca3af; }
-    .font-bold { font-weight: 700; }
-    .font-extrabold { font-weight: 800; }
-    .w-full { width: 100%; }
-
-    /* ===== GLASS EFFECT =====  */
-    .glass { 
-      background: rgba(11, 15, 25, 0.85); 
-      backdrop-filter: blur(12px); 
-      -webkit-backdrop-filter: blur(12px); 
-      border-bottom: 1px solid rgba(255,255,255,0.05); 
-    }
-
-    /* ===== HERO BACKGROUND =====  */
-    .hero-bg {
-      background: radial-gradient(circle at 70% 30%, rgba(34, 211, 238, 0.08) 0%, transparent 60%),
-                  radial-gradient(circle at 30% 70%, rgba(34, 211, 238, 0.05) 0%, transparent 50%),
-                  #0b0f19;
-    }
-
-    /* ===== NAVBAR ===== */
-    header {
-      position: fixed;
-      top: 0; left: 0; width: 100%;
-      z-index: 50;
-    }
-    .nav-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 80px;
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: #fff;
-    }
-    .desktop-nav {
-      display: none;
-      align-items: center;
-      gap: 2rem;
-      font-size: 0.95rem;
-      font-weight: 500;
-    }
-    .desktop-nav a:hover { color: #22d3ee; }
-    @media (min-width: 1024px) {
-      .desktop-nav { display: flex; }
-      .mobile-menu-btn { display: none !important; }
-    }
-
-    /* ===== BUTTONS =====  */
-    .btn-primary {
-      background: #22d3ee;
-      color: #0b0f19;
-      font-weight: 600;
-      padding: 0.75rem 1.75rem;
-      border-radius: 9999px;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      border: none;
-      cursor: pointer;
-    }
-    .btn-primary:hover { background: #06b6d4; transform: translateY(-1px); box-shadow: 0 10px 25px -5px rgba(34, 211, 238, 0.3); }
-
-    .btn-whatsapp {
-      background: #25D366;
-      color: #fff;
-      font-weight: 600;
-      padding: 0.75rem 1.75rem;
-      border-radius: 9999px;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      border: none;
-      cursor: pointer;
-    }
-    .btn-whatsapp:hover { background: #1ebe5b; transform: translateY(-1px); box-shadow: 0 10px 25px -5px rgba(37, 211, 102, 0.3); }
-
-    .btn-outline {
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.2);
-      color: #fff;
-      font-weight: 600;
-      padding: 0.75rem 1.75rem;
-      border-radius: 9999px;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      cursor: pointer;
-    }
-    .btn-outline:hover { background: rgba(255,255,255,0.1); }
-
-    /* ===== CARDS =====  */
-    .card-glow {
-      background: #151f2e;
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 1rem;
-      padding: 2rem;
-      transition: all 0.25s;
-    }
-    .card-glow:hover { border-color: rgba(34, 211, 238, 0.3); transform: translateY(-4px); box-shadow: 0 20px 40px -12px rgba(0,0,0,0.5); }
-
-    /* ===== FORMS =====  */
-    .form-input, .form-select, .form-textarea {
-      width: 100%;
-      background: #0b0f19;
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #fff;
-      padding: 0.85rem 1rem;
-      border-radius: 0.5rem;
-      font-family: inherit;
-      font-size: 0.95rem;
-      transition: all 0.2s;
-    }
-    .form-input:focus, .form-select:focus, .form-textarea:focus {
-      border-color: #22d3ee;
-      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15);
-      outline: none;
-    }
-    .form-input::placeholder, .form-textarea::placeholder { color: #6b7280; }
-    label { display: block; font-size: 0.875rem; font-weight: 500; color: #d1d5db; margin-bottom: 0.35rem; }
-
-    /* ===== MOBILE MENU =====  */
-    #mobile-menu {
-      display: none;
-      background: rgba(11, 15, 25, 0.98);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      padding: 1.5rem;
-    }
-    #mobile-menu.active { display: block; }
-    #mobile-menu a {
-      display: block;
-      padding: 0.75rem 0;
-      font-weight: 500;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-    }
-
-    /* ===== SECTIONS ===== */
-    section { padding: 5rem 0; }
-    .bg-dark-alt { background: #0f1625; }
-    .bg-dark { background: #0b0f19; }
-
-    /* ===== HERO SECTION ===== */
-    .hero {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      padding-top: 100px;
-    }
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 3rem;
-      align-items: center;
-    }
-    @media (min-width: 992px) {
-      .hero-grid { grid-template-columns: 1fr 1fr; }
-    }
-    .hero h1 {
-      font-size: 2.5rem;
-      line-height: 1.2;
-      color: #fff;
-      margin-top: 1rem;
-    }
-    @media (min-width: 768px) {
-      .hero h1 { font-size: 3.5rem; }
-    }
-    .hero p {
-      color: #9ca3af;
-      margin-top: 1.25rem;
-      font-size: 1.1rem;
-    }
-    .hero-badges {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-top: 2.5rem;
-    }
-    @media (min-width: 640px) {
-      .hero-badges { grid-template-columns: repeat(4, 1fr); }
-    }
-    .badge-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.85rem;
-      color: #d1d5db;
-    }
-
-    /* ===== SERVICES GRID ===== */
-    .services-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
-      margin-top: 3rem;
-    }
-    @media (min-width: 768px) {
-      .services-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    .service-list {
-      margin-top: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      font-size: 0.9rem;
-      color: #d1d5db;
-    }
-    .service-list li {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .service-list i { color: #22d3ee; }
-
-    /* ===== WHY CHOOSE US & CYBERSECURITY GRIDS ===== */
-    .grid-3 {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-    @media (min-width: 640px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 1024px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
-
-    /* ===== HOW IT WORKS ===== */
-    .steps-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-      margin-top: 3rem;
-    }
-    @media (min-width: 768px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (min-width: 1024px) { .steps-grid { grid-template-columns: repeat(4, 1fr); } }
-    .step-card { text-align: center; }
-    .step-number { font-size: 2.5rem; font-weight: 800; color: rgba(34, 211, 238, 0.2); }
-
-    /* ===== REQUEST FORM BOX ===== */
-    .form-box {
-      background: #1a2333;
-      border-radius: 1rem;
-      padding: 2.5rem 2rem;
-      border: 1px solid rgba(255,255,255,0.05);
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    /* ===== CONTACT & FOOTER ===== */
-    .contact-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
-      margin-top: 3rem;
-    }
-    @media (min-width: 768px) { .contact-grid { grid-template-columns: 1fr 1fr; } }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSecure - Cybersecurity & Tech Services</title>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    footer {
-      background: #070b12;
-      border-top: 1px solid rgba(255,255,255,0.05);
-      padding: 4rem 0 2rem;
-    }
-    .footer-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-    @media (min-width: 768px) { .footer-grid { grid-template-columns: repeat(4, 1fr); } }
+    <style>
+        /* Pure CSS Styles - Original Look Preserved */
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #111827;
+            --accent-cyan: #22d3ee;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #1f2937;
+        }
 
-    /* ===== AUTH MODAL OVERLAY =====  */
-    #authOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(12px);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
-    }
-    #authOverlay.hidden { display: none; }
-    .auth-modal {
-      background: #1a2333;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 1.5rem;
-      max-width: 440px;
-      width: 100%;
-      padding: 2.5rem 2rem;
-      box-shadow: 0 30px 60px -15px rgba(0,0,0,0.8);
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .close-btn {
-      float: right;
-      background: none;
-      border: none;
-      color: #9ca3af;
-      font-size: 1.5rem;
-      cursor: pointer;
-    }
-    .close-btn:hover { color: #fff; }
-    .auth-toggle { color: #22d3ee; cursor: pointer; font-weight: 600; }
-    .auth-toggle:hover { text-decoration: underline; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
 
-    /* ===== FLOATING ELEMENTS ===== */
-    .whatsapp-float {
-      position: fixed;
-      bottom: 1.5rem; right: 1.5rem;
-      z-index: 50;
-      background: #25D366;
-      color: #fff;
-      padding: 0.85rem 1.25rem;
-      border-radius: 9999px;
-      box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.3s;
-    }
-    .whatsapp-float:hover { background: #1ebe5b; }
-    .whatsapp-float .label { max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width 0.3s ease; }
-    .whatsapp-float:hover .label { max-width: 120px; }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
 
-    #backToTop {
-      position: fixed;
-      bottom: 5.5rem; right: 1.5rem;
-      z-index: 50;
-      background: #22d3ee;
-      color: #0b0f19;
-      border: none;
-      width: 45px; height: 45px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      opacity: 0;
-      pointer-events: none;
-      transition: all 0.3s;
-    }
-    #backToTop.visible { opacity: 1; pointer-events: auto; }
+        /* Auth Overlay / Modal */
+        #authOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(11, 15, 25, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
 
-    #siteContent { display: none; }
-    #siteContent.visible { display: block; }
-  </style>
+        .auth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .auth-card h2 {
+            color: var(--accent-cyan);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+        }
+
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--accent-cyan);
+            color: var(--bg-main);
+            font-weight: 600;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .auth-switch {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .auth-switch span {
+            color: var(--accent-cyan);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* Main Site Layout */
+        #siteContent {
+            display: none;
+        }
+
+        header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero h1 span {
+            color: var(--accent-cyan);
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .service-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .service-card i {
+            font-size: 2rem;
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+        }
+
+        .service-card h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .service-card p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .contact-form-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        footer {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            padding: 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 4rem;
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
-  <!-- ============================================================ -->
-  <!-- AUTHENTICATION OVERLAY (Login / Register) -->
-  <!-- ============================================================ -->
-  <div id="authOverlay">
-    <div class="auth-modal">
-      <button class="close-btn" id="closeAuthBtn" aria-label="Close" style="display:none;"><i class="fas fa-times"></i></button>
-      
-      <!-- Login Form -->
-      <div id="loginFormContainer">
-        <div class="text-center">
-          <div style="display: flex; justify-content: center; margin-bottom: 0.75rem;">
-            <i class="fas fa-shield-halved text-cyan" style="font-size: 2.5rem;"></i>
-          </div>
-          <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff;">Welcome Back</h2>
-          <p class="text-gray" style="font-size: 0.875rem; margin-top: 0.25rem;">Sign in to access your dashboard</p>
+    <!-- Auth Overlay -->
+    <div id="authOverlay">
+        <div class="auth-card">
+            <h2 id="authTitle">Ingia kwenye TechSecure</h2>
+            <form id="authForm" onsubmit="handleAuth(event)">
+                <div class="form-group" id="nameGroup" style="display: none;">
+                    <label>Jina Kamili</label>
+                    <input type="text" id="fullName" placeholder="Weka jina lako">
+                </div>
+                <div class="form-group">
+                    <label>Barua Pepe (Email)</label>
+                    <input type="email" id="email" required placeholder="mteja@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Neno la Siri (Password)</label>
+                    <input type="password" id="password" required placeholder="********">
+                </div>
+                <button type="submit" class="btn" id="authSubmitBtn">Ingia</button>
+            </form>
+            <div class="auth-switch">
+                <p id="switchText">Hauna akaunti? <span onclick="toggleAuthMode()">Jisajili hapa</span></p>
+            </div>
         </div>
-        <form id="loginForm" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;" novalidate>
-          <div>
-            <label>Email Address</label>
-            <input type="email" id="loginEmail" class="form-input" placeholder="you@example.com" required>
-          </div>
-          <div>
-            <label>Password</label>
-            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem;">
-            <label style="display: flex; align-items: center; gap: 0.5rem; color: #9ca3af; margin-bottom: 0;"><input type="checkbox" style="accent-color: #22d3ee;"> Remember me</label>
-            <a href="#" class="text-cyan" id="forgotPasswordLink">Forgot password?</a>
-          </div>
-          <button type="submit" id="loginBtn" class="btn-primary w-full" style="padding: 0.85rem;">
-            <i class="fas fa-sign-in-alt"></i> Sign In
-          </button>
-          <div id="loginStatus" class="text-center" style="font-size: 0.875rem;"></div>
-          <p class="text-center text-gray" style="font-size: 0.875rem; margin-top: 0.5rem;">
-            Don't have an account? <span class="auth-toggle" id="showRegisterBtn">Create one here</span>
-          </p>
-        </form>
-      </div>
-
-      <!-- Register Form -->
-      <div id="registerFormContainer" style="display:none;">
-        <div class="text-center">
-          <div style="display: flex; justify-content: center; margin-bottom: 0.75rem;">
-            <i class="fas fa-user-plus text-cyan" style="font-size: 2.5rem;"></i>
-          </div>
-          <h2 style="font-size: 1.5rem; font-weight: 700; color: #fff;">Create Account</h2>
-          <p class="text-gray" style="font-size: 0.875rem; margin-top: 0.25rem;">Join TechSecure today</p>
-        </div>
-        <form id="registerForm" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;" novalidate>
-          <div>
-            <label>Full Name <span class="text-cyan">*</span></label>
-            <input type="text" id="regFullName" class="form-input" placeholder="John Doe" required>
-          </div>
-          <div>
-            <label>Email Address <span class="text-cyan">*</span></label>
-            <input type="email" id="regEmail" class="form-input" placeholder="you@example.com" required>
-          </div>
-          <div>
-            <label>Phone Number</label>
-            <input type="tel" id="regPhone" class="form-input" placeholder="+255 623 630 553">
-          </div>
-          <div>
-            <label>Password <span class="text-cyan">*</span></label>
-            <input type="password" id="regPassword" class="form-input" placeholder="Min 6 characters" required minlength="6">
-          </div>
-          <div>
-            <label>Confirm Password <span class="text-cyan">*</span></label>
-            <input type="password" id="regConfirmPassword" class="form-input" placeholder="Confirm your password" required>
-          </div>
-          <button type="submit" id="registerBtn" class="btn-primary w-full" style="padding: 0.85rem;">
-            <i class="fas fa-user-plus"></i> Create Account
-          </button>
-          <div id="registerStatus" class="text-center" style="font-size: 0.875rem;"></div>
-          <p class="text-center text-gray" style="font-size: 0.875rem; margin-top: 0.5rem;">
-            Already have an account? <span class="auth-toggle" id="showLoginBtn">Sign in here</span>
-          </p>
-        </form>
-      </div>
     </div>
-  </div>
 
-  <!-- ============================================================ -->
-  <!-- MAIN SITE CONTENT (hidden until login) -->
-  <!-- ============================================================ -->
-  <div id="siteContent">
+    <!-- Site Content -->
+    <div id="siteContent">
+        <header>
+            <div class="logo"><i class="fa-solid fa-shield-halved"></i> TechSecure</div>
+            <nav>
+                <ul>
+                    <li><a href="#services">Huduma</a></li>
+                    <li><a href="#contact">Wasiliana Nasi</a></li>
+                    <li><button class="logout-btn" onclick="logout()">Toka (Logout)</button></li>
+                </ul>
+            </nav>
+        </header>
 
-    <!-- ===== NAVBAR ===== -->
-    <header class="glass">
-      <div class="container nav-inner">
-        <!-- Logo -->
-        <div class="logo">
-          <i class="fas fa-shield-halved text-cyan"></i>
-          <span>TechSecure</span>
-          <span style="font-size: 0.75rem; color: rgba(34,211,238,0.6); font-weight: 300;">| solutions</span>
+        <div class="container">
+            <section class="hero">
+                <h1>Ulinzi wa Kimtandao na <span>Suluhisho za Kisasa</span></h1>
+                <p>Tunakupa huduma za uchunguzi wa udhaifu, usalama wa mifumo, na maendeleo ya kiteknolojia kwa kiwango cha juu.</p>
+                <a href="#contact" class="btn" style="max-width: 200px; margin: 0 auto;">Omba Huduma</a>
+            </section>
+
+            <section id="services">
+                <h2 class="section-title">Huduma Zetu</h2>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <i class="fa-solid fa-bug-slash"></i>
+                        <h3>Uchunguzi wa Udhaifu (VAPT)</h3>
+                        <p>Kufanya tathmini ya kina kwenye tovuti na programu tumizi ili kugundua na kuziba mianya ya kiusalama.</p>
+                    </div>
+                    <div class="service-card">
+                        <i class="fa-solid fa-code"></i>
+                        <h3>Uendelezaji wa Programu</h3>
+                        <p>Kutengeneza mifumo salama ya wavuti na simu yenye viwango vya juu vya ulinzi wa data.</p>
+                    </div>
+                    <div class="service-card">
+                        <i class="fa-solid fa-headset"></i>
+                        <h3>Ushauri wa Kitalamu</h3>
+                        <p>Kutoa mwongozo wa kiufundi kuhusu ulinzi wa miundombinu ya TEHAMA na usimamizi wa seva.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="contact">
+                <h2 class="section-title">Omba Huduma Moja kwa Moja</h2>
+                <div class="contact-form-container">
+                    <form onsubmit="sendToWhatsApp(event)">
+                        <div class="form-group">
+                            <label>Jina Lako</label>
+                            <input type="text" id="clientName" required placeholder="Jina lako kamili">
+                        </div>
+                        <div class="form-group">
+                            <label>Namba ya Simu</label>
+                            <input type="text" id="clientPhone" required placeholder="+255 ...">
+                        </div>
+                        <div class="form-group">
+                            <label>Chagua Huduma</label>
+                            <select id="serviceType">
+                                <option value="Uchunguzi wa Udhaifu (VAPT)">Uchunguzi wa Udhaifu (VAPT)</option>
+                                <option value="Uendelezaji wa Programu">Uendelezaji wa Programu</option>
+                                <option value="Ushauri wa Kitalamu">Ushauri wa Kitalamu</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ujumbe / Maelezo Zaidi</label>
+                            <textarea id="clientMessage" rows="4" placeholder="Eleza kwa ufupi mahitaji yako..."></textarea>
+                        </div>
+                        <button type="submit" class="btn">Tuma Ombi kupitia WhatsApp</button>
+                    </form>
+                </div>
+            </section>
         </div>
 
-        <!-- Desktop Nav -->
-        <nav class="desktop-nav">
-          <a href="#home">Home</a>
-          <a href="#services">Services</a>
-          <a href="#cybersecurity">Cybersecurity</a>
-          <a href="#about">About</a>
-          <a href="#how-it-works">How It Works</a>
-          <a href="#contact">Contact</a>
-          <a href="#" id="logoutBtn" style="color: #f87171; font-weight: 600;"><i class="fas fa-sign-out-alt" style="margin-right: 0.25rem;"></i> Logout</a>
-        </nav>
+        <footer>
+            <p>&copy; 2026 TechSecure. Haki zote zimehifadhiwa.</p>
+        </footer>
+    </div>
 
-        <!-- Right side CTA -->
-        <div style="display: flex; align-items: center; gap: 1rem;">
-          <a href="#request" class="btn-primary" style="display: none; padding: 0.6rem 1.25rem; font-size: 0.875rem;" id="desktopRequestBtn">Request a Service</a>
-          <button id="menu-btn" class="mobile-menu-btn" style="background:none; border:none; color:#fff; font-size: 1.5rem; cursor:pointer;" aria-label="Toggle menu">
-            <i class="fas fa-bars"></i>
-          </button>
-        </div>
-      </div>
+    <!-- JavaScript Configuration & Logic -->
+    <script>
+        const CONFIG = {
+            API_URL: '', // Weka URL ya Backend yako ya Go ikiwa tayari
+            WHATSAPP_NUMBER: '255623630553',
+            COMPANY_NAME: 'TechSecure',
+            EMAIL: 'Khalidtamimu622@gmail.com',
+            PHONE: '+255 623 630 553'
+        };
 
-      <!-- Mobile Menu -->
-      <div id="mobile-menu">
-        <a href="#home">Home</a>
-        <a href="#services">Services</a>
-        <a href="#cybersecurity">Cybersecurity</a>
-        <a href="#about">About</a>
-        <a href="#how-it-works">How It Works</a>
-        <a href="#contact">Contact</a>
-        <a href="#" id="logoutMobileBtn" style="color: #f87171;"><i class="fas fa-sign-out-alt" style="margin-right: 0.25rem;"></i> Logout</a>
-        <a href="#request" class="btn-primary" style="display: block; text-align: center; margin-top: 1rem;">Request a Service</a>
-      </div>
-    </header>
+        let isRegistering = false;
 
-    <!-- ===== HERO SECTION ===== -->
-    <section id="home" class="hero hero-bg">
-      <div class="container">
-        <div class="hero-grid">
-          <div>
-            <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.2); border-radius: 9999px; padding: 0.35rem 1rem; font-size: 0.75rem; color: #22d3ee; margin-bottom: 1.5rem;">
-              <i class="fas fa-shield-alt"></i> Trusted technical &amp; security partner
-            </div>
-            <h1>Technical Solutions &amp; <span class="text-cyan">Cybersecurity</span> Under One Roof.</h1>
-            <p>Reliable technical support, IT solutions and professional cybersecurity assessments for individuals, businesses and organizations.</p>
-            <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem;">
-              <a href="#request" class="btn-primary"><i class="fas fa-paper-plane"></i> Request a Service</a>
-              <a href="#" onclick="openWhatsApp('Hello! I would like to request a service.')" class="btn-whatsapp"><i class="fab fa-whatsapp"></i> Talk on WhatsApp</a>
-            </div>
-            <div class="hero-badges">
-              <div class="badge-item"><i class="fas fa-microchip text-cyan"></i> Professional Support</div>
-              <div class="badge-item"><i class="fas fa-shield text-cyan"></i> Security Assessment</div>
-              <div class="badge-item"><i class="fas fa-clock text-cyan"></i> Fast Response</div>
-              <div class="badge-item"><i class="fas fa-lock text-cyan"></i> Secure &amp; Reliable</div>
-            </div>
-          </div>
-          <div style="display: none; justify-content: center;" id="heroGraphic">
-            <div style="width: 320px; height: 320px; border-radius: 50%; background: linear-gradient(135deg, rgba(34,211,238,0.2), rgba(168,85,247,0.2)); filter: blur(40px); display: flex; align-items: center; justify-content: center;">
-              <i class="fas fa-shield-halved" style="font-size: 6rem; color: rgba(34,211,238,0.3);"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+        window.onload = function() {
+            const currentUser = localStorage.getItem('techsecure_user');
+            if (currentUser) {
+                document.getElementById('authOverlay').style.display = 'none';
+                document.getElementById('siteContent').style.display = 'block';
+            }
+        };
 
-    <!-- ===== SERVICES SECTION ===== -->
-    <section id="services" class="bg-dark-alt">
-      <div class="container">
-        <div class="text-center" style="max-width: 700px; margin: 0 auto;">
-          <h2 style="font-size: 2.25rem; font-weight: 700; color: #fff;">Our <span class="text-cyan">Services</span></h2>
-          <p class="text-gray" style="margin-top: 0.75rem;">Practical technical solutions and digital security services designed to keep your technology working and your systems protected.</p>
-        </div>
+        function toggleAuthMode() {
+            isRegistering = !isRegistering;
+            const title = document.getElementById('authTitle');
+            const nameGroup = document.getElementById('nameGroup');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            const switchText = document.getElementById('switchText');
 
-        <div class="services-grid">
-          <div class="card-glow">
-            <div style="width: 56px; height: 56px; background: rgba(34,211,238,0.1); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: #22d3ee; font-size: 1.5rem; margin-bottom: 1.25rem;"><i class="fas fa-laptop-code"></i></div>
-            <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff;">Technical &amp; IT Services</h3>
-            <ul class="service-list">
-              <li><i class="fas fa-check-circle"></i> Computer &amp; Laptop Troubleshooting</li>
-              <li><i class="fas fa-check-circle"></i> Software Installation &amp; Configuration</li>
-              <li><i class="fas fa-check-circle"></i> Windows Installation &amp; Support</li>
-              <li><i class="fas fa-check-circle"></i> Network Setup &amp; Troubleshooting</li>
-              <li><i class="fas fa-check-circle"></i> Wi-Fi Configuration &amp; Printer Setup</li>
-              <li><i class="fas fa-check-circle"></i> Hardware Diagnosis &amp; System Maintenance</li>
-              <li><i class="fas fa-check-circle"></i> Website Technical Support &amp; General IT</li>
-            </ul>
-            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem;">
-              <a href="#request" class="btn-primary" style="padding: 0.6rem 1.25rem; font-size: 0.875rem;"><i class="fas fa-paper-plane"></i> Request Service</a>
-              <a href="#" onclick="openWhatsApp('Hello, I would like to request your Technical &amp; IT Support service.')" class="btn-outline" style="padding: 0.6rem 1.25rem; font-size: 0.875rem;"><i class="fab fa-whatsapp"></i> WhatsApp Chat</a>
-            </div>
-          </div>
-
-          <div class="card-glow">
-            <div style="width: 56px; height: 56px; background: rgba(34,211,238,0.1); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: #22d3ee; font-size: 1.5rem; margin-bottom: 1.25rem;"><i class="fas fa-shield-halved"></i></div>
-            <h3 style="font-size: 1.25rem; font-weight: 700; color: #fff;">Cybersecurity &amp; Audit</h3>
-            <ul class="service-list">
-              <li><i class="fas fa-check-circle"></i> Website Security Audit</li>
-              <li><i class="fas fa-check-circle"></i> Vulnerability Assessment</li>
-              <li><i class="fas fa-check-circle"></i> Security Configuration Review</li>
-              <li><i class="fas fa-check-circle"></i> SSL/HTTPS Security Check</li>
-              <li><i class="fas fa-check-circle"></i> Authentication &amp; Access Control Review</li>
-              <li><i class="fas fa-check-circle"></i> Security Best-Practice Review</li>
-              <li><i class="fas fa-check-circle"></i> Security Report &amp; Recommendations</li>
-            </ul>
-            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem;">
-              <a href="#request" class="btn-primary" style="padding: 0.6rem 1.25rem; font-size: 0.875rem;"><i class="fas fa-paper-plane"></i> Request Audit</a>
-              <a href="#" onclick="openWhatsApp('Hello, I would like to request a Cybersecurity Audit.')" class="btn-outline" style="padding: 0.6rem 1.25rem; font-size: 0.875rem;"><i class="fab fa-whatsapp"></i> WhatsApp Chat</a>
-            </div>
-            <p class="text-gray" style="font-size: 0.75rem; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 1.5rem; padding-top: 1rem;"><i class="fas fa-info-circle text-cyan"></i> Security assessments are performed only on systems and websites that you own or have explicit authorization to test.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== WHY CHOOSE US ===== -->
-    <section class="bg-dark">
-      <div class="container">
-        <h2 class="text-center" style="font-size: 2.25rem; font-weight: 700; color: #fff;">Why <span class="text-cyan">Choose Us?</span></h2>
-        <div class="grid-3">
-          <div class="card-glow"><i class="fas fa-headset text-cyan" style="font-size: 2rem; margin-bottom: 1rem;"></i><h4 style="font-size: 1.1rem; font-weight: 600; color: #fff;">Professional Support</h4><p class="text-gray" style="font-size: 0.875rem; margin-top: 0.5rem;">Reliable technical assistance for individuals and businesses.</p></div>
-          <div class="card-glow"><i class="fas fa-lock text-cyan" style="font-size: 2rem; margin-bottom: 1rem;"></i><h4 style="font-size: 1.1rem; font-weight: 600; color: #fff;">Security First</h4><p class="text-gray" style="font-size: 0.875rem; margin-top: 0.5rem;">We help identify security weaknesses and recommend practical improvements.</p></div>
-          <div class="card-glow"><i class="fas fa-bolt text-cyan" style="font-size: 2rem; margin-bottom: 1rem;"></i><h4 style="font-size: 1.1rem; font-weight: 600; color: #fff;">Fast Response</h4><p class="text-gray" style="font-size: 0.875rem; margin-top: 0.5rem;">Easy communication and quick service requests.</p></div>
-          <div class="card-glow"><i class="fas fa-route text-cyan" style="font-size: 2rem; margin-bottom: 1rem;"></i><h4 style="font-size: 1.1rem; font-weight: 600; color: #fff;">Transparent Process</h4><p class="text-gray" style="font-size: 0.875rem; margin-top: 0.5rem;">Clients understand what service is being requested and what happens next.</p></div>
-          <div class="card-glow"><i class="fas fa-briefcase text-cyan" style="font-size: 2rem; margin-bottom: 1rem;"></i><h4 style="font-size: 1.1rem; font-weight: 600; color: #fff;">Business Focused</h4><p class="text-gray" style="font-size: 0.875rem; margin-top: 0.5rem;">Solutions designed to minimize technical problems and downtime.</p></div>
-          <div class="card-glow"><i class="fas fa-comment-dots text-cyan" style="font-size: 2rem; margin-bottom: 1rem;"></i><h4 style="font-size: 1.1rem; font-weight: 600; color: #fff;">Customer Support</h4><p class="text-gray" style="font-size: 0.875rem; margin-top: 0.5rem;">Easy communication through WhatsApp and the website.</p></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== HOW IT WORKS ===== -->
-    <section id="how-it-works" class="bg-dark-alt">
-      <div class="container">
-        <h2 class="text-center" style="font-size: 2.25rem; font-weight: 700; color: #fff;">How It <span class="text-cyan">Works</span></h2>
-        <div class="steps-grid">
-          <div class="card-glow step-card"><span class="step-number">01</span><h4 style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-top: 0.5rem;">Choose a Service</h4><p class="text-gray" style="font-size: 0.875rem; margin-top: 0.5rem;">Client chooses Technical Support or Cybersecurity Audit.</p></div>
-          <div class="card-glow step-card"><span class="step-number">02</span><h4 style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-top: 0.5rem;">Submit Request</h4><p class="text-gray" style="font-size: 0.875rem; margin-top: 0.5rem;">Client fills in name, phone number, service and description.</p></div>
-          <div class="card-glow step-card"><span class="step-number">03</span><h4 style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-top: 0.5rem;">We Contact You</h4><p class="text-gray" style="font-size: 0.875rem; margin-top: 0.5rem;">Our team reviews the request and contacts the client.</p></div>
-          <div class="card-glow step-card"><span class="step-number">04</span><h4 style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-top: 0.5rem;">Service Delivery</h4><p class="text-gray" style="font-size: 0.875rem; margin-top: 0.5rem;">The requested service is scheduled and delivered professionally.</p></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== CYBERSECURITY SECTION ===== -->
-    <section id="cybersecurity" class="bg-dark">
-      <div class="container">
-        <div class="text-center" style="max-width: 700px; margin: 0 auto;">
-          <h2 style="font-size: 2.25rem; font-weight: 700; color: #fff;">Protect Your <span class="text-cyan">Website &amp; Digital Systems</span></h2>
-          <p class="text-gray" style="margin-top: 0.75rem;">Helping businesses and website owners understand security weaknesses in their systems.</p>
-        </div>
-        <div class="grid-3">
-          <div class="card-glow" style="display: flex; gap: 1rem;"><i class="fas fa-globe text-cyan" style="font-size: 1.25rem;"></i><div><h4 style="font-weight: 600; color: #fff;">Website Security Assessment</h4><p class="text-gray" style="font-size: 0.85rem; margin-top: 0.25rem;">Comprehensive review of your website's security posture.</p></div></div>
-          <div class="card-glow" style="display: flex; gap: 1rem;"><i class="fas fa-bug text-cyan" style="font-size: 1.25rem;"></i><div><h4 style="font-weight: 600; color: #fff;">Vulnerability Assessment</h4><p class="text-gray" style="font-size: 0.85rem; margin-top: 0.25rem;">Identify potential weaknesses in your systems.</p></div></div>
-          <div class="card-glow" style="display: flex; gap: 1rem;"><i class="fas fa-cog text-cyan" style="font-size: 1.25rem;"></i><div><h4 style="font-weight: 600; color: #fff;">Security Configuration Review</h4><p class="text-gray" style="font-size: 0.85rem; margin-top: 0.25rem;">Ensure your systems are configured securely.</p></div></div>
-          <div class="card-glow" style="display: flex; gap: 1rem;"><i class="fas fa-lock text-cyan" style="font-size: 1.25rem;"></i><div><h4 style="font-weight: 600; color: #fff;">SSL/HTTPS Review</h4><p class="text-gray" style="font-size: 0.85rem; margin-top: 0.25rem;">Check encryption and certificate validity.</p></div></div>
-          <div class="card-glow" style="display: flex; gap: 1rem;"><i class="fas fa-user-check text-cyan" style="font-size: 1.25rem;"></i><div><h4 style="font-weight: 600; color: #fff;">Authentication Review</h4><p class="text-gray" style="font-size: 0.85rem; margin-top: 0.25rem;">Evaluate access control mechanisms.</p></div></div>
-          <div class="card-glow" style="display: flex; gap: 1rem;"><i class="fas fa-file-alt text-cyan" style="font-size: 1.25rem;"></i><div><h4 style="font-weight: 600; color: #fff;">Security Report</h4><p class="text-gray" style="font-size: 0.85rem; margin-top: 0.25rem;">Detailed findings and actionable recommendations.</p></div></div>
-        </div>
-        <div class="text-center" style="margin-top: 3rem;">
-          <a href="#request" class="btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;"><i class="fas fa-shield-alt"></i> Request a Security Assessment</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== REQUEST FORM ===== -->
-    <section id="request" class="bg-dark-alt">
-      <div class="container">
-        <div class="form-box">
-          <h2 style="font-size: 2rem; font-weight: 700; color: #fff; text-align: center;">Request a <span class="text-cyan">Service</span></h2>
-          <form id="requestForm" style="margin-top: 2rem; display: flex; flex-direction: column; gap: 1.25rem;" novalidate>
-            <div class="contact-grid" style="gap: 1.25rem; margin-top: 0;">
-              <div>
-                <label>Full Name <span class="text-cyan">*</span></label>
-                <input type="text" id="fullName" required class="form-input" placeholder="John Doe">
-              </div>
-              <div>
-                <label>Phone Number <span class="text-cyan">*</span></label>
-                <input type="tel" id="phone" required class="form-input" placeholder="+255 623 630 553">
-              </div>
-            </div>
-            <div>
-              <label>Email Address</label>
-              <input type="email" id="email" class="form-input" placeholder="Khalidtamimu622@gmail.com">
-            </div>
-            <div>
-              <label>Service Category <span class="text-cyan">*</span></label>
-              <select id="serviceCategory" required class="form-select">
-                <option value="">Select category</option>
-                <option value="Technical &amp; IT Services">Technical &amp; IT Services</option>
-                <option value="Cybersecurity &amp; Security Audit">Cybersecurity &amp; Security Audit</option>
-                <option value="Website Services">Website Services</option>
-                <option value="General Maintenance">General Maintenance</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-            <div>
-              <label>Specific Service</label>
-              <input type="text" id="specificService" class="form-input" placeholder="e.g., Network Setup">
-            </div>
-            <div>
-              <label>Preferred Contact Method</label>
-              <select id="contactMethod" class="form-select">
-                <option value="Phone">Phone</option>
-                <option value="WhatsApp">WhatsApp</option>
-                <option value="Email">Email</option>
-              </select>
-            </div>
-            <div>
-              <label>Description / Problem <span class="text-cyan">*</span></label>
-              <textarea id="description" rows="3" required class="form-textarea" placeholder="Briefly describe your issue..."></textarea>
-            </div>
-            <div>
-              <label>Preferred Date</label>
-              <input type="date" id="preferredDate" class="form-input">
-            </div>
-            <div>
-              <label>Additional Notes</label>
-              <textarea id="notes" rows="2" class="form-textarea" placeholder="Any extra information..."></textarea>
-            </div>
-
-            <button type="submit" id="submitBtn" class="btn-primary w-full" style="padding: 1rem; font-size: 1rem;">
-              <i class="fas fa-paper-plane"></i> Submit Request &amp; Send to WhatsApp
-            </button>
-            <div id="formStatus" class="text-center" style="font-size: 0.875rem;"></div>
-          </form>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== ABOUT SECTION ===== -->
-    <section id="about" class="bg-dark">
-      <div class="container">
-        <div class="contact-grid" style="align-items: center;">
-          <div>
-            <h2 style="font-size: 2.25rem; font-weight: 700; color: #fff;">About <span class="text-cyan">Us</span></h2>
-            <p class="text-gray" style="margin-top: 1rem; line-height: 1.8;">We are a technology service provider focused on delivering IT support, technical services, digital solutions, cybersecurity assessments, and professional customer support. Our mission is to keep your technology working and your systems protected.</p>
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
-            <div class="card-glow text-center" style="padding: 1.5rem;"><span style="font-size: 2rem; font-weight: 800; color: #22d3ee;">100+</span><p class="text-gray" style="font-size: 0.85rem; margin-top: 0.25rem;">Service Requests</p></div>
-            <div class="card-glow text-center" style="padding: 1.5rem;"><span style="font-size: 2rem; font-weight: 800; color: #22d3ee;">24/7</span><p class="text-gray" style="font-size: 0.85rem; margin-top: 0.25rem;">Request Availability</p></div>
-            <div class="card-glow text-center" style="padding: 1.5rem;"><span style="font-size: 1.75rem; font-weight: 800; color: #22d3ee;">Pro</span><p class="text-gray" style="font-size: 0.85rem; margin-top: 0.25rem;">Technical Support</p></div>
-            <div class="card-glow text-center" style="padding: 1.5rem;"><span style="font-size: 1.75rem;">🔒</span><p class="text-gray" style="font-size: 0.85rem; margin-top: 0.25rem;">Security First</p></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== CONTACT SECTION ===== -->
-    <section id="contact" class="bg-dark-alt">
-      <div class="container" style="max-width: 900px;">
-        <h2 class="text-center" style="font-size: 2.25rem; font-weight: 700; color: #fff;">Get in <span class="text-cyan">Touch</span></h2>
-        <div class="contact-grid" style="margin-top: 3rem;">
-          <div style="display: flex; flex-direction: column; gap: 1rem;">
-            <div class="card-glow" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;"><i class="fas fa-phone text-cyan" style="font-size: 1.25rem; width: 30px; text-align: center;"></i><div><p class="text-gray" style="font-size: 0.8rem;">Phone</p><p style="font-weight: 500; color: #fff;">+255 623 630 553</p></div></div>
-            <div class="card-glow" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;"><i class="fab fa-whatsapp text-green" style="font-size: 1.25rem; width: 30px; text-align: center;"></i><div><p class="text-gray" style="font-size: 0.8rem;">WhatsApp</p><p style="font-weight: 500; color: #fff;">+255 623 630 553</p></div></div>
-            <div class="card-glow" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;"><i class="fas fa-envelope text-cyan" style="font-size: 1.25rem; width: 30px; text-align: center;"></i><div><p class="text-gray" style="font-size: 0.8rem;">Email</p><p style="font-weight: 500; color: #fff;">Khalidtamimu622@gmail.com</p></div></div>
-            <div class="card-glow" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;"><i class="fas fa-clock text-cyan" style="font-size: 1.25rem; width: 30px; text-align: center;"></i><div><p class="text-gray" style="font-size: 0.8rem;">Business Hours</p><p style="font-weight: 500; color: #fff;">Mon–Fri: 8:00 AM – 6:00 PM</p></div></div>
-          </div>
-          <div style="display: flex; flex-direction: column; gap: 1rem; justify-content: center;">
-            <a href="tel:+255623630553" class="btn-primary" style="justify-content: center; padding: 1rem;"><i class="fas fa-phone-alt"></i> Call Us Directly</a>
-            <a href="#" onclick="openWhatsApp('Hello, I have a question.')" class="btn-whatsapp" style="justify-content: center; padding: 1rem;"><i class="fab fa-whatsapp"></i> Chat on WhatsApp</a>
-            <a href="mailto:Khalidtamimu622@gmail.com" class="btn-outline" style="justify-content: center; padding: 1rem; background: #1a2333;"><i class="fas fa-envelope"></i> Send an Email</a>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== FOOTER ===== -->
-    <footer>
-      <div class="container">
-        <div class="footer-grid">
-          <div>
-            <div style="display: flex; align-items: center; gap: 0.5rem;"><i class="fas fa-shield-halved text-cyan" style="font-size: 1.5rem;"></i><span style="font-size: 1.25rem; font-weight: 700; color: #fff;">TechSecure</span></div>
-            <p class="text-gray" style="font-size: 0.875rem; margin-top: 0.75rem;">Professional technical solutions and cybersecurity services for individuals and businesses.</p>
-          </div>
-          <div>
-            <h4 style="font-weight: 600; color: #fff; margin-bottom: 1rem;">Quick Links</h4>
-            <ul style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;" class="text-gray">
-              <li><a href="#home">Home</a></li>
-              <li><a href="#services">Services</a></li>
-              <li><a href="#cybersecurity">Cybersecurity</a></li>
-              <li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 style="font-weight: 600; color: #fff; margin-bottom: 1rem;">Services</h4>
-            <ul style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;" class="text-gray">
-              <li>IT Support</li>
-              <li>Technical Services</li>
-              <li>Cybersecurity Audit</li>
-              <li>Website Security</li>
-            </ul>
-          </div>
-          <div>
-            <h4 style="font-weight: 600; color: #fff; margin-bottom: 1rem;">Connect</h4>
-            <div style="display: flex; gap: 1rem; font-size: 1.25rem;" class="text-gray">
-              <a href="https://wa.me/255623630553"><i class="fab fa-whatsapp"></i></a>
-              <a href="#"><i class="fab fa-facebook"></i></a>
-              <a href="#"><i class="fab fa-instagram"></i></a>
-              <a href="#"><i class="fab fa-linkedin"></i></a>
-              <a href="#"><i class="fab fa-github"></i></a>
-            </div>
-          </div>
-        </div>
-        <div style="border-top: 1px solid rgba(255,255,255,0.05); margin-top: 3rem; padding-top: 1.5rem; text-align: center; font-size: 0.875rem;" class="text-gray">
-          &copy; <span id="year"></span> TechSecure. All Rights Reserved. | Designed by MklDigitalcraft
-        </div>
-      </div>
-    </footer>
-
-    <!-- ===== FLOATING WHATSAPP BUTTON ===== -->
-    <a href="#" onclick="openWhatsApp('Hello! I have a question.')" class="whatsapp-float">
-      <i class="fab fa-whatsapp" style="font-size: 1.5rem;"></i>
-      <span class="label" style="font-size: 0.875rem; font-weight: 500;">Chat with us</span>
-    </a>
-
-    <!-- ===== BACK TO TOP ===== -->
-    <button id="backToTop" aria-label="Back to top">
-      <i class="fas fa-arrow-up"></i>
-    </button>
-
-  </div> <!-- end #siteContent -->
-
-  <!-- ============================================================ -->
-  <!-- JAVASCRIPT -->
-  <!-- ============================================================ -->
-  <script>
-    const CONFIG = {
-      API_URL: '', 
-      WHATSAPP_NUMBER: '255623630553',
-      COMPANY_NAME: 'TechSecure',
-      EMAIL: 'Khalidtamimu622@gmail.com',
-      PHONE: '+255 623 630 553',
-    };
-
-    function openWhatsApp(message) {
-      const url = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-      window.open(url, '_blank');
-    }
-
-    const authOverlay = document.getElementById('authOverlay');
-    const siteContent = document.getElementById('siteContent');
-    const loginContainer = document.getElementById('loginFormContainer');
-    const registerContainer = document.getElementById('registerFormContainer');
-    const showRegisterBtn = document.getElementById('showRegisterBtn');
-    const showLoginBtn = document.getElementById('showLoginBtn');
-    const closeAuthBtn = document.getElementById('closeAuthBtn');
-
-    function checkAuth() {
-      const user = localStorage.getItem('techsecure_user');
-      if (user) {
-        authOverlay.classList.add('hidden');
-        siteContent.classList.add('visible');
-        return true;
-      } else {
-        authOverlay.classList.remove('hidden');
-        siteContent.classList.remove('visible');
-        return false;
-      }
-    }
-
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
-      const status = document.getElementById('loginStatus');
-
-      if (!email || !password) {
-        status.textContent = 'Please fill in all fields.';
-        status.className = 'text-center text-red';
-        return;
-      }
-
-      const users = JSON.parse(localStorage.getItem('techsecure_users') || '[]');
-      const user = users.find(u => u.email === email && u.password === password);
-
-      if (user) {
-        localStorage.setItem('techsecure_user', JSON.stringify({ name: user.name, email: user.email }));
-        status.textContent = '✅ Login successful!';
-        status.className = 'text-center text-green';
-        setTimeout(() => {
-          authOverlay.classList.add('hidden');
-          siteContent.classList.add('visible');
-          document.getElementById('loginForm').reset();
-          status.textContent = '';
-        }, 500);
-      } else {
-        status.textContent = '❌ Invalid email or password.';
-        status.className = 'text-center text-red';
-      }
-    });
-
-    document.getElementById('registerForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const name = document.getElementById('regFullName').value.trim();
-      const email = document.getElementById('regEmail').value.trim();
-      const phone = document.getElementById('regPhone').value.trim();
-      const password = document.getElementById('regPassword').value;
-      const confirmPassword = document.getElementById('regConfirmPassword').value;
-      const status = document.getElementById('registerStatus');
-
-      if (!name || !email || !password || !confirmPassword) {
-        status.textContent = 'Please fill in all required fields.';
-        status.className = 'text-center text-red';
-        return;
-      }
-
-      if (password.length < 6) {
-        status.textContent = 'Password must be at least 6 characters.';
-        status.className = 'text-center text-red';
-        return;
-      }
-
-      if (password !== confirmPassword) {
-        status.textContent = 'Passwords do not match.';
-        status.className = 'text-center text-red';
-        return;
-      }
-
-      const users = JSON.parse(localStorage.getItem('techsecure_users') || '[]');
-      if (users.some(u => u.email === email)) {
-        status.textContent = '❌ Email already registered. Please login.';
-        status.className = 'text-center text-red';
-        return;
-      }
-
-      users.push({ name, email, phone, password });
-      localStorage.setItem('techsecure_users', JSON.stringify(users));
-      localStorage.setItem('techsecure_user', JSON.stringify({ name, email }));
-      status.textContent = '✅ Account created successfully!';
-      status.className = 'text-center text-green';
-      setTimeout(() => {
-        authOverlay.classList.add('hidden');
-        siteContent.classList.add('visible');
-        document.getElementById('registerForm').reset();
-        status.textContent = '';
-        registerContainer.style.display = 'none';
-        loginContainer.style.display = 'block';
-      }, 500);
-    });
-
-    showRegisterBtn.addEventListener('click', () => {
-      loginContainer.style.display = 'none';
-      registerContainer.style.display = 'block';
-    });
-
-    showLoginBtn.addEventListener('click', () => {
-      registerContainer.style.display = 'none';
-      loginContainer.style.display = 'block';
-    });
-
-    function logout() {
-      localStorage.removeItem('techsecure_user');
-      siteContent.classList.remove('visible');
-      authOverlay.classList.remove('hidden');
-      document.getElementById('loginForm').reset();
-      document.getElementById('registerForm').reset();
-      registerContainer.style.display = 'none';
-      loginContainer.style.display = 'block';
-    }
-
-    document.getElementById('logoutBtn').addEventListener('click', (e) => { e.preventDefault(); logout(); });
-    document.getElementById('logoutMobileBtn').addEventListener('click', (e) => { e.preventDefault(); logout(); });
-
-    document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
-      e.preventDefault();
-      alert('Please contact support at ' + CONFIG.EMAIL + ' to reset your password.');
-    });
-
-    const menuBtn = document.getElementById('menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
-
-    menuBtn.addEventListener('click', () => {
-      mobileMenu.classList.toggle('active');
-      const icon = menuBtn.querySelector('i');
-      icon.classList.toggle('fa-bars');
-      icon.classList.toggle('fa-times');
-    });
-
-    mobileMenu.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        mobileMenu.classList.remove('active');
-        menuBtn.querySelector('i').classList.remove('fa-times');
-        menuBtn.querySelector('i').classList.add('fa-bars');
-      });
-    });
-
-    const backToTop = document.getElementById('backToTop');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 400) {
-        backToTop.classList.add('visible');
-      } else {
-        backToTop.classList.remove('visible');
-      }
-    });
-
-    backToTop.addEventListener('click', () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    const form = document.getElementById('requestForm');
-    const submitBtn = document.getElementById('submitBtn');
-    const formStatus = document.getElementById('formStatus');
-
-    function setStatus(message, type = 'info') {
-      formStatus.innerHTML = message;
-      formStatus.className = `text-center ${type === 'success' ? 'text-green' : type === 'error' ? 'text-red' : 'text-gray'}`;
-    }
-
-    function validatePhone(phone) { return phone.replace(/\s/g, '').length >= 8; }
-    function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      setStatus('', 'info');
-
-      const fullName = document.getElementById('fullName').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const serviceCategory = document.getElementById('serviceCategory').value;
-      const specificService = document.getElementById('specificService').value.trim();
-      const contactMethod = document.getElementById('contactMethod').value;
-      const description = document.getElementById('description').value.trim();
-      const preferredDate = document.getElementById('preferredDate').value;
-      const notes = document.getElementById('notes').value.trim();
-
-      if (!fullName) { setStatus('Please enter your full name.', 'error'); return; }
-      if (!phone || !validatePhone(phone)) { setStatus('Please enter a valid phone number.', 'error'); return; }
-      if (email && !validateEmail(email)) { setStatus('Please enter a valid email address.', 'error'); return; }
-      if (!serviceCategory) { setStatus('Please select a service category.', 'error'); return; }
-      if (!description) { setStatus('Please describe your problem or request.', 'error'); return; }
-
-      const payload = { fullName, phone, email: email || null, serviceCategory, specificService: specificService || null, contactMethod, description, preferredDate: preferredDate || null, notes: notes || null };
-
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-
-      try {
-        if (CONFIG.API_URL) {
-          await fetch(CONFIG.API_URL + '/api/service-requests', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          }).catch(err => console.log('Backend warning:', err));
+            if (isRegistering) {
+                title.innerText = 'Jisajili na TechSecure';
+                nameGroup.style.display = 'block';
+                submitBtn.innerText = 'Jisajili';
+                switchText.innerHTML = 'Una akaunti tayari? <span onclick="toggleAuthMode()">Ingia hapa</span>';
+            } else {
+                title.innerText = 'Ingia kwenye TechSecure';
+                nameGroup.style.display = 'none';
+                submitBtn.innerText = 'Ingia';
+                switchText.innerHTML = 'Hauna akaunti? <span onclick="toggleAuthMode()">Jisajili hapa</span>';
+            }
         }
 
-        const waMessage = `*NEW SERVICE REQUEST - TECHSECURE*\n\n` +
-                          `👤 *Name:* ${fullName}\n` +
-                          `📞 *Phone:* ${phone}\n` +
-                          `✉️ *Email:* ${email || 'N/A'}\n` +
-                          `🛠️ *Category:* ${serviceCategory}\n` +
-                          `📌 *Specific Service:* ${specificService || 'N/A'}\n` +
-                          `📱 *Preferred Contact:* ${contactMethod}\n` +
-                          `📝 *Description:* ${description}\n` +
-                          `📅 *Preferred Date:* ${preferredDate || 'N/A'}\n` +
-                          `📌 *Notes:* ${notes || 'N/A'}`;
+        function handleAuth(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            let users = JSON.parse(localStorage.getItem('techsecure_users')) || [];
 
-        setStatus('✅ Request submitted successfully! Opening WhatsApp...', 'success');
-        setTimeout(() => {
-          openWhatsApp(waMessage);
-          form.reset();
-        }, 800);
+            if (isRegistering) {
+                const fullName = document.getElementById('fullName').value;
+                const existingUser = users.find(u => u.email === email);
+                if (existingUser) {
+                    alert('Barua pepe hii imeshasajiliwa tayari!');
+                    return;
+                }
+                const newUser = { fullName, email, password };
+                users.push(newUser);
+                localStorage.setItem('techsecure_users', JSON.stringify(users));
+                localStorage.setItem('techsecure_user', JSON.stringify(newUser));
+                alert('Usajili umefanikiwa!');
+            } else {
+                const user = users.find(u => u.email === email && u.password === password);
+                if (!user) {
+                    alert('Barua pepe au neno la siri si sahihi!');
+                    return;
+                }
+                localStorage.setItem('techsecure_user', JSON.stringify(user));
+            }
 
-      } catch (error) {
-        console.error('Submission error:', error);
-        setStatus('❌ Error occurred. Please try again.', 'error');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request &amp; Send to WhatsApp';
-      }
-    });
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('siteContent').style.display = 'block';
+        }
 
-    checkAuth();
-  </script>
+        function logout() {
+            localStorage.removeItem('techsecure_user');
+            location.reload();
+        }
 
+        function sendToWhatsApp(event) {
+            event.preventDefault();
+            const name = document.getElementById('clientName').value;
+            const phone = document.getElementById('clientPhone').value;
+            const service = document.getElementById('serviceType5') ? document.getElementById('serviceType5').value : document.getElementById('serviceType').value;
+            const message = document.getElementById('clientMessage').value;
+
+            const text = `Habari ${CONFIG.COMPANY_NAME}, ninaomba huduma.%0A%0A*Jina:* ${name}%0A*Simu:* ${phone}%0A*Huduma:* ${service}%0A*Ujumbe:* ${message}`;
+            const url = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${text}`;
+            
+            window.open(url, '_blank');
+        }
+    </script>
 </body>
 </html>
