@@ -262,7 +262,7 @@
   <!-- ============================================================ -->
   <div id="siteContent">
 
-    <!-- ===== NAVBAR ===== -->
+    <!-- ===== NAVBAR (REVISED) ===== -->
     <header id="navbar" class="fixed top-0 left-0 w-full z-50 glass">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 lg:h-20">
         <!-- Logo -->
@@ -292,17 +292,17 @@
         </div>
       </div>
 
-      <!-- Mobile Menu -->
-      <div id="mobile-menu" class="lg:hidden hidden bg-[#0b0f19]/95 backdrop-blur-md border-b border-white/5">
-        <div class="px-4 py-4 space-y-3 text-sm font-medium">
-          <a href="#home">Home</a>
-          <a href="#services">Services</a>
-          <a href="#cybersecurity">Cybersecurity</a>
-          <a href="#about">About</a>
-          <a href="#how-it-works">How It Works</a>
-          <a href="#contact">Contact</a>
-          <a href="#" id="logoutMobileBtn" class="text-red-400 font-semibold"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
-          <a href="#request" class="block bg-cyan-500 text-center rounded-full py-2.5 text-white font-semibold">Request a Service</a>
+      <!-- Mobile Menu (Fixed absolute layout to prevent overlap) -->
+      <div id="mobile-menu" class="lg:hidden hidden bg-[#0b0f19]/95 backdrop-blur-md border-b border-white/5 absolute top-full left-0 w-full shadow-2xl">
+        <div class="px-4 py-5 space-y-3 text-sm font-medium">
+          <a href="#home" class="block py-1">Home</a>
+          <a href="#services" class="block py-1">Services</a>
+          <a href="#cybersecurity" class="block py-1">Cybersecurity</a>
+          <a href="#about" class="block py-1">About</a>
+          <a href="#how-it-works" class="block py-1">How It Works</a>
+          <a href="#contact" class="block py-1">Contact</a>
+          <a href="#" id="logoutMobileBtn" class="block py-1 text-red-400 font-semibold"><i class="fas fa-sign-out-alt mr-1"></i> Logout</a>
+          <a href="#request" class="block bg-cyan-500 text-center rounded-full py-2.5 text-white font-semibold mt-2">Request a Service</a>
         </div>
       </div>
     </header>
@@ -603,7 +603,7 @@
   </div> <!-- end #siteContent -->
 
   <!-- ============================================================ -->
-  <!-- JAVASCRIPT (UPDATED FOR DIRECT WHATSAPP SUBMISSION) -->
+  <!-- JAVASCRIPT -->
   <!-- ============================================================ -->
   <script>
     const CONFIG = {
@@ -637,7 +637,7 @@
       }
     }
 
-    // LOGIN API CONNECTION (Local simulation / keeping login intact)
+    // LOGIN API CONNECTION
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value.trim();
@@ -673,7 +673,6 @@
           status.className = 'text-center text-sm mt-2 text-red-400';
         }
       } catch (err) {
-        // Fallback for local testing if backend is offline
         localStorage.setItem('techsecure_user', JSON.stringify({ email }));
         authOverlay.classList.add('hidden');
         siteContent.classList.add('visible');
@@ -821,8 +820,7 @@
         return;
       }
 
-      // Tengeneza ujumbe mzuri wa WhatsApp
-      const whatsappMessage = 
+      const whatsappMessage =
         `*Ombi Jipya Kutoka TechSecure*%0A%0A` +
         `👤 *Jina Kamili:* ${fullName}%0A` +
         `📞 *Namba ya Simu:* ${phone}%0A` +
