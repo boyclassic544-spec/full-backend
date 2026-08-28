@@ -30,11 +30,31 @@ type ServiceReq struct {
 	Created_At      string `json:"created_at"`
 }
 
+// Muundo mpya wa data zinazokuja wakati wa Login
+type LoginReq struct {
+	Email string `json:"email"`
+	Phone string `json:"phone"`
+}
+
 var (
 	mu       sync.Mutex
 	users    = []User{}
 	requests = []ServiceReq{}
 )
+
+// secureHeaders Middleware ya kulinda tovuti na kuongeza Security Headers zote za A+
+func secureHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload")
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';")
+		w.Header().Set("X-Frame-Options", "DENY")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
+		w.Header().Set("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+
+		next.ServeHTTP(w, r)
+	})
+}
 
 func main() {
 	port := os.Getenv("PORT")
@@ -42,32 +62,43 @@ func main() {
 		port = "8080"
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "index.html")
 	})
 
-	http.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/admin", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "admin.html")
 	})
 
-	http.HandleFunc("/api/signup", handleSignup)
-	http.HandleFunc("/api/login", handleLogin)
-	http.HandleFunc("/api/service-requests", handleService)
-	http.HandleFunc("/api/admin/users", handleGetUsers)
-	http.HandleFunc("/api/admin/requests", handleGetRequests)
+	mux.HandleFunc("/api/signup", handleSignup)
+	mux.HandleFunc("/api/login", handleLogin)
+	mux.HandleFunc("/api/service-requests", handleService)
+	mux.HandleFunc("/api/admin/users", handleGetUsers)
+	mux.HandleFunc("/api/admin/requests", handleGetRequests)
 
-	http.ListenAndServe(":"+port, nil)
+	// Tumeifunga router yetu yote kwenye secureHeaders middleware
+	securedHandler := secureHeaders(mux)
+
+	http.ListenAndServe(":"+port, securedHandler)
 }
 
 func handleSignup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var u User
 	_ = json.NewDecoder(r.Body).Decode(&u)
-	
+
 	if u.FullName == "" {
-		if u.Name != "" { u.FullName = u.Name } else { u.FullName = "Mteja Aliyejisajili" }
+		if u.Name != "" {
+			u.FullName = u.Name
+		} else {
+			u.FullName = "Mteja Aliyejisajili"
+		}
 	}
-	if u.Email == "" { u.Email = "haijulikani@domain.com" }
+	if u.Email == "" {
+		u.Email = "haijulikani@domain.com"
+	}
 
 	mu.Lock()
 	users = append(users, u)
@@ -76,16 +107,36 @@ func handleSignup(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Imefaulu!"})
 }
 
+// handleLogin iliyorekebishwa: Inakagua kama mtumiaji yupo kwenye database kabla ya kumruhusu kuingia
 func handleLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Umefanikiwa!"})
+	var loginData LoginReq
+	_ = json.NewDecoder(r.Body).Decode(&loginData)
+
+	mu.Lock()
+	found := false
+	for _, u := range users {
+		if (loginData.Email != "" && u.Email == loginData.Email) || (loginData.Phone != "" && (u.Phone == loginData.Phone || u.PhoneNumber == loginData.Phone)) {
+			found = true
+			break
+		}
+	}
+	mu.Unlock()
+
+	if !found {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{"status": "error", "message": "Akaunti haipatikani! Tafadhali jisajili kwanza."})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Umefanikiwa kuingia!"})
 }
 
 func handleService(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var req ServiceReq
 	_ = json.NewDecoder(r.Body).Decode(&req)
-	
+
 	// Safisha majina ili yasikosekane kwenye Dashboard
 	if req.FullName == "" {
 		if req.Full_Name != "" {
@@ -99,7 +150,11 @@ func handleService(w http.ResponseWriter, r *http.Request) {
 	req.Full_Name = req.FullName
 
 	if req.Phone == "" {
-		if req.PhoneNumber != "" { req.Phone = req.PhoneNumber } else { req.Phone = "Namba haipo" }
+		if req.PhoneNumber != "" {
+			req.Phone = req.PhoneNumber
+		} else {
+			req.Phone = "Namba haipo"
+		}
 	}
 	req.PhoneNumber = req.Phone
 
