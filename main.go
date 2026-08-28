@@ -345,3 +345,4 @@ func handleGetSecurityLogs(w http.ResponseWriter, r *http.Request) {
 	mu.Unlock()
 	json.NewEncoder(w).Encode(logs)
 }
+// Update
