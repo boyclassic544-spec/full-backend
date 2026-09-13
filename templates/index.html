@@ -13,7 +13,7 @@
             --bg-light: #f4f6f7;
             --text-dark: #333;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
         
         header { background: var(--primary); color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .logo { font-size: 1.6em; font-weight: bold; color: #fff; text-decoration: none; }
@@ -22,13 +22,16 @@
         .nav-links button, .nav-links a { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 8px 14px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 0.9em; transition: 0.3s; }
         .nav-links button:hover, .nav-links a:hover { background: var(--accent); border-color: var(--accent); }
 
-        .hero { background: linear-gradient(135deg, #1e3799, #0c2461); color: white; text-align: center; padding: 50px 20px; margin-bottom: 30px; }
-        .hero h1 { font-size: 2.3em; margin-bottom: 10px; }
-        .hero p { font-size: 1.1em; color: #dcdde1; max-width: 650px; margin: 0 auto 20px auto; }
-        .features-strip { display: flex; justify-content: center; gap: 20px; margin-top: 25px; flex-wrap: wrap; }
-        .feature-badge { background: rgba(255,255,255,0.15); padding: 8px 16px; border-radius: 30px; font-size: 0.85em; }
+        .hero { background: linear-gradient(135deg, #1e3799, #0c2461); color: white; text-align: center; padding: 40px 20px; margin-bottom: 20px; }
+        .hero h1 { font-size: 2.2em; margin-bottom: 10px; }
+        .hero p { font-size: 1.05em; color: #dcdde1; max-width: 650px; margin: 0 auto 15px auto; }
+        .features-strip { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+        .feature-badge { background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 30px; font-size: 0.85em; }
 
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px 40px 20px; }
+        /* Security Alert Banner */
+        .security-banner { background: #ffeaa7; color: #d63031; border: 1px solid #ffeaa7; padding: 12px 20px; text-align: center; font-size: 0.9em; font-weight: bold; margin-bottom: 20px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px 40px 20px; flex: 1; width: 100%; box-sizing: border-box; }
         
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #dcdde1; }
@@ -51,6 +54,10 @@
         .badge { background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
         
         .auth-banner { background: #fff3cd; color: #856404; padding: 15px; text-align: center; font-size: 1em; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ffeeba; font-weight: bold; }
+
+        /* Footer ya Admin */
+        footer { background: var(--primary); color: #fff; text-align: center; padding: 20px; margin-top: auto; font-size: 0.9em; border-top: 3px solid var(--accent); }
+        footer p { margin: 5px 0; }
     </style>
 </head>
 <body>
@@ -66,11 +73,16 @@
         <div class="features-strip">
             <div class="feature-badge">🔒 Salama 100% (Escrow)</div>
             <div class="feature-badge">📱 Tigo Lipa Namba: 45416553</div>
-            <div class="feature-badge">⚡ Hakuna Matapeli (Admin Verified)</div>
+            <div class="feature-badge">🛡️ Cyber Security Monitored</div>
         </div>
     </div>
 
     <div class="container">
+
+        <!-- Onyo la Kiusalama na Udanganyifu -->
+        <div class="security-banner">
+            ⚠️ ONYO LA KIUSALAMA: SokoSmart TZ inalindwa chini ya mifumo ya kisasa ya Cyber Security. Vitendo vyote vya udanganyifu, utapeli, au kuweka bidhaa feki vinafuatiliwa na akaunti yako itafutwa mara moja!
+        </div>
 
         <!-- 1. MARKETPLACE SECTION -->
         <div id="market" class="section">
@@ -122,11 +134,11 @@
             </div>
         </div>
 
-        <!-- 4. VENDOR UPLOAD SECTION -->
+        <!-- 4. VENDOR UPLOAD SECTION (Inaruhusu Kupakia Picha Halisi) -->
         <div id="designer" class="section">
             <div class="form-card" style="max-width: 600px;">
                 <h2 style="margin-top:0; color: var(--primary);">Weka Bidhaa Yako Bure</h2>
-                <form action="/api/upload" method="POST" id="upload-form">
+                <form action="/api/upload" method="POST" enctype="multipart/form-data" id="upload-form">
                     <label>Jina la Bidhaa / Huduma</label>
                     <input type="text" name="title" placeholder="Mf. Simu, Viatu, Logo, au Softwares" required>
                     
@@ -136,8 +148,8 @@
                     <label>Bei (TZS)</label>
                     <input type="number" step="0.01" name="price" placeholder="10000" required>
                     
-                    <label>Link ya Picha (Image URL)</label>
-                    <input type="text" name="image_url" placeholder="https://example.com/image.jpg" required>
+                    <label>Pakia Picha ya Bidhaa (Chagua kutoka kwenye simu)</label>
+                    <input type="file" name="image_file" accept="image/*" required style="background: #fff; padding: 8px;">
                     
                     <label>Kategoria ya Biashara</label>
                     <input type="text" name="category" placeholder="Mf. Electronics, Mitindo, Digital Services" required>
@@ -178,6 +190,13 @@
             </div>
         </div>
     </div>
+
+    <!-- Footer yenye namba ya Admin -->
+    <footer>
+        <p><strong>SokoSmart TZ</strong> - Soko Salama la Kidijitali Tanzania</p>
+        <p>Msaada na Huduma kwa Wateja (Admin Support): <strong>+255 754 165 553 / WhatsApp</strong></p>
+        <p style="font-size: 0.8em; color: #bdc3c7; margin-top: 5px;">Protected by Advanced Cybersecurity & Fraud Detection Systems © 2026</p>
+    </footer>
 
     <script>
         let currentUser = localStorage.getItem('sokosmart_user') || null;

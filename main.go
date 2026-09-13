@@ -4,9 +4,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -59,6 +62,12 @@ func main() {
 
 	initDB()
 
+	// Hakikisha folda ya kuhifadhi picha zipo
+	os.MkdirAll("./uploads", 0755)
+
+	// Static Routes kwaajili ya kusoma picha zilizopakiwa
+	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
+
 	// Web Routes
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/api/signup", signupHandler)
@@ -85,7 +94,6 @@ func main() {
 }
 
 func initDB() {
-	// Tunatengeneza jedwali jipya kabisa linaloitwa 'app_accounts' ili kuepuka kabisa conflict za zamani
 	queryUsers := `
 	CREATE TABLE IF NOT EXISTS app_accounts (
 		id SERIAL PRIMARY KEY,
@@ -157,7 +165,6 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Tunaingiza kwenye jedwali letu jipya 'app_accounts'
 	_, err = db.Exec("INSERT INTO app_accounts (username, password, role) VALUES ($1, $2, 'user')", username, password)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari! Tafadhali tumia lingine."})
@@ -220,21 +227,46 @@ func uploadDesignHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.ParseForm()
+	// Ruhusu multipart form kusoma picha kubwa hadi 10MB
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		http.Error(w, "Picha ni kubwa sana au imeshindikana kusomwa", http.StatusBadRequest)
+		return
+	}
+
 	title := r.FormValue("title")
 	description := r.FormValue("description")
 	priceStr := r.FormValue("price")
-	imageURL := r.FormValue("image_url")
 	category := r.FormValue("category")
 	designerName := r.FormValue("designer_name")
 
 	var price float64
 	fmt.Sscanf(priceStr, "%f", &price)
 
-	_, err := db.Exec("INSERT INTO designs (title, description, price, image_url, category, designer_name, status) VALUES ($1, $2, $3, $4, $5, $6, 'pending')",
+	// Pokea faili la picha
+	file, handler, err := r.FormFile("image_file")
+	imageURL := ""
+	if err == nil {
+		defer file.Close()
+		filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), filepath.Base(handler.Filename))
+		dstPath := filepath.Join("./uploads", filename)
+
+		dst, err := os.Create(dstPath)
+		if err == nil {
+			defer dst.Close()
+			io.Copy(dst, file)
+			imageURL = "/uploads/" + filename
+		}
+	}
+
+	if imageURL == "" {
+		imageURL = "https://via.placeholder.com/300" // Fallback kama picha haijapatikana
+	}
+
+	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, category, designer_name, status) VALUES ($1, $2, $3, $4, $5, $6, 'pending')",
 		title, description, price, imageURL, category, designerName)
 	if err != nil {
-		http.Error(w, "Imeshindikana kuweka bidhaa", http.StatusInternalServerError)
+		http.Error(w, "Imeshindikana kuweka bidhaa kwenye database", http.StatusInternalServerError)
 		return
 	}
 
