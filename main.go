@@ -1,4 +1,4 @@
-package main
+Package main
 
 import (
 	"database/sql"
@@ -145,22 +145,40 @@ func initDB() {
 	}
 }
 
-// Mtendakazi wa kuhakiki miundo sahihi ya picha
-func isValidImageURL(urlStr string) bool {
+// Huhakiki picha zote (zilizounganishwa kwa alama ya |||) zikiwa na kikomo cha picha 1 hadi 4
+func isValidImageURLs(urlStr string) bool {
 	if urlStr == "" || urlStr == "https://via.placeholder.com/300" {
 		return true
 	}
-	lower := strings.ToLower(urlStr)
-	if strings.HasPrefix(lower, "data:image/") {
-		return true
+	
+	// Tunatenganisha picha kupitia alama maalum ya kutenganisha (|||)
+	imgs := strings.Split(urlStr, "|||")
+	if len(imgs) > 4 {
+		return false // Imekataa ikiwa ni zaidi ya picha 4
 	}
+
 	validExts := []string{".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".svg"}
-	for _, ext := range validExts {
-		if strings.Contains(lower, ext) {
-			return true
+	
+	for _, img := range imgs {
+		lower := strings.ToLower(strings.TrimSpace(img))
+		if lower == "" {
+			continue
+		}
+		if strings.HasPrefix(lower, "data:image/") {
+			continue
+		}
+		valid := false
+		for _, ext := range validExts {
+			if strings.Contains(lower, ext) {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			return false
 		}
 	}
-	return false
+	return true
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
@@ -289,7 +307,7 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		VendorPhone  string  `json:"vendor_phone"`
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
+	r.Body = http.MaxBytesReader(w, r.Body, 25<<20) // Kuongeza ukubwa kidogo kuruhusu picha hadi 4
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -298,9 +316,9 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Uhakiki wa muundo wa picha (JPG, JPEG, PNG, WEBP, n.k.)
-	if !isValidImageURL(payload.ImageURL) {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Muundo wa picha haukubaliwi! Tafadhali tumia JPG, JPEG, PNG, au WEBP."})
+	// Huhakiki picha ni kuanzia 1 hadi 4 na zina miundo sahihi
+	if !isValidImageURLs(payload.ImageURL) {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Tafadhali chagua kuanzia picha 1 hadi 4 pekee zenye miundo sahihi (JPG, PNG, WEBP)!"})
 		return
 	}
 
@@ -319,7 +337,7 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imewasilishwa kikamilifu kwa ukaguzi!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa na picha zake zimewasilishwa kikamilifu kwa ukaguzi!"})
 }
 
 func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
@@ -339,7 +357,7 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		VendorPhone string  `json:"vendor_phone"`
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
+	r.Body = http.MaxBytesReader(w, r.Body, 25<<20)
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -349,8 +367,8 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if payload.ImageURL != "" {
-		if !isValidImageURL(payload.ImageURL) {
-			json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Muundo wa picha mpya haukubaliwi! Tafadhali tumia JPG, JPEG, PNG, au WEBP."})
+		if !isValidImageURLs(payload.ImageURL) {
+			json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Tafadhali chagua picha mpya kuanzia 1 hadi 4 pekee zenye miundo sahihi!"})
 			return
 		}
 		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, category = $5, location = $6, vendor_phone = $7, status = 'pending', rejection_reason = '' WHERE id = $8",
