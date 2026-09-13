@@ -13,6 +13,10 @@
         .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .card h3 { margin: 0 0 10px 0; color: #111; }
         .price { color: #e67e22; font-weight: bold; font-size: 1.1em; }
+        .form-box { background: #fff; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .form-box input, .form-box textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 1em; width: 100%; }
+        .btn:hover { background: #219653; }
     </style>
 </head>
 <body>
@@ -20,7 +24,21 @@
         <h1>Designly</h1>
         <p>A marketplace where designers sell their best work and customers discover unique designs.</p>
     </header>
+    
     <div class="container">
+        <!-- Fomu ya Upload ya Designer -->
+        <div class="form-box">
+            <h3>Weka Design Mpya</h3>
+            <form action="/api/upload" method="POST">
+                <input type="text" name="title" placeholder="Jina la Design" required>
+                <textarea name="description" placeholder="Maelezo mafupi kuhusu design" rows="3" required></textarea>
+                <input type="number" step="0.01" name="price" placeholder="Bei ($)" required>
+                <input type="text" name="image_url" placeholder="Link ya Picha (Image URL)" required>
+                <input type="text" name="category" placeholder="Aina (Category - Mf. UI/UX, Logo)" required>
+                <button type="submit" class="btn">Chapisha Design</button>
+            </form>
+        </div>
+
         <h2>Featured Designs</h2>
         <div class="grid" id="designs-grid">
             <div class="card">
@@ -29,6 +47,26 @@
             </div>
         </div>
     </div>
+
+    <script>
+        fetch('/api/designs')
+            .then(res => res.json())
+            .then(data => {
+                const grid = document.getElementById('designs-grid');
+                if(!data || data.length === 0) {
+                    grid.innerHTML = '<p>Hakuna design bado kwenye mfumo.</p>';
+                    return;
+                }
+                grid.innerHTML = data.map(d => `
+                    <div class="card">
+                        <img src="${d.image_url}" alt="${d.title}" style="width:100%; height:150px; object-fit:cover; border-radius:4px;">
+                        <h3>${d.title}</h3>
+                        <p>${d.description}</p>
+                        <p class="price">$${d.price}</p>
+                    </div>
+                `).join('');
+            });
+    </script>
 </body>
 </html>
-
+ 

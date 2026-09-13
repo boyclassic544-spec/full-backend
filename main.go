@@ -48,6 +48,7 @@ func main() {
 	// Routes za Mfumo
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/api/designs", designsHandler)
+	http.HandleFunc("/api/upload", uploadHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -127,4 +128,29 @@ func designsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(designs)
+}
+
+func uploadHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
+
+	title := r.FormValue("title")
+	description := r.FormValue("description")
+	priceStr := r.FormValue("price")
+	imageURL := r.FormValue("image_url")
+	category := r.FormValue("category")
+
+	var price float64
+	fmt.Sscanf(priceStr, "%f", &price)
+
+	_, err := db.Exec("INSERT INTO designs (title, description, price, image_url, category) VALUES ($1, $2, $3, $4, $5)",
+		title, description, price, imageURL, category)
+	if err != nil {
+		http.Error(w, "Imeshindikana kuhifadhi design: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
