@@ -17,16 +17,17 @@ import (
 var db *sql.DB
 
 type Design struct {
-	ID          int     `json:"id"`
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
-	ImageURL    string  `json:"image_url"`
-	Category    string  `json:"category"`
-	Designer    string  `json:"designer_name"`
-	Location    string  `json:"location"`
-	VendorPhone string  `json:"vendor_phone"`
-	Status      string  `json:"status"`
+	ID              int     `json:"id"`
+	Title           string  `json:"title"`
+	Description     string  `json:"description"`
+	Price           float64 `json:"price"`
+	ImageURL        string  `json:"image_url"`
+	Category        string  `json:"category"`
+	Designer        string  `json:"designer_name"`
+	Location        string  `json:"location"`
+	VendorPhone     string  `json:"vendor_phone"`
+	Status          string  `json:"status"`
+	RejectionReason string  `json:"rejection_reason"`
 }
 
 type Order struct {
@@ -78,6 +79,7 @@ func main() {
 	http.HandleFunc("/api/admin/login", adminLoginHandler)
 	http.HandleFunc("/api/admin/designs", adminGetDesignsHandler)
 	http.HandleFunc("/api/admin/approve", adminApproveDesignHandler)
+	http.HandleFunc("/api/admin/reject", adminRejectDesignHandler) // Mpya: Kukataa bidhaa na sababu
 	http.HandleFunc("/api/admin/orders", adminGetOrdersHandler)
 	http.HandleFunc("/api/admin/users", adminUsersHandler)
 	http.HandleFunc("/api/admin/delete-user", adminDeleteUserHandler)
@@ -105,7 +107,6 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la app_accounts: %v", err)
 	}
 
-	// Kutengeneza jedwali la designs kama halipo kabisa
 	queryDesigns := `
 	CREATE TABLE IF NOT EXISTS designs (
 		id SERIAL PRIMARY KEY,
@@ -117,17 +118,19 @@ func initDB() {
 		designer_name TEXT DEFAULT '',
 		location TEXT DEFAULT 'Tanzania',
 		vendor_phone TEXT DEFAULT '',
-		status TEXT DEFAULT 'pending'
+		status TEXT DEFAULT 'pending',
+		rejection_reason TEXT DEFAULT ''
 	);`
 	_, err = db.Exec(queryDesigns)
 	if err != nil {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la designs: %v", err)
 	}
 
-	// Sehemu ya kujiongeza yenyewe (Auto-migration) endapo jedwali lilikuwepo zamani bila safu hizi
+	// Auto-migration salama kulinda taarifa zote zilizopo
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS designer_name TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS location TEXT DEFAULT 'Tanzania';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS vendor_phone TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS rejection_reason TEXT DEFAULT '';")
 
 	queryOrders := `
 	CREATE TABLE IF NOT EXISTS orders (
@@ -203,7 +206,7 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, description, price, image_url, category, designer_name, location, vendor_phone, status FROM designs WHERE status = 'approved'")
+	rows, err := db.Query("SELECT id, title, description, price, image_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE status = 'approved'")
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma bidhaa", http.StatusInternalServerError)
 		return
@@ -213,7 +216,7 @@ func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	var designs []Design
 	for rows.Next() {
 		var d Design
-		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status); err != nil {
+		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
 			continue
 		}
 		designs = append(designs, d)
@@ -269,7 +272,7 @@ func uploadDesignHandler(w http.ResponseWriter, r *http.Request) {
 		imageURL = "https://via.placeholder.com/300"
 	}
 
-	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, category, designer_name, location, vendor_phone, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending')",
+	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', '')",
 		title, description, price, imageURL, category, designerName, location, vendorPhone)
 	if err != nil {
 		log.Printf("Kosa la database wakati wa kuweka bidhaa: %v", err)
@@ -322,7 +325,7 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, description, price, image_url, category, designer_name, location, vendor_phone, status FROM designs ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, title, description, price, image_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs ORDER BY id DESC")
 	if err != nil {
 		http.Error(w, "Imeshindikana", http.StatusInternalServerError)
 		return
@@ -332,7 +335,7 @@ func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	var designs []Design
 	for rows.Next() {
 		var d Design
-		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status); err != nil {
+		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
 			continue
 		}
 		designs = append(designs, d)
@@ -353,13 +356,42 @@ func adminApproveDesignHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	id := r.URL.Query().Get("id")
-	_, err := db.Exec("UPDATE designs SET status = 'approved' WHERE id = $1", id)
+	_, err := db.Exec("UPDATE designs SET status = 'approved', rejection_reason = '' WHERE id = $1", id)
 	if err != nil {
 		http.Error(w, "Imeshindikana kuidhinisha", http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// Sehemu mpya ya kushughulikia kukataa bidhaa na kuweka sababu
+func adminRejectDesignHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Taarifa mbovu", http.StatusBadRequest)
+		return
+	}
+
+	id := r.URL.Query().Get("id")
+	reason := r.FormValue("reason")
+	if reason == "" {
+		reason = "Haikutimiza vigezo vya ubora vya SokoSmart TZ."
+	}
+
+	_, err = db.Exec("UPDATE designs SET status = 'rejected', rejection_reason = $1 WHERE id = $2", reason, id)
+	if err != nil {
+		http.Error(w, "Imeshindikana kukataa bidhaa", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imekataliwa kikamilifu."})
 }
 
 func adminGetOrdersHandler(w http.ResponseWriter, r *http.Request) {
