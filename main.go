@@ -85,9 +85,9 @@ func main() {
 }
 
 func initDB() {
-	// Tunatengeneza jedwali safi kabisa bila takataka za zamani
+	// Tunatengeneza jedwali jipya kabisa linaloitwa 'app_accounts' ili kuepuka kabisa conflict za zamani
 	queryUsers := `
-	CREATE TABLE IF NOT EXISTS users (
+	CREATE TABLE IF NOT EXISTS app_accounts (
 		id SERIAL PRIMARY KEY,
 		username TEXT UNIQUE NOT NULL,
 		password TEXT NOT NULL,
@@ -96,7 +96,7 @@ func initDB() {
 	);`
 	_, err := db.Exec(queryUsers)
 	if err != nil {
-		log.Fatalf("Imeshindikana kutengeneza jedwali la users: %v", err)
+		log.Fatalf("Imeshindikana kutengeneza jedwali la app_accounts: %v", err)
 	}
 
 	queryDesigns := `
@@ -143,7 +143,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa za usajili"})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa"})
 		return
 	}
 
@@ -157,11 +157,10 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Jaribu kuweka moja kwa moja kwenye database
-	_, err = db.Exec("INSERT INTO users (username, password, role) VALUES ($1, $2, 'user')", username, password)
+	// Tunaingiza kwenye jedwali letu jipya 'app_accounts'
+	_, err = db.Exec("INSERT INTO app_accounts (username, password, role) VALUES ($1, $2, 'user')", username, password)
 	if err != nil {
-		// Kama itagoma, hapo ndio tunasema jina limetumika
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari! Tafadhali tumia jina lingine."})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari! Tafadhali tumia lingine."})
 		return
 	}
 
@@ -181,7 +180,7 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var storedPass string
-	err := db.QueryRow("SELECT password FROM users WHERE username = $1", username).Scan(&storedPass)
+	err := db.QueryRow("SELECT password FROM app_accounts WHERE username = $1", username).Scan(&storedPass)
 	if err != nil || storedPass != password {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina la mtumiaji au nenosiri si sahihi!"})
 		return
@@ -352,7 +351,7 @@ func adminGetOrdersHandler(w http.ResponseWriter, r *http.Request) {
 func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	rows, err := db.Query("SELECT id, username, role, created_at FROM users ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, username, role, created_at FROM app_accounts ORDER BY id DESC")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"error": "Imeshindikana kusoma watumiaji"}`))
@@ -389,12 +388,12 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := db.Exec("DELETE FROM users WHERE id = $1", userID)
+	_, err := db.Exec("DELETE FROM app_accounts WHERE id = $1", userID)
 	if err != nil {
 		http.Error(w, "Imeshindikana kufuta mtumiaji", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa kwenye mfumo (Banned & Deleted)!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
