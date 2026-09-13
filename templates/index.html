@@ -28,6 +28,10 @@
         .features-strip { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
         .feature-badge { background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 30px; font-size: 0.85em; }
 
+        /* Search Bar Staili ya Jiji */
+        .search-container { max-width: 600px; margin: 20px auto; display: flex; gap: 10px; padding: 0 15px; }
+        .search-container input { flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #ccc; font-size: 1em; }
+
         /* Security Alert Banner */
         .security-banner { background: #ffeaa7; color: #d63031; border: 1px solid #ffeaa7; padding: 12px 20px; text-align: center; font-size: 0.9em; font-weight: bold; margin-bottom: 20px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
@@ -41,6 +45,9 @@
         .card p { font-size: 0.9em; color: #666; margin-bottom: 10px; }
         .price { color: var(--accent); font-weight: bold; font-size: 1.2em; margin-bottom: 10px; display: block; }
         
+        .vendor-contact-btn { background: #25d366; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 0.9em; width: 100%; font-weight: bold; text-decoration: none; display: block; text-align: center; margin-bottom: 10px; }
+        .vendor-contact-btn:hover { background: #128c7e; }
+
         .payment-box { background: #e8f8f5; border-top: 1px solid #a3e4d7; padding: 12px 15px; }
         input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; }
         .btn { background: var(--success); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 1em; width: 100%; font-weight: bold; transition: background 0.2s; }
@@ -90,7 +97,13 @@
                 Tafadhali fanya <a href="#" onclick="switchTab('signin')" style="color:var(--accent);">Sign In</a> au <a href="#" onclick="switchTab('signup')" style="color:var(--accent);">Sign Up</a> kwanza ili uweze kuona na kununua bidhaa zote zilizopo kwenye SokoSmart!
             </div>
             <div id="market-content-area">
-                <h2 style="margin-bottom: 20px; border-left: 4px solid var(--accent); padding-left: 10px;">Bidhaa na Huduma Zilizothibitishwa</h2>
+                <h2 style="margin-bottom: 10px; border-left: 4px solid var(--accent); padding-left: 10px;">Bidhaa na Huduma Zilizothibitishwa</h2>
+                
+                <!-- Sehemu ya Kutafuta Bidhaa (Search Bar) -->
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="🔍 Tafuta bidhaa, huduma, simu, au vifaa..." oninput="filterDesigns()">
+                </div>
+
                 <div class="grid" id="designs-grid">
                     <p style="text-align:center; grid-column: 1/-1;">Inapakia bidhaa...</p>
                 </div>
@@ -134,7 +147,7 @@
             </div>
         </div>
 
-        <!-- 4. VENDOR UPLOAD SECTION (Inaruhusu Kupakia Picha Halisi) -->
+        <!-- 4. VENDOR UPLOAD SECTION (Inaruhusu Kupakia Picha, Mkoa, na Namba ya Simu) -->
         <div id="designer" class="section">
             <div class="form-card" style="max-width: 600px;">
                 <h2 style="margin-top:0; color: var(--primary);">Weka Bidhaa Yako Bure</h2>
@@ -151,6 +164,12 @@
                     <label>Bei (TZS)</label>
                     <input type="number" step="0.01" name="price" placeholder="10000" required>
                     
+                    <label>Mkoa / Eneo Ilipo (Mf. Morogoro, Dar es Salaam)</label>
+                    <input type="text" name="location" placeholder="Mkoa au Wilaya" required>
+
+                    <label>Namba ya Simu ya Muuzaji (Ya kuwasiliana nawe)</label>
+                    <input type="text" name="vendor_phone" placeholder="Mf. 0712345678" required>
+
                     <label>Pakia Picha ya Bidhaa (Chagua kutoka kwenye simu)</label>
                     <input type="file" name="image_file" accept="image/*" required style="background: #fff; padding: 8px;">
                     
@@ -203,6 +222,7 @@
 
     <script>
         let currentUser = localStorage.getItem('sokosmart_user') || null;
+        let allDesigns = []; // Kuhifadhi bidhaa zote kwa ajili ya Search
 
         function updateAuthUI() {
             const navContainer = document.getElementById('nav-menu-container');
@@ -357,31 +377,61 @@
             fetch('/api/designs')
                 .then(res => res.json())
                 .then(data => {
-                    const grid = document.getElementById('designs-grid');
-                    if(!data || data.length === 0) {
-                        grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Hakuna bidhaa zilizoidhinishwa bado kwenye SokoSmart.</p>';
-                        return;
-                    }
-                    grid.innerHTML = data.map(d => `
-                        <div class="card">
-                            <div>
-                                <img src="${d.image_url}" alt="${d.title}">
-                                <div class="card-content">
-                                    <span style="font-size: 0.8em; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #4a5568;">${d.category || 'General'}</span>
-                                    <h3>${d.title}</h3>
-                                    <p>${d.description}</p>
-                                    <span class="price">Tsh ${d.price.toLocaleString()}</span>
-                                    <p style="font-size:0.85em; color:#888; margin:0;">Muuzaji: <strong>${d.designer_name}</strong></p>
-                                </div>
-                            </div>
-                            <div class="payment-box">
-                                <p style="margin:0 0 6px 0; font-size:0.85em;"><strong>Lipa Tsh ${d.price.toLocaleString()}</strong> kwenda Tigo Lipa Namba: <strong>45416553</strong></p>
-                                <input type="text" id="phone-${d.id}" placeholder="Namba yako ya simu uliyolipia" style="margin-bottom:6px;">
-                                <button class="btn" onclick="buyDesign(${d.id}, '${d.title.replace(/'/g, "\\'")}', ${d.price})">Nimemaliza Kulipa</button>
+                    allDesigns = data || [];
+                    displayDesigns(allDesigns);
+                });
+        }
+
+        function displayDesigns(designs) {
+            const grid = document.getElementById('designs-grid');
+            if(!designs || designs.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Hakuna bidhaa zilizopatikana.</p>';
+                return;
+            }
+            grid.innerHTML = designs.map(d => {
+                let vPhone = d.vendor_phone || '255623630553';
+                // Hakikisha namba ya simu ipo katika mfumo wa kimataifa kwa ajili ya WhatsApp (anza na 255...)
+                if(vPhone.startsWith('0')) {
+                    vPhone = '255' + vPhone.substring(1);
+                }
+                let chatMsg = `Habari, nimeona bidhaa yako ya *${d.title}* (Tsh ${d.price.toLocaleString()}) kwenye SokoSmart TZ. Je, bado ipo?`;
+                let whatsappVendorUrl = `https://wa.me/${vPhone}?text=` + encodeURIComponent(chatMsg);
+
+                return `
+                    <div class="card">
+                        <div>
+                            <img src="${d.image_url}" alt="${d.title}">
+                            <div class="card-content">
+                                <span style="font-size: 0.8em; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #4a5568;">${d.category || 'General'}</span>
+                                <span style="font-size: 0.8em; background: #feebc8; padding: 2px 6px; border-radius: 4px; color: #744210; float: right;">📍 ${d.location || 'Tanzania'}</span>
+                                <h3>${d.title}</h3>
+                                <p>${d.description}</p>
+                                <span class="price">Tsh ${d.price.toLocaleString()}</span>
+                                <p style="font-size:0.85em; color:#666; margin:0 0 10px 0;">Muuzaji: <strong>${d.designer_name}</strong></p>
+                                
+                                <!-- Kitufe cha Kuongea na Muuzaji Moja kwa Moja -->
+                                <a href="${whatsappVendorUrl}" target="_blank" class="vendor-contact-btn">💬 Uliza Muuzaji (WhatsApp)</a>
                             </div>
                         </div>
-                    `).join('');
-                });
+                        <div class="payment-box">
+                            <p style="margin:0 0 6px 0; font-size:0.85em;"><strong>Lipa Tsh ${d.price.toLocaleString()}</strong> kwenda Tigo Lipa Namba: <strong>45416553</strong></p>
+                            <input type="text" id="phone-${d.id}" placeholder="Namba yako ya simu uliyolipia" style="margin-bottom:6px;">
+                            <button class="btn" onclick="buyDesign(${d.id}, '${d.title.replace(/'/g, "\\'")}', ${d.price})">Nimemaliza Kulipa</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterDesigns() {
+            let query = document.getElementById('search-input').value.toLowerCase();
+            let filtered = allDesigns.filter(d => 
+                d.title.toLowerCase().includes(query) || 
+                d.description.toLowerCase().includes(query) || 
+                (d.category && d.category.toLowerCase().includes(query)) ||
+                (d.location && d.location.toLowerCase().includes(query))
+            );
+            displayDesigns(filtered);
         }
 
         function buyDesign(id, title, price) {
@@ -399,11 +449,9 @@
                 return;
             }
             
-            // Piga hesabu ya 10% ya makato ya jukwaa na sehemu ya muuzaji
             let platformFee = price * 0.10;
             let vendorAmount = price - platformFee;
 
-            // 1. Tuma taarifa kwenye backend kama kawaida
             fetch('/api/buy', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -411,16 +459,13 @@
             })
             .then(res => res.json())
             .then(data => {
-                // 2. Fungua WhatsApp ya Admin ikiwa na hesabu kamili ya 10%
-                let adminPhone = "255623630553"; // Namba ya Admin
+                let adminPhone = "255623630553";
                 let msg = `Habari Admin, nimelipia bidhaa ifuatayo kwenye SokoSmart TZ:\n\n*Bidhaa:* ${title}\n*Bei Kamili:* Tsh ${price.toLocaleString()}\n*Faida Yako (10%):* Tsh ${platformFee.toLocaleString()}\n*Kiasi cha Muuzaji:* Tsh ${vendorAmount.toLocaleString()}\n*Namba Iliyolipia:* ${phone}\n*Mnunuzi:* ${currentUser}\n*ID ya Oda:* ${id}\n\nTafadhali thibitisha malipo.`;
                 
                 let whatsappUrl = `https://wa.me/${adminPhone}?text=` + encodeURIComponent(msg);
                 
                 alert(data.message || "Oda imepokelewa! Inakuelekeza kwenye WhatsApp ya Admin...");
                 phoneInput.value = '';
-                
-                // Fungua WhatsApp
                 window.open(whatsappUrl, '_blank');
             })
             .catch(err => {
@@ -429,7 +474,6 @@
         }
 
         function loadAdminData() {
-            // 1. Load Users
             fetch('/api/admin/users')
                 .then(res => res.json())
                 .then(data => {
@@ -449,7 +493,6 @@
                     `).join('');
                 });
 
-            // 2. Load Designs/Products
             fetch('/api/admin/designs')
                 .then(res => res.json())
                 .then(data => {
@@ -462,7 +505,7 @@
                         <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <div>
                                 <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
-                                <small style="color:#666;">Muuzaji: ${d.designer_name} | Kategoria: ${d.category} | Hali: <span class="badge">${d.status}</span></small>
+                                <small style="color:#666;">Muuzaji: ${d.designer_name} (${d.vendor_phone || 'N/A'}) | Eneo: ${d.location || 'N/A'} | Hali: <span class="badge">${d.status}</span></small>
                             </div>
                             <div>
                                 ${d.status === 'pending' ? `<button onclick="approveDesign(${d.id})" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Idhinisha</button>` : '<span style="color:var(--success); font-weight:bold;">Imeshatikiwa</span>'}
@@ -471,7 +514,6 @@
                     `).join('');
                 });
 
-            // 3. Load Orders
             fetch('/api/admin/orders')
                 .then(res => res.json())
                 .then(data => {
@@ -526,3 +568,4 @@
     </script>
 </body>
 </html>
+ 
