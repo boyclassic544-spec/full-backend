@@ -3,78 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Designly TZ - Marketplace</title>
+    <title>Designly TZ - Marketplace Salama</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
-        header { background: #111; color: #fff; padding: 20px; text-align: center; position: relative; }
-        .admin-link { position: absolute; top: 20px; right: 20px; color: #f39c12; text-decoration: none; font-size: 0.9em; cursor: pointer; }
-        .container { max-width: 1000px; margin: 20px auto; padding: 20px; }
-        .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .btn { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 1em; width: 100%; }
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --success: #27ae60;
+            --danger: #c0392b;
+            --bg-light: #f8f9fa;
+            --text-dark: #333;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; }
+        
+        header { background: var(--primary); color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .logo { font-size: 1.5em; font-weight: bold; color: #fff; text-decoration: none; }
+        .logo span { color: var(--accent); }
+        .nav-links { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .nav-links button, .nav-links a { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 8px 14px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 0.9em; transition: 0.3s; }
+        .nav-links button:hover, .nav-links a:hover { background: var(--accent); border-color: var(--accent); }
+
+        .hero { background: linear-gradient(135deg, #2c3e50, #1a252f); color: white; text-align: center; padding: 50px 20px; margin-bottom: 30px; }
+        .hero h1 { font-size: 2.3em; margin-bottom: 10px; }
+        .hero p { font-size: 1.1em; color: #bdc3c7; max-width: 600px; margin: 0 auto 20px auto; }
+        .features-strip { display: flex; justify-content: center; gap: 20px; margin-top: 25px; flex-wrap: wrap; }
+        .feature-badge { background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 30px; font-size: 0.85em; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px 40px 20px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #e1e8ed; }
+        .card img { width: 100%; height: 180px; object-fit: cover; }
+        .card-content { padding: 15px; }
+        .card h3 { margin: 0 0 10px 0; font-size: 1.2em; color: var(--primary); }
+        .card p { font-size: 0.9em; color: #666; margin-bottom: 10px; }
+        .price { color: var(--accent); font-weight: bold; font-size: 1.2em; margin-bottom: 10px; display: block; }
+        
+        .payment-box { background: #e8f8f5; border-top: 1px solid #a3e4d7; padding: 12px 15px; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; }
+        .btn { background: var(--success); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 1em; width: 100%; font-weight: bold; transition: background 0.2s; }
         .btn:hover { background: #219653; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
-        .price { color: #e67e22; font-weight: bold; font-size: 1.1em; }
-        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .nav-tabs button { flex: 1; padding: 10px; background: #ddd; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        .nav-tabs button.active { background: #111; color: #fff; }
+        
         .section { display: none; }
         .section.active { display: block; }
-        .badge { background: #f39c12; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; }
-        .payment-box { background: #e8f8f5; border: 1px solid #a3e4d7; padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+        .form-card { background: #fff; max-width: 450px; margin: 0 auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #ddd; }
+
+        .admin-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        .badge { background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+        
+        .auth-banner { background: #fff3cd; color: #856404; padding: 15px; text-align: center; font-size: 1em; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ffeeba; font-weight: bold; }
     </style>
 </head>
 <body>
+
     <header>
-        <h1>Designly TZ</h1>
-        <p>Marketplace salama ya kuuza na kununua designs - Lipa kwa Tigo Pesa</p>
-        <a class="admin-link" onclick="openAdminLogin()">Admin Login</a>
+        <a href="#" class="logo" onclick="checkMarketAccess()">Designly <span>TZ</span></a>
+        <div class="nav-links" id="nav-menu-container"></div>
     </header>
 
-    <div class="container">
-        <!-- Menyu ya Kawaida -->
-        <div class="nav-tabs" id="user-tabs">
-            <button class="active" onclick="switchTab('market')">Marketplace</button>
-            <button onclick="switchTab('designer')">Weka Design (Designer)</button>
+    <div class="hero" id="hero-section">
+        <h1>Soko Kuu la Ubunifu Tanzania</h1>
+        <p>Pata designs kali za UI/UX, Logo, na Graphics kwa usalama kamili kupitia Tigo Pesa.</p>
+        <div class="features-strip">
+            <div class="feature-badge">🔒 Salama (Escrow)</div>
+            <div class="feature-badge">📱 Tigo Lipa Namba: 45416553</div>
+            <div class="feature-badge">⚡ Ulinzi wa IDOR & Auth</div>
         </div>
+    </div>
+
+    <div class="container">
 
         <!-- 1. MARKETPLACE SECTION -->
-        <div id="market" class="section active">
-            <h2>Designs Zilizothibitishwa</h2>
-            <div class="grid" id="designs-grid">
-                <p>Inapakia designs...</p>
+        <div id="market" class="section">
+            <div id="market-auth-warning" class="auth-banner" style="display:none;">
+                Tafadhali fanya <a href="#" onclick="switchTab('signin')" style="color:var(--accent);">Sign In</a> au <a href="#" onclick="switchTab('signup')" style="color:var(--accent);">Sign Up</a> kwanza ili uweze kuona na kupekua designs zote zilizopo kwenye soko!
+            </div>
+            <div id="market-content-area">
+                <h2 style="margin-bottom: 20px; border-left: 4px solid var(--accent); padding-left: 10px;">Designs Zilizothibitishwa</h2>
+                <div class="grid" id="designs-grid">
+                    <p style="text-align:center; grid-column: 1/-1;">Inapakia designs...</p>
+                </div>
             </div>
         </div>
 
-        <!-- 2. DESIGNER UPLOAD SECTION -->
+        <!-- 2. SIGN UP SECTION (Imesahihishwa kuwa na Confirm Password) -->
+        <div id="signup" class="section">
+            <div class="form-card">
+                <h2 style="margin-top:0; color: var(--primary); text-align: center;">Fungua Akaunti (Sign Up)</h2>
+                <form id="signup-form" onsubmit="handleSignup(event)">
+                    <label>Jina la Mtumiaji (Username)</label>
+                    <input type="text" id="su-username" placeholder="Weka jina lako" required>
+                    
+                    <label>Nenosiri (Password)</label>
+                    <input type="password" id="su-password" placeholder="Weka nenosiri salama" required>
+
+                    <label>Thibitisha Nenosiri (Confirm Password)</label>
+                    <input type="password" id="su-confirm-password" placeholder="Rudia nenosiri lako" required>
+                    
+                    <button type="submit" class="btn" style="margin-top: 15px;">Jisajili Sasa</button>
+                </form>
+                <p style="text-align: center; margin-top: 15px; font-size: 0.9em;">Una akaunti tayari? <a href="#" onclick="switchTab('signin')" style="color:var(--accent);">Sign In hapa</a></p>
+            </div>
+        </div>
+
+        <!-- 3. SIGN IN SECTION -->
+        <div id="signin" class="section">
+            <div class="form-card">
+                <h2 style="margin-top:0; color: var(--primary); text-align: center;">Ingia Kwenye Akaunti (Sign In)</h2>
+                <form id="signin-form" onsubmit="handleSignin(event)">
+                    <label>Jina la Mtumiaji (Username)</label>
+                    <input type="text" id="si-username" placeholder="Jina lako la usajili" required>
+                    
+                    <label>Nenosiri (Password)</label>
+                    <input type="password" id="si-password" placeholder="Nenosiri lako" required>
+                    
+                    <button type="submit" class="btn" style="margin-top: 15px;">Ingia</button>
+                </form>
+                <p style="text-align: center; margin-top: 15px; font-size: 0.9em;">Huna akaunti? <a href="#" onclick="switchTab('signup')" style="color:var(--accent);">Jisajili hapa</a></p>
+            </div>
+        </div>
+
+        <!-- 4. DESIGNER UPLOAD SECTION -->
         <div id="designer" class="section">
-            <div class="card">
-                <h3>Weka Design Yako Mpya</h3>
-                <form action="/api/upload" method="POST">
-                    <input type="text" name="title" placeholder="Jina la Design" required>
-                    <textarea name="description" placeholder="Maelezo mafupi" rows="3" required></textarea>
-                    <input type="number" step="0.01" name="price" placeholder="Bei (TZS)" required>
-                    <input type="text" name="image_url" placeholder="Link ya Picha (Image URL)" required>
-                    <input type="text" name="category" placeholder="Kategoria (Mf. UI/UX, Logo)" required>
-                    <input type="text" name="designer_name" placeholder="Jina Lako au Namba ya Simu" required>
-                    <button type="submit" class="btn">Wasilisha kwa Admin</button>
+            <div class="form-card" style="max-width: 600px;">
+                <h2 style="margin-top:0; color: var(--primary);">Wasilisha Design Yako</h2>
+                <form action="/api/upload" method="POST" id="upload-form">
+                    <label>Jina la Design</label>
+                    <input type="text" name="title" placeholder="Mf. E-Commerce Mobile UI" required>
+                    
+                    <label>Maelezo Mafupi</label>
+                    <textarea name="description" placeholder="Eleza kuhusu design yako..." rows="3" required></textarea>
+                    
+                    <label>Bei (TZS)</label>
+                    <input type="number" step="0.01" name="price" placeholder="10000" required>
+                    
+                    <label>Link ya Picha (Image URL)</label>
+                    <input type="text" name="image_url" placeholder="https://example.com/image.jpg" required>
+                    
+                    <label>Kategoria</label>
+                    <input type="text" name="category" placeholder="Mf. UI/UX, Logo" required>
+                    
+                    <label>Jina Lako (Designer Name)</label>
+                    <input type="text" name="designer_name" id="designer-name-input" placeholder="Jina lako" required>
+                    
+                    <button type="submit" class="btn" style="margin-top: 15px;">Wasilisha kwa Ukaguzi</button>
                 </form>
             </div>
         </div>
 
-        <!-- 3. ADMIN PANEL SECTION (Imefichwa mpaka uweke password) -->
+        <!-- 5. ADMIN PANEL SECTION -->
         <div id="admin" class="section">
-            <div class="card">
-                <h3>Admin Dashboard - Usimamizi wa Oda na Designs</h3>
-                <button onclick="logoutAdmin()" style="background:#c0392b; color:#fff; border:none; padding:8px 15px; border-radius:4px; margin-bottom:15px; cursor:pointer;">Toka (Logout Admin)</button>
+            <div class="form-card" style="max-width: 1000px;">
+                <div class="admin-panel-header">
+                    <div>
+                        <h2 style="margin:0; color: var(--primary);">Admin Super Portal</h2>
+                        <small style="color: #666;">Udhibiti wa Watumiaji, Tigo Lipa Namba (45416553), na Usalama</small>
+                    </div>
+                    <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">Toka (Logout)</button>
+                </div>
                 
-                <h4 style="border-bottom:1px solid #ddd; padding-bottom:5px;">Oda za Malipo (Tigo Lipa Namba 45416553)</h4>
-                <div id="admin-orders-list" style="margin-bottom:20px;">
+                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 25px;">Watumiaji Waliojisajili (User Management)</h3>
+                <div id="admin-users-list" style="margin-bottom:30px; overflow-x: auto;">
+                    <p>Inapakia orodha ya watumiaji...</p>
+                </div>
+
+                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Oda za Malipo (Tigo Lipa Namba)</h3>
+                <div id="admin-orders-list" style="margin-bottom:30px; overflow-x: auto;">
                     <p>Inapakia oda...</p>
                 </div>
 
-                <h4 style="border-bottom:1px solid #ddd; padding-bottom:5px;">Ukaguzi wa Designs</h4>
-                <div id="admin-designs-list">
+                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Ukaguzi na Udhibiti wa Designs</h3>
+                <div id="admin-designs-list" style="overflow-x: auto;">
                     <p>Inapakia designs...</p>
                 </div>
             </div>
@@ -82,12 +180,116 @@
     </div>
 
     <script>
+        let currentUser = localStorage.getItem('designly_user') || null;
+
+        function updateAuthUI() {
+            const navContainer = document.getElementById('nav-menu-container');
+            if(currentUser) {
+                navContainer.innerHTML = `
+                    <button onclick="switchTab('market')">Marketplace</button>
+                    <button onclick="switchTab('designer')">Weka Design</button>
+                    <span style="color:#2ecc71; font-weight:bold; font-size:0.9em; margin-left:5px;">👤 ${currentUser}</span> 
+                    <button onclick="handleLogout()" style="background:#c0392b; border:none;">Toka</button>
+                    <button onclick="openAdminLogin()" style="border-color: var(--accent); color: var(--accent);">Admin Portal</button>
+                `;
+            } else {
+                navContainer.innerHTML = `
+                    <button onclick="switchTab('signin')">Sign In</button>
+                    <button onclick="switchTab('signup')" style="background:var(--accent); border-color:var(--accent);">Sign Up</button>
+                    <button onclick="openAdminLogin()" style="border-color: var(--accent); color: var(--accent);">Admin Portal</button>
+                `;
+            }
+        }
+
+        function checkMarketAccess() {
+            if(!currentUser) {
+                switchTab('signin');
+            } else {
+                switchTab('market');
+            }
+        }
+
         function switchTab(tabId) {
+            if(!currentUser && (tabId === 'market' || tabId === 'designer')) {
+                tabId = 'signin';
+            }
+
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-            if(tabId === 'market') loadDesigns();
+            
+            const hero = document.getElementById('hero-section');
+            if(tabId === 'market') {
+                hero.style.display = 'block';
+                document.getElementById('market-auth-warning').style.display = 'none';
+                document.getElementById('market-content-area').style.display = 'block';
+                loadDesigns();
+            } else if(tabId === 'signin' || tabId === 'signup') {
+                hero.style.display = 'block';
+                if(tabId === 'market') {
+                    document.getElementById('market-auth-warning').style.display = 'block';
+                    document.getElementById('market-content-area').style.display = 'none';
+                }
+            } else {
+                hero.style.display = 'none';
+            }
+
+            if(tabId === 'designer' && currentUser) {
+                document.getElementById('designer-name-input').value = currentUser;
+            }
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            let u = document.getElementById('su-username').value;
+            let p = document.getElementById('su-password').value;
+            let cp = document.getElementById('su-confirm-password').value;
+
+            if(p !== cp) {
+                alert('Nenosiri uliloingiza halilingani na uthibitisho! Tafadhali hakikisha zinalingana.');
+                return;
+            }
+
+            fetch('/api/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                if(data.success) {
+                    switchTab('signin');
+                }
+            });
+        }
+
+        function handleSignin(e) {
+            e.preventDefault();
+            let u = document.getElementById('si-username').value;
+            let p = document.getElementById('si-password').value;
+
+            fetch('/api/signin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                if(data.success) {
+                    currentUser = u;
+                    localStorage.setItem('designly_user', u);
+                    updateAuthUI();
+                    switchTab('market');
+                }
+            });
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('designly_user');
+            updateAuthUI();
+            switchTab('signin');
         }
 
         function openAdminLogin() {
@@ -97,46 +299,55 @@
             fetch('/api/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `password=${pwd}`
+                body: `password=${encodeURIComponent(pwd)}`
             })
             .then(res => res.json())
             .then(data => {
                 if(data.success) {
-                    document.getElementById('user-tabs').style.display = 'none';
+                    document.getElementById('hero-section').style.display = 'none';
                     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
                     document.getElementById('admin').classList.add('active');
                     loadAdminData();
                 } else {
-                    alert('Password si sahihi!');
+                    alert('Password si sahihi! Upatikanaji umezuiwa.');
                 }
             });
         }
 
         function logoutAdmin() {
-            document.getElementById('user-tabs').style.display = 'flex';
-            switchTab('market');
+            if(currentUser) {
+                switchTab('market');
+            } else {
+                switchTab('signin');
+            }
         }
 
         function loadDesigns() {
+            if(!currentUser) return;
+
             fetch('/api/designs')
                 .then(res => res.json())
                 .then(data => {
                     const grid = document.getElementById('designs-grid');
                     if(!data || data.length === 0) {
-                        grid.innerHTML = '<p>Hakuna design zilizoidhinishwa bado.</p>';
+                        grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Hakuna design zilizoidhinishwa bado kwa sasa.</p>';
                         return;
                     }
                     grid.innerHTML = data.map(d => `
                         <div class="card">
-                            <img src="${d.image_url}" alt="${d.title}" style="width:100%; height:150px; object-fit:cover; border-radius:4px;">
-                            <h3>${d.title}</h3>
-                            <p>${d.description}</p>
-                            <p class="price">Tsh ${d.price}</p>
-                            <p><small>Mbunifu: ${d.designer_name}</small></p>
+                            <div>
+                                <img src="${d.image_url}" alt="${d.title}">
+                                <div class="card-content">
+                                    <span style="font-size: 0.8em; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #4a5568;">${d.category || 'General'}</span>
+                                    <h3>${d.title}</h3>
+                                    <p>${d.description}</p>
+                                    <span class="price">Tsh ${d.price.toLocaleString()}</span>
+                                    <p style="font-size:0.85em; color:#888; margin:0;">Mbunifu: <strong>${d.designer_name}</strong></p>
+                                </div>
+                            </div>
                             <div class="payment-box">
-                                <p style="margin:0 0 8px 0; font-size:0.9em;"><strong>Jinsi ya Kununua:</strong><br>
-                                Lipa Tsh ${d.price} kwenda <strong>Tigo Lipa Namba: 45416553</strong></p>
-                                <input type="text" id="phone-${d.id}" placeholder="Weka namba yako ya simu uliyolipia" style="margin-bottom:8px;">
+                                <p style="margin:0 0 6px 0; font-size:0.85em;"><strong>Lipa Tsh ${d.price.toLocaleString()}</strong> kwenda Tigo Lipa Namba: <strong>45416553</strong></p>
+                                <input type="text" id="phone-${d.id}" placeholder="Namba yako ya simu uliyolipia" style="margin-bottom:6px;">
                                 <button class="btn" onclick="buyDesign(${d.id}, ${d.price})">Nimemaliza Kulipa</button>
                             </div>
                         </div>
@@ -145,6 +356,12 @@
         }
 
         function buyDesign(id, price) {
+            if(!currentUser) {
+                alert('Tafadhali fanya Sign In kwanza ndipo uweze kununua design!');
+                switchTab('signin');
+                return;
+            }
+
             let phoneInput = document.getElementById('phone-' + id);
             let phone = phoneInput ? phoneInput.value.trim() : '';
             
@@ -156,17 +373,37 @@
             fetch('/api/buy', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `design_id=${id}&phone=${phone}&amount=${price}`
+                body: `design_id=${id}&phone=${encodeURIComponent(phone)}&amount=${price}`
             })
             .then(res => res.json())
             .then(data => {
-                alert(data.message || "Oda yako imepokewa! Admin anakagua muamala wako.");
+                alert(data.message || "Oda imepokelewa!");
                 phoneInput.value = '';
             });
         }
 
         function loadAdminData() {
-            // Pakia Designs za Admin
+            // 1. Load Users
+            fetch('/api/admin/users')
+                .then(res => res.json())
+                .then(data => {
+                    const usersList = document.getElementById('admin-users-list');
+                    if(!data || data.length === 0) {
+                        usersList.innerHTML = '<p>Hakuna watumiaji waliojisajili bado.</p>';
+                        return;
+                    }
+                    usersList.innerHTML = data.map(u => `
+                        <div style="border-bottom:1px solid #eee; padding:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em;">
+                            <div>
+                                👤 <strong>${u.username}</strong> (Wajibu: <span class="badge">${u.role}</span>) 
+                                <br><small style="color:#666;">Tarehe ya Kusajili: ${u.created_at}</small>
+                            </div>
+                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Futa (Ban/Delete)</button>
+                        </div>
+                    `).join('');
+                });
+
+            // 2. Load Designs
             fetch('/api/admin/designs')
                 .then(res => res.json())
                 .then(data => {
@@ -176,33 +413,46 @@
                         return;
                     }
                     list.innerHTML = data.map(d => `
-                        <div style="border-bottom:1px solid #ddd; padding:10px 0; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <div>
-                                <strong>${d.title}</strong> - Tsh ${d.price} <br>
-                                <small>Mbunifu: ${d.designer_name} | Hali: <span class="badge">${d.status}</span></small>
+                                <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
+                                <small style="color:#666;">Mbunifu: ${d.designer_name} | Kategoria: ${d.category} | Hali: <span class="badge">${d.status}</span></small>
                             </div>
                             <div>
-                                ${d.status === 'pending' ? `<button onclick="approveDesign(${d.id})" style="background:#27ae60; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Idhinisha</button>` : 'Imekubaliwa'}
+                                ${d.status === 'pending' ? `<button onclick="approveDesign(${d.id})" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Idhinisha</button>` : '<span style="color:var(--success); font-weight:bold;">Imeshatikiwa</span>'}
                             </div>
                         </div>
                     `).join('');
                 });
 
-            // Pakia Oda za Wateja
+            // 3. Load Orders
             fetch('/api/admin/orders')
                 .then(res => res.json())
                 .then(data => {
                     const ordersList = document.getElementById('admin-orders-list');
                     if(!data || data.length === 0) {
-                        ordersList.innerHTML = '<p>Hakuna oda za malipo zilizofanyika bado.</p>';
+                        ordersList.innerHTML = '<p>Hakuna oda za malipo zilizofanyika kwa sasa.</p>';
                         return;
                     }
-                    ordersList.innerHTML = data.map(o => `
-                        <div style="border-bottom:1px solid #ddd; padding:8px 0; font-size:0.9em;">
-                            Mteja: <strong>${o.phone}</strong> amelipia Tsh <strong>${o.amount}</strong> kwa ajili ya Design ID: ${o.design_id} 
-                            <br><small>Hali: <span class="badge">${o.payment_status}</span> | Tarehe: ${o.created_at}</small>
+                    ordersList.innerHTML = ordersList.innerHTML = data.map(o => `
+                        <div style="border-bottom:1px solid #eee; padding:8px 0; font-size:0.9em;">
+                            Mteja namba: <strong>${o.phone}</strong> amelipia Tsh <strong>${o.amount.toLocaleString()}</strong> (Design ID: ${o.design_id}) 
+                            <br><small style="color:#666;">Hali ya Malipo: <span class="badge">${o.payment_status}</span> | Tarehe: ${o.created_at}</small>
                         </div>
                     `).join('');
+                });
+        }
+
+        function deleteUser(id, username) {
+            if(!confirm(`Una uhakika unataka kumfuta kabisa mtumiaji "${username}" kutoka kwenye mfumo? Hatua hii itafuta akaunti yake mazima!`)) {
+                return;
+            }
+
+            fetch('/api/admin/delete-user?id=' + id, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || 'Mtumiaji amefutwa!');
+                    loadAdminData();
                 });
         }
 
@@ -210,14 +460,18 @@
             fetch('/api/admin/approve?id=' + id, { method: 'POST' })
                 .then(res => {
                     if(res.ok) {
-                        alert('Imethibitishwa na kuwekwa sokoni!');
+                        alert('Design imethibitishwa!');
                         loadAdminData();
                     }
                 });
         }
 
-        loadDesigns();
+        updateAuthUI();
+        if (!currentUser) {
+            switchTab('signin');
+        } else {
+            switchTab('market');
+        }
     </script>
 </body>
 </html>
- 
