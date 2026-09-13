@@ -4,12 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
-	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -65,22 +62,18 @@ func main() {
 
 	initDB()
 
-	os.MkdirAll("./uploads", 0755)
-
-	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
-
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/api/signup", signupHandler)
 	http.HandleFunc("/api/signin", signinHandler)
 	http.HandleFunc("/api/designs", getDesignsHandler)
-	http.HandleFunc("/api/upload", uploadDesignHandler)
+	http.HandleFunc("/api/upload", uploadDesignJSONHandler)
 	http.HandleFunc("/api/buy", buyDesignHandler)
 
 	http.HandleFunc("/api/admin/login", adminLoginHandler)
 	http.HandleFunc("/api/admin/designs", adminGetDesignsHandler)
 	http.HandleFunc("/api/admin/approve", adminApproveDesignHandler)
 	http.HandleFunc("/api/admin/reject", adminRejectDesignHandler)
-	http.HandleFunc("/api/admin/delete-design", adminDeleteDesignHandler) // Mpya: Kufuta bidhaa kama admin
+	http.HandleFunc("/api/admin/delete-design", adminDeleteDesignHandler)
 	http.HandleFunc("/api/admin/orders", adminGetOrdersHandler)
 	http.HandleFunc("/api/admin/users", adminUsersHandler)
 	http.HandleFunc("/api/admin/delete-user", adminDeleteUserHandler)
@@ -127,7 +120,6 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la designs: %v", err)
 	}
 
-	// Auto-migration salama
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS designer_name TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS location TEXT DEFAULT 'Tanzania';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS vendor_phone TEXT DEFAULT '';")
@@ -231,57 +223,47 @@ func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(designs)
 }
 
-func uploadDesignHandler(w http.ResponseWriter, r *http.Request) {
+func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
 		return
 	}
 
-	err := r.ParseMultipartForm(10 << 20)
+	var payload struct {
+		Title        string  `json:"title"`
+		Description  string  `json:"description"`
+		Price        float64 `json:"price"`
+		ImageURL     string  `json:"image_url"`
+		Category     string  `json:"category"`
+		DesignerName string  `json:"designer_name"`
+		Location     string  `json:"location"`
+		VendorPhone  string  `json:"vendor_phone"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		http.Error(w, "Picha ni kubwa sana", http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa za bidhaa"})
 		return
 	}
 
-	title := r.FormValue("title")
-	description := r.FormValue("description")
-	priceStr := r.FormValue("price")
-	category := r.FormValue("category")
-	designerName := r.FormValue("designer_name")
-	location := r.FormValue("location")
-	vendorPhone := r.FormValue("vendor_phone")
-
-	var price float64
-	fmt.Sscanf(priceStr, "%f", &price)
-
-	file, handler, err := r.FormFile("image_file")
-	imageURL := ""
-	if err == nil {
-		defer file.Close()
-		filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), filepath.Base(handler.Filename))
-		dstPath := filepath.Join("./uploads", filename)
-
-		dst, err := os.Create(dstPath)
-		if err == nil {
-			defer dst.Close()
-			io.Copy(dst, file)
-			imageURL = "/uploads/" + filename
-		}
+	if payload.ImageURL == "" {
+		payload.ImageURL = "https://via.placeholder.com/300"
 	}
-
-	if imageURL == "" {
-		imageURL = "https://via.placeholder.com/300"
+	if payload.Location == "" {
+		payload.Location = "Tanzania"
 	}
 
 	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', '')",
-		title, description, price, imageURL, category, designerName, location, vendorPhone)
+		payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Category, payload.DesignerName, payload.Location, payload.VendorPhone)
+	
 	if err != nil {
 		log.Printf("Kosa la database: %v", err)
-		http.Error(w, "Imeshindikana kuweka bidhaa", http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuweka bidhaa kwenye database"})
 		return
 	}
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imewasilishwa kikamilifu kwa ukaguzi!"})
 }
 
 func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
@@ -490,3 +472,4 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
+
