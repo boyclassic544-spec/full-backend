@@ -5,389 +5,245 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SokoSmart TZ - Soko Kuu la Kidijitali Tanzania</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; }
-        header { background-color: #1e293b; color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-        header h1 { margin: 0; font-size: 20px; }
-        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
-        .card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        button, .btn { background-color: #2563eb; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; text-decoration: none; display: inline-block; }
-        button:hover, .btn:hover { background-color: #1d4ed8; }
-        .btn-danger { background-color: #dc2626; }
-        .btn-danger:hover { background-color: #b91c1c; }
-        .btn-success { background-color: #16a34a; }
-        .btn-success:hover { background-color: #15803d; }
-        .btn-secondary { background-color: #64748b; }
-        .btn-secondary:hover { background-color: #475569; }
-        input, textarea, select { width: 100%; padding: 10px; margin: 8px 0 15px 0; display: inline-block; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-        .product-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-        .product-card img { width: 100%; height: 200px; object-fit: cover; background-color: #eee; }
-        .product-info { padding: 15px; flex-grow: 1; }
-        .price { color: #16a34a; font-weight: bold; font-size: 18px; }
-        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-        .badge-pending { background: #fef08a; color: #854d0e; }
-        .badge-approved { background: #bbf7d0; color: #166534; }
-        .badge-rejected { background: #fecaca; color: #991b1b; }
-        
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
-        .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 600px; position: relative; }
-        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close:hover { color: black; }
+        :root {
+            --primary: #1e3a8a;
+            --primary-dark: #1e293b;
+            --accent: #2563eb;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg-main: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding-bottom: 40px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: background 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-secondary { background: #475569; }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .hero-banner {
+            background: linear-gradient(to right, #eff6ff, #dbeafe);
+            border-left: 5px solid var(--accent);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .hero-banner h1 {
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .hero-banner p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+            font-weight: 700;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-image-container {
+            width: 100%;
+            height: 220px;
+            background-color: #f1f5f9;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .product-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-content {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+
+        .product-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            flex-grow: 1;
+        }
+
+        .product-price {
+            font-size: 1.15rem;
+            font-weight: bold;
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+
+        .product-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 8px;
+        }
+
+        .admin-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .admin-controls button {
+            flex: 1;
+            padding: 8px;
+            font-size: 0.85rem;
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>SokoSmart TZ</h1>
-        <div>
-            <button onclick="showSection('home-section')">Nyumbani</button>
-            <button onclick="showSection('upload-section')">Weka Bidhaa</button>
-            <button onclick="showSection('auth-section')">Ingia / Jisajili</button>
-            <button onclick="showSection('admin-login-section')" style="background-color: #475569;">Admin Portal</button>
+        <div class="header-container">
+            <div class="logo">SokoSmart TZ</div>
+            <div class="nav-buttons">
+                <a href="#" class="btn">Ingia / Jisajili</a>
+                <a href="#" class="btn btn-secondary">Admin Portal</a>
+            </div>
         </div>
     </header>
 
     <div class="container">
-
-        <!-- UKURASA WA NYUMBANI -->
-        <div id="home-section" class="section">
-            <div class="card">
-                <h2>Karibu SokoSmart TZ - Soko Kuu la Kidijitali</h2>
-                <p>Nunua na uuze bidhaa bora Tanzania kwa urahisi. Malipo hufanywa kupitia Tigo Lipa Namba <strong>45416553</strong>.</p>
-            </div>
-            <h3>Bidhaa Zilizopo Sokoni</h3>
-            <div id="products-grid" class="grid">
-                <p>Inapakia bidhaa...</p>
-            </div>
+        <div class="hero-banner">
+            <h1>Karibu SokoSmart TZ - Soko Kuu la Kidijitali</h1>
+            <p>Nunua na uuze bidhaa bora Tanzania kwa urahisi. Malipo hufanyika kupitia Tigo Lipa Namba <strong>45416553</strong>.</p>
         </div>
 
-        <!-- UKURASA WA KUWEKA BIDHAA -->
-        <div id="upload-section" class="section" style="display:none;">
-            <div class="card" style="max-width: 600px; margin: auto;">
-                <h2>Weka Bidhaa Yako Mpya</h2>
-                <form action="/api/upload" method="POST" enctype="multipart/form-data">
-                    <label>Jina la Bidhaa / Muundo:</label>
-                    <input type="text" name="title" required placeholder="Mf. Classic Full Suit">
+        <div class="section-title">Bidhaa Zilizopo Sokoni</div>
 
-                    <label>Maelezo Kamili:</label>
-                    <textarea name="description" rows="4" required placeholder="Elezea vizuri bidhaa yako..."></textarea>
-
-                    <label>Bei (Tsh):</label>
-                    <input type="number" name="price" required placeholder="65000">
-
-                    <label>Kategoria:</label>
-                    <select name="category">
-                        <option value="nguo">Nguo na Mitindo</option>
-                        <option value="viatu">Viatu</option>
-                        <option value="electronics">Vifaa vya Kielektroniki</option>
-                        <option value="vinginevyo">Vinginevyo</option>
-                    </select>
-
-                    <label>Jina Lako (Muuzaji / Designer):</label>
-                    <input type="text" name="designer_name" required placeholder="Jina lako kamili">
-
-                    <label>Eneo Ulipo:</label>
-                    <input type="text" name="location" required placeholder="Morogoro">
-
-                    <label>Namba yako ya Simu:</label>
-                    <input type="text" name="vendor_phone" required placeholder="0617726353">
-
-                    <label>Picha ya Bidhaa:</label>
-                    <input type="file" name="image_file" accept="image/*" required>
-
-                    <button type="submit" style="width: 100%;">Wasilisha kwa Ukaguzi wa Admin</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- UKURASA WA Kuingia / KusaJili -->
-        <div id="auth-section" class="section" style="display:none;">
-            <div class="card" style="max-width: 400px; margin: auto;">
-                <h2>Ingia kwenye Akaunti</h2>
-                <form onsubmit="handleSignin(event)">
-                    <label>Jina la Mtumiaji:</label>
-                    <input type="text" id="signin-user" required>
-                    <label>Nenosiri:</label>
-                    <input type="password" id="signin-pass" required>
-                    <button type="submit" style="width: 100%;">Ingia</button>
-                </form>
-                <hr style="margin: 20px 0;">
-                <h3>Au Fungua Akaunti Mpya</h3>
-                <form onsubmit="handleSignup(event)">
-                    <label>Jina la Mtumiaji:</label>
-                    <input type="text" id="signup-user" required>
-                    <label>Nenosiri:</label>
-                    <input type="password" id="signup-pass" required>
-                    <button type="submit" class="btn-success" style="width: 100%;">Jisajili</button>
-                </form>
-                <p id="auth-msg" style="font-weight: bold; margin-top: 10px;"></p>
-            </div>
-        </div>
-
-        <!-- UKURASA WA ADMIN LOGIN -->
-        <div id="admin-login-section" class="section" style="display:none;">
-            <div class="card" style="max-width: 400px; margin: auto;">
-                <h2>Ingia kama Admin</h2>
-                <form onsubmit="handleAdminLogin(event)">
-                    <label>Nenosiri la Admin:</label>
-                    <input type="password" id="admin-password" required placeholder="Weka nenosiri">
-                    <button type="submit" style="width: 100%;">Ingia Admin Portal</button>
-                </form>
-                <p id="admin-login-err" style="color: red; font-weight: bold;"></p>
-            </div>
-        </div>
-
-        <!-- ADMIN PORTAL -->
-        <div id="admin-portal-section" class="section" style="display:none;">
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2>SokoSmart Admin Portal</h2>
-                    <button onclick="showSection('home-section')" class="btn-danger">Toka (Logout)</button>
+        <div class="products-grid">
+            <!-- Mfano wa Kadi ya Bidhaa -->
+            <div class="product-card">
+                <div class="product-image-container">
+                    <!-- Hapa picha inaonyeshwa kwa usahihi kabisa -->
+                    <img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=600&q=80" alt="Classic Full Suit">
                 </div>
-                <p>Udhibiti wa Watumiaji, Tigo Lipa Namba (45416553), na 10% Makato</p>
+                <div class="product-content">
+                    <div class="product-title">Classic Full Suit / Smart Casual Outfit ya Kiume</div>
+                    <div class="product-desc">Pendeza kwa muonekano wa kipekee na wa kisasa! Nguo hizi zimeshonwa kwa kitambaa kizuri sana...</div>
+                    <div class="product-price">Tsh 65,000</div>
+                    <div class="product-meta">Muuzaji: Halima (0617726353) | Eneo: Morogoro</div>
+                    <a href="#" class="btn">Nunua Sasa</a>
+                </div>
             </div>
-
-            <div class="card">
-                <h3>Watumiaji Waliojisajili</h3>
-                <div id="admin-users-list">Inapakia watumiaji...</div>
-            </div>
-
-            <div class="card">
-                <h3>Oda za Malipo na Makato ya 10%</h3>
-                <div id="admin-orders-list">Inapakia oda...</div>
-            </div>
-
-            <div class="card">
-                <h3>Ukaguzi na Udhibiti wa Bidhaa (Ina uwezo wa Kufuta)</h3>
-                <div id="admin-designs-list">Inapakia bidhaa...</div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- MODAL YA KUTAZAMA MAELEZO -->
-    <div id="designModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <div id="modal-body-content"></div>
         </div>
     </div>
 
-    <!-- MODAL YA KUKATAA BIDHAA -->
-    <div id="rejectModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeRejectModal()">&times;</span>
-            <h3>Sababu ya Kukataa Bidhaa Hii</h3>
-            <textarea id="rejection-reason-input" rows="4" placeholder="Andika sababu fupi..."></textarea>
-            <button onclick="submitRejection()" class="btn-danger" style="width: 100%;">Thibitisha Kukataa</button>
-        </div>
-    </div>
-
-    <script>
-        let currentRejectId = null;
-        let allAdminDesigns = [];
-
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
-            document.getElementById(sectionId).style.display = 'block';
-            if(sectionId === 'home-section') loadProducts();
-        }
-
-        function loadProducts() {
-            fetch('/api/designs')
-            .then(res => res.json())
-            .then(data => {
-                const grid = document.getElementById('products-grid');
-                if(!data || data.length === 0) {
-                    grid.innerHTML = '<p>Hakuna bidhaa zilizoidhinishwa bado kwa sasa.</p>';
-                    return;
-                }
-                grid.innerHTML = data.map(d => `
-                    <div class="product-card">
-                        <img src="${d.image_url}" onerror="this.src='https://via.placeholder.com/300?text=Hakuna+Picha'" alt="${d.title}">
-                        <div class="product-info">
-                            <h3>${d.title}</h3>
-                            <p>${d.description.substring(0, 80)}...</p>
-                            <p class="price">Tsh ${d.price.toLocaleString()}</p>
-                            <p><small>Muuzaji: <strong>${d.designer_name}</strong> (${d.vendor_phone}) | Eneo: <strong>${d.location}</strong></small></p>
-                            <button onclick="buyProduct(${d.id}, ${d.price})">Nunua Sasa</button>
-                        </div>
-                    </div>
-                `).join('');
-            });
-        }
-
-        function buyProduct(designId, price) {
-            const phone = prompt("Weka namba yako ya simu ya Tigo Lipa:");
-            if(!phone) return;
-
-            const formData = new URLSearchParams();
-            formData.append('design_id', designId);
-            formData.append('phone', phone);
-            formData.append('amount', price);
-
-            fetch('/api/buy', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => alert(data.message));
-        }
-
-        function handleSignup(e) {
-            e.preventDefault();
-            const formData = new URLSearchParams();
-            formData.append('username', document.getElementById('signup-user').value);
-            formData.append('password', document.getElementById('signup-pass').value);
-
-            fetch('/api/signup', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                const msg = document.getElementById('auth-msg');
-                msg.style.color = data.success ? 'green' : 'red';
-                msg.innerText = data.message;
-            });
-        }
-
-        function handleSignin(e) {
-            e.preventDefault();
-            const formData = new URLSearchParams();
-            formData.append('username', document.getElementById('signin-user').value);
-            formData.append('password', document.getElementById('signin-pass').value);
-
-            fetch('/api/signin', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                const msg = document.getElementById('auth-msg');
-                msg.style.color = data.success ? 'green' : 'red';
-                msg.innerText = data.message;
-                if(data.success) setTimeout(() => showSection('home-section'), 1000);
-            });
-        }
-
-        function handleAdminLogin(e) {
-            e.preventDefault();
-            const formData = new URLSearchParams();
-            formData.append('password', document.getElementById('admin-password').value);
-
-            fetch('/api/admin/login', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    showSection('admin-portal-section');
-                    loadAdminData();
-                } else {
-                    document.getElementById('admin-login-err').innerText = 'Nenosiri si sahihi!';
-                }
-            });
-        }
-
-        function loadAdminData() {
-            fetch('/api/admin/users')
-            .then(res => res.json())
-            .then(users => {
-                const div = document.getElementById('admin-users-list');
-                if(!users || users.length === 0) { div.innerHTML = '<p>Hakuna watumiaji.</p>'; return; }
-                div.innerHTML = users.map(u => `
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 8px 0;">
-                        <span>👤 <strong>${u.username}</strong> (${u.role})</span>
-                        <button class="btn-danger" onclick="deleteUser(${u.id})">Futa</button>
-                    </div>
-                `).join('');
-            });
-
-            fetch('/api/admin/orders')
-            .then(res => res.json())
-            .then(orders => {
-                const div = document.getElementById('admin-orders-list');
-                if(!orders || orders.length === 0) { div.innerHTML = '<p>Hakuna oda.</p>'; return; }
-                div.innerHTML = orders.map(o => `
-                    <div style="border-bottom: 1px solid #eee; padding: 8px 0;">
-                        <p>Oda #${o.id} | Simu: <strong>${o.phone}</strong> | Tsh ${o.amount.toLocaleString()} | <span class="badge badge-pending">${o.payment_status}</span></p>
-                    </div>
-                `).join('');
-            });
-
-            fetch('/api/admin/designs')
-            .then(res => res.json())
-            .then(designs => {
-                allAdminDesigns = designs;
-                const div = document.getElementById('admin-designs-list');
-                if(!designs || designs.length === 0) { div.innerHTML = '<p>Hakuna bidhaa.</p>'; return; }
-                div.innerHTML = designs.map(d => `
-                    <div style="border-bottom: 1px solid #eee; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                        <div>
-                            <h4 style="margin: 0 0 5px 0;">${d.title} - Tsh ${d.price.toLocaleString()}</h4>
-                            <p style="margin: 0; font-size: 13px; color: #555;">Muuzaji: ${d.designer_name} (${d.vendor_phone}) | Hali: <span class="badge badge-${d.status}">${d.status}</span></p>
-                            ${d.status === 'rejected' ? `<p style="margin: 5px 0 0 0; color: red; font-size: 12px;">Sababu: ${d.rejection_reason}</p>` : ''}
-                        </div>
-                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                            <button class="btn-secondary" onclick="viewDesignDetails(${d.id})">Maelezo</button>
-                            ${d.status !== 'approved' ? `<button class="btn-success" onclick="approveDesign(${d.id})">Idhinisha</button>` : ''}
-                            ${d.status !== 'rejected' ? `<button class="btn-danger" onclick="openRejectModal(${d.id})">Kataa</button>` : ''}
-                            <button class="btn-danger" style="background-color: #7f1d1d;" onclick="deleteDesign(${d.id})">Futa Kabisa</button>
-                        </div>
-                    </div>
-                `).join('');
-            });
-        }
-
-        function viewDesignDetails(id) {
-            const d = allAdminDesigns.find(item => item.id === id);
-            if(!d) return;
-            document.getElementById('modal-body-content').innerHTML = `
-                <h2>${d.title}</h2>
-                <img src="${d.image_url}" onerror="this.src='https://via.placeholder.com/300?text=Hakuna+Picha'" style="width: 100%; max-height: 220px; object-fit: cover; border-radius: 6px; margin-bottom: 10px;">
-                <p><strong>Bei:</strong> Tsh ${d.price.toLocaleString()}</p>
-                <p><strong>Maelezo:</strong> ${d.description}</p>
-                <p><strong>Muuzaji:</strong> ${d.designer_name} (${d.vendor_phone}) - Eneo: ${d.location}</p>
-            `;
-            document.getElementById('designModal').style.display = 'block';
-        }
-
-        function closeModal() { document.getElementById('designModal').style.display = 'none'; }
-
-        function openRejectModal(id) {
-            currentRejectId = id;
-            document.getElementById('rejection-reason-input').value = '';
-            document.getElementById('rejectModal').style.display = 'block';
-        }
-
-        function closeRejectModal() { document.getElementById('rejectModal').style.display = 'none'; currentRejectId = null; }
-
-        function submitRejection() {
-            if(!currentRejectId) return;
-            const reason = document.getElementById('rejection-reason-input').value;
-            const formData = new URLSearchParams();
-            formData.append('reason', reason);
-
-            fetch(`/api/admin/reject?id=${currentRejectId}`, { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => { alert(data.message); closeRejectModal(); loadAdminData(); });
-        }
-
-        function approveDesign(id) {
-            fetch(`/api/admin/approve?id=${id}`, { method: 'POST' })
-            .then(() => { alert('Imetosha, bidhaa imeidhinishwa!'); loadAdminData(); });
-        }
-
-        function deleteDesign(id) {
-            if(!confirm('Una hakika unataka kufuta bidhaa hii kabisa?')) return;
-            fetch(`/api/admin/delete-design?id=${id}`, { method: 'POST' })
-            .then(res => res.json())
-            .then(data => { alert(data.message); loadAdminData(); });
-        }
-
-        function deleteUser(id) {
-            if(!confirm('Una hakika unataka kufuta mtumiaji huyu?')) return;
-            fetch(`/api/admin/delete-user?id=${id}`, { method: 'POST' })
-            .then(res => res.json())
-            .then(data => { alert(data.message); loadAdminData(); });
-        }
-
-        window.onclick = function(event) {
-            if (event.target == document.getElementById('designModal')) closeModal();
-            if (event.target == document.getElementById('rejectModal')) closeRejectModal();
-        }
-
-        loadProducts();
-    </script>
 </body>
 </html>
