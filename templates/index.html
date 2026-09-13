@@ -14,7 +14,7 @@
             --text-dark: #333;
         }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
-        
+
         header { background: var(--primary); color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .logo { font-size: 1.6em; font-weight: bold; color: #fff; text-decoration: none; }
         .logo span { color: var(--accent); }
@@ -31,7 +31,7 @@
         .security-banner { background: #ffeaa7; color: #d63031; border: 1px solid #ffeaa7; padding: 12px 20px; text-align: center; font-size: 0.9em; font-weight: bold; margin-bottom: 20px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px 40px 20px; flex: 1; width: 100%; box-sizing: border-box; }
-        
+
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #dcdde1; }
         .card img { width: 100%; height: 180px; object-fit: cover; background-color: #eee; }
@@ -39,19 +39,19 @@
         .card h3 { margin: 0 0 10px 0; font-size: 1.2em; color: var(--primary); }
         .card p { font-size: 0.9em; color: #666; margin-bottom: 10px; }
         .price { color: var(--accent); font-weight: bold; font-size: 1.2em; margin-bottom: 10px; display: block; }
-        
+
         .payment-box { background: #e8f8f5; border-top: 1px solid #a3e4d7; padding: 12px 15px; }
         input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; }
         .btn { background: var(--success); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 1em; width: 100%; font-weight: bold; transition: background 0.2s; }
         .btn:hover { background: #219653; }
-        
+
         .section { display: none; }
         .section.active { display: block; }
         .form-card { background: #fff; max-width: 450px; margin: 0 auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #ddd; }
 
         .admin-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
         .badge { background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
-        
+
         .auth-banner { background: #fff3cd; color: #856404; padding: 15px; text-align: center; font-size: 1em; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ffeeba; font-weight: bold; }
 
         footer { background: var(--primary); color: #fff; text-align: center; padding: 20px; margin-top: auto; font-size: 0.9em; border-top: 3px solid var(--accent); }
@@ -101,13 +101,13 @@
                 <form id="signup-form" onsubmit="handleSignup(event)">
                     <label>Jina la Mtumiaji (Username)</label>
                     <input type="text" id="su-username" placeholder="Weka jina lako" required>
-                    
+
                     <label>Nenosiri (Password)</label>
                     <input type="password" id="su-password" placeholder="Weka nenosiri salama" required>
 
                     <label>Thibitisha Nenosiri (Confirm Password)</label>
                     <input type="password" id="su-confirm-password" placeholder="Rudia nenosiri lako" required>
-                    
+
                     <button type="submit" class="btn" style="margin-top: 15px;">Jisajili Sasa</button>
                 </form>
                 <p style="text-align: center; margin-top: 15px; font-size: 0.9em;">Una akaunti tayari? <a href="#" onclick="switchTab('signin')" style="color:var(--accent);">Sign In hapa</a></p>
@@ -121,51 +121,51 @@
                 <form id="signin-form" onsubmit="handleSignin(event)">
                     <label>Jina la Mtumiaji (Username)</label>
                     <input type="text" id="si-username" placeholder="Jina lako la usajili" required>
-                    
+
                     <label>Nenosiri (Password)</label>
                     <input type="password" id="si-password" placeholder="Nenosiri lako" required>
-                    
+
                     <button type="submit" class="btn" style="margin-top: 15px;">Ingia</button>
                 </form>
                 <p style="text-align: center; margin-top: 15px; font-size: 0.9em;">Huna akaunti? <a href="#" onclick="switchTab('signup')" style="color:var(--accent);">Jisajili hapa</a></p>
             </div>
         </div>
 
-        <!-- 4. VENDOR UPLOAD SECTION (Tumia Base64 ili picha isomeke moja kwa moja bila kupotea) -->
+        <!-- 4. VENDOR UPLOAD SECTION -->
         <div id="designer" class="section">
             <div class="form-card" style="max-width: 600px;">
                 <h2 style="margin-top:0; color: var(--primary);">Weka Bidhaa Yako Bure</h2>
                 <div style="background: #e8f8f5; border-left: 4px solid var(--success); padding: 10px; margin-bottom: 15px; font-size: 0.85em; color: #0e6655;">
                     💡 <strong>Kumbuka:</strong> SokoSmart TZ inatoza <strong>10% ya ada ya usimamizi na ulinzi wa miamala (Escrow fee)</strong> wakati bidhaa yako inapouzwa na kulipiwa kupitia mfumo wetu.
                 </div>
-                
+
                 <div id="my-rejection-notice" style="display:none; background:#fadbd8; border-left:4px solid var(--danger); padding:10px; margin-bottom:15px; font-size:0.85em; color: var(--danger);"></div>
 
                 <form id="upload-form" onsubmit="handleUploadWithBase64(event)">
                     <label>Jina la Bidhaa / Huduma</label>
                     <input type="text" id="up-title" placeholder="Mf. Simu, Viatu, Logo, au Softwares" required>
-                    
+
                     <label>Maelezo Kamili</label>
                     <textarea id="up-desc" placeholder="Eleza kwa ufasaha kuhusu bidhaa yako..." rows="3" required></textarea>
-                    
+
                     <label>Bei (TZS)</label>
                     <input type="number" step="0.01" id="up-price" placeholder="10000" required>
-                    
+
                     <label>Pakia Picha Halisi ya Bidhaa (Chagua kutoka kwenye simu yako)</label>
                     <input type="file" id="up-image-file" accept="image/*" required style="background: #fff; padding: 8px;">
-                    
+
                     <label>Kategoria ya Biashara</label>
                     <input type="text" id="up-cat" placeholder="Mf. Electronics, Mitindo, Digital Services" required>
-                    
+
                     <label>Jina la Muuzaji / Biashara</label>
                     <input type="text" id="designer-name-input" placeholder="Jina lako au la duka" required>
-                    
+
                     <button type="submit" class="btn" style="margin-top: 15px;">Wasilisha kwa Ukaguzi</button>
                 </form>
             </div>
         </div>
 
-        <!-- 5. ADMIN PANEL SECTION -->
+        <!-- 5. ADMIN PANEL SECTION (Ina vitufe vitatu vya Idhinisha, Kataa, na Futa Kabisa) -->
         <div id="admin" class="section">
             <div class="form-card" style="max-width: 1000px;">
                 <div class="admin-panel-header">
@@ -175,7 +175,7 @@
                     </div>
                     <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">Toka (Logout)</button>
                 </div>
-                
+
                 <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 25px;">Watumiaji Waliojisajili (User Management)</h3>
                 <div id="admin-users-list" style="margin-bottom:30px; overflow-x: auto;">
                     <p>Inapakia orodha ya watumiaji...</p>
@@ -209,7 +209,7 @@
                 navContainer.innerHTML = `
                     <button onclick="switchTab('market')">Soko Kuu</button>
                     <button onclick="switchTab('designer')">Weka Bidhaa</button>
-                    <span style="color:#2ecc71; font-weight:bold; font-size:0.9em; margin-left:5px;">👤 ${currentUser}</span> 
+                    <span style="color:#2ecc71; font-weight:bold; font-size:0.9em; margin-left:5px;">👤 ${currentUser}</span>
                     <button onclick="handleLogout()" style="background:#c0392b; border:none;">Toka</button>
                     <button onclick="openAdminLogin()" style="border-color: var(--accent); color: var(--accent);">Admin Portal</button>
                 `;
@@ -237,7 +237,7 @@
 
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            
+
             const hero = document.getElementById('hero-section');
             if(tabId === 'market') {
                 hero.style.display = 'block';
@@ -256,22 +256,7 @@
 
             if(tabId === 'designer' && currentUser) {
                 document.getElementById('designer-name-input').value = currentUser;
-                checkUserRejectionNotice(currentUser);
             }
-        }
-
-        function checkUserRejectionNotice(username) {
-            fetch('/api/user/notices?username=' + encodeURIComponent(username))
-                .then(res => res.json())
-                .then(data => {
-                    let noticeBox = document.getElementById('my-rejection-notice');
-                    if(data && data.reason) {
-                        noticeBox.style.display = 'block';
-                        noticeBox.innerHTML = `⚠️ <strong>Ujumbe kutoka kwa Admin kuhusu bidhaa yako:</strong> ${data.reason}`;
-                    } else {
-                        noticeBox.style.display = 'none';
-                    }
-                }).catch(err => {});
         }
 
         function handleSignup(e) {
@@ -365,13 +350,13 @@
             }
         }
 
-        // Hapa ndipo picha ya Base64 inasomwa na kuonyeshwa kikamilifu bila kukosa
+        // Kusoma picha kikamilifu kwa mfumo wa Base64 bila kupoteza data kutoka simu
         function handleUploadWithBase64(e) {
             e.preventDefault();
-            
+
             const fileInput = document.getElementById('up-image-file');
             const file = fileInput.files[0];
-            
+
             if(!file) {
                 alert('Tafadhali chagua picha ya bidhaa!');
                 return;
@@ -379,13 +364,13 @@
 
             const reader = new FileReader();
             reader.onload = function(event) {
-                const base64Image = event.target.result; 
-                
+                const base64Image = event.target.result;
+
                 const payload = {
                     title: document.getElementById('up-title').value,
                     description: document.getElementById('up-desc').value,
                     price: parseFloat(document.getElementById('up-price').value),
-                    image_url: base64Image, 
+                    image_url: base64Image,
                     category: document.getElementById('up-cat').value,
                     designer_name: document.getElementById('designer-name-input').value
                 };
@@ -402,10 +387,10 @@
                     switchTab('market');
                 })
                 .catch(err => {
-                    alert('Imeshindikana kupakia bidhaa.');
+                    alert('Imeshindikana kupakia bidhaa. Picha inaweza kuwa kubwa mno.');
                 });
             };
-            
+
             reader.readAsDataURL(file);
         }
 
@@ -451,12 +436,12 @@
 
             let phoneInput = document.getElementById('phone-' + id);
             let phone = phoneInput ? phoneInput.value.trim() : '';
-            
+
             if(!phone) {
                 alert('Tafadhali weka namba yako ya simu uliyotumia kufanya malipo!');
                 return;
             }
-            
+
             let platformFee = price * 0.10;
             let vendorAmount = price - platformFee;
 
@@ -470,7 +455,7 @@
                 let adminPhone = "255623630553";
                 let msg = `Habari Admin, nimelipia bidhaa ifuatayo kwenye SokoSmart TZ:\n\n*Bidhaa:* ${title}\n*Bei Kamili:* Tsh ${price.toLocaleString()}\n*Faida Yako (10%):* Tsh ${platformFee.toLocaleString()}\n*Kiasi cha Muuzaji:* Tsh ${vendorAmount.toLocaleString()}\n*Namba Iliyolipia:* ${phone}\n*Mnunuzi:* ${currentUser}\n*ID ya Oda:* ${id}\n\nTafadhali thibitisha malipo.`;
                 let whatsappUrl = `https://wa.me/${adminPhone}?text=` + encodeURIComponent(msg);
-                
+
                 alert(data.message || "Oda imepokelewa! Inakuelekeza kwenye WhatsApp ya Admin...");
                 phoneInput.value = '';
                 window.open(whatsappUrl, '_blank');
@@ -492,7 +477,7 @@
                     usersList.innerHTML = data.map(u => `
                         <div style="border-bottom:1px solid #eee; padding:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em;">
                             <div>
-                                👤 <strong>${u.username}</strong> (Wajibu: <span class="badge">${u.role}</span>) 
+                                👤 <strong>${u.username}</strong> (Wajibu: <span class="badge">${u.role}</span>)
                                 <br><small style="color:#666;">Tarehe ya Kusajili: ${u.created_at}</small>
                             </div>
                             <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Futa (Ban/Delete)</button>
@@ -518,6 +503,7 @@
                                     ${d.rejection_reason ? `<br><small style="color:var(--danger);">Sababu ya kukataliwa: ${d.rejection_reason}</small>` : ''}
                                 </div>
                             </div>
+                            <!-- Vitufe vitatu vya Admin: Idhinisha, Kataa, na Futa Kabisa -->
                             <div style="display:flex; gap:6px; flex-wrap:wrap;">
                                 <button onclick="approveDesign(${d.id})" style="background:var(--success); color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Idhinisha</button>
                                 <button onclick="rejectDesign(${d.id})" style="background:var(--accent); color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Kataa</button>
@@ -540,7 +526,7 @@
                         let vendor = o.amount - fee;
                         return `
                             <div style="border-bottom:1px solid #eee; padding:8px 0; font-size:0.9em;">
-                                Mteja namba: <strong>${o.phone}</strong> amelipia Tsh <strong>${o.amount.toLocaleString()}</strong> 
+                                Mteja namba: <strong>${o.phone}</strong> amelipia Tsh <strong>${o.amount.toLocaleString()}</strong>
                                 <br><span style="color:var(--success); font-weight:bold;">Faida yako (10%): Tsh ${fee.toLocaleString()}</span> | Mkabidhi muuzaji: Tsh ${vendor.toLocaleString()}
                                 <br><small style="color:#666;">Hali: <span class="badge">${o.payment_status}</span> | Tarehe: ${o.created_at}</small>
                             </div>
@@ -564,7 +550,7 @@
             fetch('/api/admin/approve?id=' + id, { method: 'POST' })
                 .then(res => {
                     if(res.ok) {
-                        alert('Bidhaa imethibitishwa!');
+                        alert('Bidhaa imethibitishwa na kuonekana kwenye Soko Kuu!');
                         loadAdminData();
                     }
                 });
@@ -592,7 +578,7 @@
             fetch('/api/admin/delete-design?id=' + id, { method: 'POST' })
                 .then(res => {
                     if(res.ok) {
-                        alert('Bidhaa imefutwa kabisa!');
+                        alert('Bidhaa imefutwa kabisa kwenye mfumo!');
                         loadAdminData();
                     }
                 });
@@ -607,3 +593,4 @@
     </script>
 </body>
 </html>
+ 

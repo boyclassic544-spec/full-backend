@@ -124,6 +124,8 @@ func initDB() {
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS location TEXT DEFAULT 'Tanzania';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS vendor_phone TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS rejection_reason TEXT DEFAULT '';")
+	// Kuhakikisha safu ya image_url inasoma TEXT ya kutosha kubeba Base64 ndefu
+	db.Exec("ALTER TABLE designs ALTER COLUMN image_url TYPE TEXT;")
 
 	queryOrders := `
 	CREATE TABLE IF NOT EXISTS orders (
@@ -240,10 +242,14 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		VendorPhone  string  `json:"vendor_phone"`
 	}
 
+	// Kuongeza ukubwa wa kupokea data (MaxBytes) ili picha kubwa za Base64 zisikataliwe na seva
+	r.Body = http.MaxBytesReader(w, r.Body, 15<<20) // 15MB max
 	err := json.NewDecoder(r.Body).Decode(&payload)
+	
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa za bidhaa"})
+		log.Printf("Kosa la kupokea JSON/Image: %v", err)
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa au picha ni kubwa sana"})
 		return
 	}
 
