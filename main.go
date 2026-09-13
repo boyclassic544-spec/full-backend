@@ -283,7 +283,7 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		payload.ImageURL = "https://via.placeholder.com/300"
 	}
 	if payload.Location == "" {
-		payload.Location = "Tanzania"
+		payload.Location = "Morogoro, Tanzania" // Imewekwa default ya Morogoro au nchi
 	}
 
 	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', '')",
@@ -310,6 +310,8 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		Price       float64 `json:"price"`
 		ImageURL    string  `json:"image_url"`
 		Category    string  `json:"category"`
+		Location    string  `json:"location"`
+		VendorPhone string  `json:"vendor_phone"`
 	}
 
 	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
@@ -321,12 +323,13 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Imerekebishwa ili iweze kusasisha pia Location na VendorPhone zikiwa zinabadilishwa
 	if payload.ImageURL != "" {
-		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, category = $5, status = 'pending', rejection_reason = '' WHERE id = $6",
-			payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Category, payload.ID)
+		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, category = $5, location = $6, vendor_phone = $7, status = 'pending', rejection_reason = '' WHERE id = $8",
+			payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Category, payload.Location, payload.VendorPhone, payload.ID)
 	} else {
-		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, category = $4, status = 'pending', rejection_reason = '' WHERE id = $5",
-			payload.Title, payload.Description, payload.Price, payload.Category, payload.ID)
+		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, category = $4, location = $5, vendor_phone = $6, status = 'pending', rejection_reason = '' WHERE id = $7",
+			payload.Title, payload.Description, payload.Price, payload.Category, payload.Location, payload.VendorPhone, payload.ID)
 	}
 
 	if err != nil {
@@ -560,3 +563,4 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
+ 

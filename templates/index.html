@@ -54,7 +54,6 @@
 
         .auth-banner { background: #fff3cd; color: #856404; padding: 15px; text-align: center; font-size: 1em; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ffeeba; font-weight: bold; }
 
-        /* Modal kwa ajili ya kusoma maelezo yote ya bidhaa kwa Admin */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
         .modal-content { background-color: #fff; margin: auto; padding: 25px; border-radius: 8px; width: 90%; max-width: 600px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; max-height: 90vh; overflow-y: auto; }
         .close-modal { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
@@ -155,7 +154,13 @@
                     <label>Bei (TZS)</label>
                     <input type="number" step="0.01" id="up-price" placeholder="10000" required>
 
-                    <label>Pakia Picha Halisi ya Bidhaa (Chagua kutoka kwenye simu yako)</label>
+                    <label>Eneo Lipo (Location / Mkoa)</label>
+                    <input type="text" id="up-location" placeholder="Mf. Morogoro, Dar es Salaam, Arusha" required>
+
+                    <label>Namba ya Simu ya Muuzaji (Vendor Phone)</label>
+                    <input type="text" id="up-vendor-phone" placeholder="Mf. 0712345678" required>
+
+                    <label>Pakia Picha Halisi ya Bidhaa</label>
                     <input type="file" id="up-image-file" accept="image/*" required style="background: #fff; padding: 8px;">
 
                     <label>Kategoria ya Biashara</label>
@@ -195,6 +200,12 @@
                     <label>Bei (TZS)</label>
                     <input type="number" step="0.01" id="edit-price" required>
 
+                    <label>Eneo Lipo (Location)</label>
+                    <input type="text" id="edit-location" required>
+
+                    <label>Namba ya Simu ya Muuzaji</label>
+                    <input type="text" id="edit-vendor-phone" required>
+
                     <label>Badilisha Picha (Hiari)</label>
                     <input type="file" id="edit-image-file" accept="image/*" style="background: #fff; padding: 8px;">
 
@@ -231,7 +242,6 @@
                 </div>
 
                 <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Ukaguzi na Udhibiti wa Bidhaa (Admin Actions)</h3>
-                <p style="font-size:0.85em; color:#666;">Bofya kitufe cha <strong>"Soma Maelezo"</strong> kuona picha kubwa na maelezo yote ya bidhaa kabla ya kuidhinisha au kukataa.</p>
                 <div id="admin-designs-list" style="overflow-x: auto;">
                     <p>Inapakia bidhaa...</p>
                 </div>
@@ -249,6 +259,8 @@
             </div>
             <p><strong>Jina la Bidhaa:</strong> <span id="modal-prod-title"></span></p>
             <p><strong>Bei:</strong> <span id="modal-prod-price" style="color: var(--accent); font-weight: bold;"></span></p>
+            <p><strong>Eneo (Location):</strong> <span id="modal-prod-location"></span></p>
+            <p><strong>Simu ya Muuzaji:</strong> <span id="modal-prod-vendor-phone"></span></p>
             <p><strong>Kategoria:</strong> <span id="modal-prod-cat"></span></p>
             <p><strong>Muuzaji:</strong> <span id="modal-prod-designer"></span></p>
             <p><strong>Hali ya Sasa:</strong> <span id="modal-prod-status" class="badge"></span></p>
@@ -256,9 +268,7 @@
                 <strong style="display: block; margin-bottom: 5px; color: var(--primary);">Maelezo ya Ziada (Description):</strong>
                 <p id="modal-prod-desc" style="margin: 0; white-space: pre-wrap; font-size: 0.95em; color: #444;"></p>
             </div>
-            <div id="modal-action-buttons" style="display: flex; gap: 10px; margin-top: 20px;">
-                <!-- Vitufe vya uamuzi vitawekwa hapa moja kwa moja -->
-            </div>
+            <div id="modal-action-buttons" style="display: flex; gap: 10px; margin-top: 20px;"></div>
         </div>
     </div>
 
@@ -434,6 +444,8 @@
                     title: document.getElementById('up-title').value,
                     description: document.getElementById('up-desc').value,
                     price: parseFloat(document.getElementById('up-price').value),
+                    location: document.getElementById('up-location').value,
+                    vendor_phone: document.getElementById('up-vendor-phone').value,
                     image_url: event.target.result,
                     category: document.getElementById('up-cat').value,
                     designer_name: document.getElementById('designer-name-input').value
@@ -474,7 +486,9 @@
                                     <h3>${d.title}</h3>
                                     <p>${d.description}</p>
                                     <span class="price">Tsh ${d.price.toLocaleString()}</span>
-                                    <p style="font-size:0.85em; color:#888; margin:0;">Muuzaji: <strong>${d.designer_name}</strong></p>
+                                    <p style="font-size:0.85em; color:#666; margin:2px 0;">📍 Eneo: <strong>${d.location || 'Tanzania'}</strong></p>
+                                    <p style="font-size:0.85em; color:#666; margin:2px 0;">📞 Simu: <strong>${d.vendor_phone || 'N/A'}</strong></p>
+                                    <p style="font-size:0.85em; color:#888; margin:5px 0 0 0;">Muuzaji: <strong>${d.designer_name}</strong></p>
                                 </div>
                             </div>
                             <div class="payment-box">
@@ -504,7 +518,7 @@
                                 <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
-                                    <small style="color:#666;">Kategoria: ${d.category} | Hali: <span class="badge">${d.status}</span></small>
+                                    <small style="color:#666;">Eneo: ${d.location} | Simu: ${d.vendor_phone} | Hali: <span class="badge">${d.status}</span></small>
                                     ${d.rejection_reason ? `<br><small style="color:var(--danger);">Sababu ya kukataliwa: ${d.rejection_reason}</small>` : ''}
                                 </div>
                             </div>
@@ -522,6 +536,8 @@
             document.getElementById('edit-title').value = d.title;
             document.getElementById('edit-desc').value = d.description;
             document.getElementById('edit-price').value = d.price;
+            document.getElementById('edit-location').value = d.location || '';
+            document.getElementById('edit-vendor-phone').value = d.vendor_phone || '';
             document.getElementById('edit-cat').value = d.category;
             document.getElementById('edit-image-file').value = '';
             switchTab('edit-product');
@@ -533,6 +549,8 @@
             const title = document.getElementById('edit-title').value;
             const description = document.getElementById('edit-desc').value;
             const price = parseFloat(document.getElementById('edit-price').value);
+            const location = document.getElementById('edit-location').value;
+            const vendor_phone = document.getElementById('edit-vendor-phone').value;
             const category = document.getElementById('edit-cat').value;
             const fileInput = document.getElementById('edit-image-file');
             const file = fileInput.files[0];
@@ -541,7 +559,16 @@
                 fetch('/api/update-design', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: parseInt(id), title, description, price, image_url: imgUrl, category })
+                    body: JSON.stringify({ 
+                        id: parseInt(id), 
+                        title, 
+                        description, 
+                        price, 
+                        location, 
+                        vendor_phone, 
+                        image_url: imgUrl, 
+                        category 
+                    })
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -618,7 +645,7 @@
                                 👤 <strong>${u.username}</strong> (Wajibu: <span class="badge">${u.role}</span>)
                                 <br><small style="color:#666;">Tarehe ya Kusajili: ${u.created_at}</small>
                             </div>
-                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Futa (Ban/Delete)</button>
+                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Futa</button>
                         </div>
                     `).join('');
                 });
@@ -626,7 +653,7 @@
             fetch('/api/admin/designs')
                 .then(res => res.json())
                 .then(data => {
-                    window.adminAllDesigns = data; // Hifadhi kwa ajili ya kufungua modal ya maelezo kamili
+                    window.adminAllDesigns = data;
                     const list = document.getElementById('admin-designs-list');
                     if(!data || data.length === 0) {
                         list.innerHTML = '<p>Hakuna bidhaa zilizowekwa bado.</p>';
@@ -638,7 +665,7 @@
                                 <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
-                                    <small style="color:#666;">Muuzaji: ${d.designer_name} | Kategoria: ${d.category} | Hali: <span class="badge">${d.status}</span></small>
+                                    <small style="color:#666;">Muuzaji: ${d.designer_name} | Eneo: ${d.location} | Hali: <span class="badge">${d.status}</span></small>
                                 </div>
                             </div>
                             <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -680,16 +707,17 @@
             document.getElementById('modal-image').src = d.image_url;
             document.getElementById('modal-prod-title').innerText = d.title;
             document.getElementById('modal-prod-price').innerText = "Tsh " + d.price.toLocaleString();
+            document.getElementById('modal-prod-location').innerText = d.location || 'Tanzania';
+            document.getElementById('modal-prod-vendor-phone').innerText = d.vendor_phone || 'N/A';
             document.getElementById('modal-prod-cat').innerText = d.category;
             document.getElementById('modal-prod-designer').innerText = d.designer_name;
             document.getElementById('modal-prod-status').innerText = d.status;
             document.getElementById('modal-prod-desc').innerText = d.description;
 
-            // Kuweka vitufe vya uamuzi moja kwa moja ndani ya Modal pia
             const actionsDiv = document.getElementById('modal-action-buttons');
             actionsDiv.innerHTML = `
-                <button onclick="approveDesign(${d.id}); closeAdminModal();" class="btn" style="background:var(--success);">Idhinisha (Approve)</button>
-                <button onclick="rejectDesign(${d.id}); closeAdminModal();" class="btn" style="background:var(--accent);">Kataa (Reject)</button>
+                <button onclick="approveDesign(${d.id}); closeAdminModal();" class="btn" style="background:var(--success);">Idhinisha</button>
+                <button onclick="rejectDesign(${d.id}); closeAdminModal();" class="btn" style="background:var(--accent);">Kataa</button>
                 <button onclick="deleteDesign(${d.id}); closeAdminModal();" class="btn" style="background:var(--danger);">Futa Kabisa</button>
             `;
 
@@ -701,7 +729,7 @@
         }
 
         function deleteUser(id, username) {
-            if(!confirm(`Una uhakika unataka kumfuta kabisa mtumiaji "${username}" kutoka SokoSmart?`)) return;
+            if(!confirm(`Una uhakika unataka kumfuta kabisa mtumiaji "${username}"?`)) return;
             fetch('/api/admin/delete-user?id=' + id, { method: 'POST' })
                 .then(res => res.json())
                 .then(data => {
@@ -756,3 +784,4 @@
     </script>
 </body>
 </html>
+ 
