@@ -44,7 +44,7 @@ func main() {
 	var err error
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" {
-		connStr = "postgres://postgres:password@localhost:5432/designly?sslmode=disable"
+		connStr = "postgres://postgres:password@localhost:5432/sokosmart?sslmode=disable"
 	}
 
 	db, err = sql.Open("postgres", connStr)
@@ -139,21 +139,39 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err := r.ParseForm()
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa za usajili"})
+		return
+	}
+
 	username := r.FormValue("username")
 	password := r.FormValue("password")
 
-	if username == "" || password == "" {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza taarifa zote"})
-		return
-	}
-
-	_, err := db.Exec("INSERT INTO users (username, password, role) VALUES ($1, $2, 'user')", username, password)
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari!"})
-		return
-	}
-
 	w.Header().Set("Content-Type", "application/json")
+
+	if username == "" || password == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina la mtumiaji na nenosiri!"})
+		return
+	}
+
+	// Angalia kwanza kama jina lipo tayari kabla ya kuingiza
+	var existingID int
+	err = db.QueryRow("SELECT id FROM users WHERE username = $1", username).Scan(&existingID)
+	if err == nil {
+		// Ikiwa halina error maanake jina LIPO tayari
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari! Tafadhali tumia jina lingine."})
+		return
+	}
+
+	// Kama halipo, ingiza mtumiaji mpya
+	_, err = db.Exec("INSERT INTO users (username, password, role) VALUES ($1, $2, 'user')", username, password)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Hitilafu imetokea kwenye database: " + err.Error()})
+		return
+	}
+
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti imefunguliwa kikamilifu! Sasa unaweza kuingia."})
 }
 
@@ -163,8 +181,11 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	r.ParseForm()
 	username := r.FormValue("username")
 	password := r.FormValue("password")
+
+	w.Header().Set("Content-Type", "application/json")
 
 	var storedPass string
 	err := db.QueryRow("SELECT password FROM users WHERE username = $1", username).Scan(&storedPass)
@@ -173,14 +194,13 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Umeingia kwa mafanikio!"})
 }
 
 func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, title, description, price, image_url, category, designer_name, status FROM designs WHERE status = 'approved'")
 	if err != nil {
-		http.Error(w, "Imeshindikana kusoma designs", http.StatusInternalServerError)
+		http.Error(w, "Imeshindikana kusoma bidhaa", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
@@ -208,6 +228,7 @@ func uploadDesignHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	r.ParseForm()
 	title := r.FormValue("title")
 	description := r.FormValue("description")
 	priceStr := r.FormValue("price")
@@ -221,7 +242,7 @@ func uploadDesignHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := db.Exec("INSERT INTO designs (title, description, price, image_url, category, designer_name, status) VALUES ($1, $2, $3, $4, $5, $6, 'pending')",
 		title, description, price, imageURL, category, designerName)
 	if err != nil {
-		http.Error(w, "Imeshindikana kuweka design", http.StatusInternalServerError)
+		http.Error(w, "Imeshindikana kuweka bidhaa", http.StatusInternalServerError)
 		return
 	}
 
@@ -234,6 +255,7 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	r.ParseForm()
 	designID := r.FormValue("design_id")
 	phone := r.FormValue("phone")
 	amountStr := r.FormValue("amount")
@@ -251,20 +273,13 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Oda imepokelewa! Tafadhali kamalisha malipo kupitia Tigo Lipa Namba 45416553."})
 }
 
-// Hapa ndipo neno la siri limewekwa rasmi liwe khalidsec2026 na r.ParseForm() imeongezwa kuhakikisha inasoma vizuri
 func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
 		return
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false})
-		return
-	}
-
+	r.ParseForm()
 	password := r.FormValue("password")
 	
 	w.Header().Set("Content-Type", "application/json")
