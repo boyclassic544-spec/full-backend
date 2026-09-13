@@ -105,7 +105,7 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la app_accounts: %v", err)
 	}
 
-	// Hapa tunasafisha na kutengeneza upya jedwali la designs lenye safu zote za picha, location na vendor_phone
+	// Kutengeneza jedwali la designs kama halipo kabisa
 	queryDesigns := `
 	CREATE TABLE IF NOT EXISTS designs (
 		id SERIAL PRIMARY KEY,
@@ -114,7 +114,7 @@ func initDB() {
 		price NUMERIC NOT NULL,
 		image_url TEXT NOT NULL,
 		category TEXT NOT NULL,
-		designer_name TEXT NOT NULL,
+		designer_name TEXT DEFAULT '',
 		location TEXT DEFAULT 'Tanzania',
 		vendor_phone TEXT DEFAULT '',
 		status TEXT DEFAULT 'pending'
@@ -124,7 +124,8 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la designs: %v", err)
 	}
 
-	// Hakikisha safu zipo hata kama jedwali lilikuwepo la zamani
+	// Sehemu ya kujiongeza yenyewe (Auto-migration) endapo jedwali lilikuwepo zamani bila safu hizi
+	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS designer_name TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS location TEXT DEFAULT 'Tanzania';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS vendor_phone TEXT DEFAULT '';")
 
@@ -435,3 +436,4 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
+
