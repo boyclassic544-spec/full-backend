@@ -36,7 +36,6 @@ type Order struct {
 type User struct {
 	ID        int    `json:"id"`
 	Username  string `json:"username"`
-	Password  string `json:"password"`
 	Role      string `json:"role"`
 	CreatedAt string `json:"created_at"`
 }
@@ -249,21 +248,29 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Oda imepokelewa! Tafadhalikamilisha malipo kupitia Tigo Lipa Namba 45416553."})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Oda imepokelewa! Tafadhali kamalisha malipo kupitia Tigo Lipa Namba 45416553."})
 }
 
+// Hapa ndipo neno la siri limewekwa rasmi liwe khalidsec2026 na r.ParseForm() imeongezwa kuhakikisha inasoma vizuri
 func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
 		return
 	}
 
-	password := r.FormValue("password")
-	if password == "khalidadmin2026" {
+	err := r.ParseForm()
+	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false})
+		return
+	}
+
+	password := r.FormValue("password")
+	
+	w.Header().Set("Content-Type", "application/json")
+	if password == "khalidsec2026" {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
 	} else {
-		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false})
 	}
 }
