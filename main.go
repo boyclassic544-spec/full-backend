@@ -85,6 +85,7 @@ func main() {
 }
 
 func initDB() {
+	// Tunatengeneza tables kwa usahihi kamili
 	queryUsers := `
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
@@ -156,19 +157,10 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Angalia kwanza kama jina lipo tayari kabla ya kuingiza
-	var existingID int
-	err = db.QueryRow("SELECT id FROM users WHERE username = $1", username).Scan(&existingID)
-	if err == nil {
-		// Ikiwa halina error maanake jina LIPO tayari
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari! Tafadhali tumia jina lingine."})
-		return
-	}
-
-	// Kama halipo, ingiza mtumiaji mpya
+	// Ingiza moja kwa moja; ikiwa username ipo tayari (kutokana na UNIQUE constraint), postgres itatoa error tutakayoikamata salama
 	_, err = db.Exec("INSERT INTO users (username, password, role) VALUES ($1, $2, 'user')", username, password)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Hitilafu imetokea kwenye database: " + err.Error()})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari! Tafadhali tumia lingine."})
 		return
 	}
 
