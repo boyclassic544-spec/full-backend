@@ -28,7 +28,6 @@
         .features-strip { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
         .feature-badge { background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 30px; font-size: 0.85em; }
 
-        /* Security Alert Banner */
         .security-banner { background: #ffeaa7; color: #d63031; border: 1px solid #ffeaa7; padding: 12px 20px; text-align: center; font-size: 0.9em; font-weight: bold; margin-bottom: 20px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px 40px 20px; flex: 1; width: 100%; box-sizing: border-box; }
@@ -55,7 +54,6 @@
         
         .auth-banner { background: #fff3cd; color: #856404; padding: 15px; text-align: center; font-size: 1em; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ffeeba; font-weight: bold; }
 
-        /* Footer ya SokoSmart */
         footer { background: var(--primary); color: #fff; text-align: center; padding: 20px; margin-top: auto; font-size: 0.9em; border-top: 3px solid var(--accent); }
         footer p { margin: 5px 0; }
     </style>
@@ -79,7 +77,6 @@
 
     <div class="container">
 
-        <!-- Onyo la Kiusalama na Udanganyifu -->
         <div class="security-banner">
             ⚠️ ONYO LA KIUSALAMA: SokoSmart TZ inalindwa chini ya mifumo ya kisasa ya Cyber Security. Vitendo vyote vya udanganyifu au utapeli vinafuatiliwa na akaunti yako itafutwa mara moja!
         </div>
@@ -134,7 +131,7 @@
             </div>
         </div>
 
-        <!-- 4. VENDOR UPLOAD SECTION -->
+        <!-- 4. VENDOR UPLOAD SECTION (Tumia Base64 ili picha isomeke moja kwa moja bila kupotea) -->
         <div id="designer" class="section">
             <div class="form-card" style="max-width: 600px;">
                 <h2 style="margin-top:0; color: var(--primary);">Weka Bidhaa Yako Bure</h2>
@@ -142,27 +139,26 @@
                     💡 <strong>Kumbuka:</strong> SokoSmart TZ inatoza <strong>10% ya ada ya usimamizi na ulinzi wa miamala (Escrow fee)</strong> wakati bidhaa yako inapouzwa na kulipiwa kupitia mfumo wetu.
                 </div>
                 
-                <!-- Ujumbe wa mapitio / sababu ya kukataliwa ikiwa bidhaa ya mtumiaji haikupita -->
                 <div id="my-rejection-notice" style="display:none; background:#fadbd8; border-left:4px solid var(--danger); padding:10px; margin-bottom:15px; font-size:0.85em; color: var(--danger);"></div>
 
-                <form action="/api/upload" method="POST" enctype="multipart/form-data" id="upload-form">
+                <form id="upload-form" onsubmit="handleUploadWithBase64(event)">
                     <label>Jina la Bidhaa / Huduma</label>
-                    <input type="text" name="title" placeholder="Mf. Simu, Viatu, Logo, au Softwares" required>
+                    <input type="text" id="up-title" placeholder="Mf. Simu, Viatu, Logo, au Softwares" required>
                     
                     <label>Maelezo Kamili</label>
-                    <textarea name="description" placeholder="Eleza kwa ufasaha kuhusu bidhaa yako..." rows="3" required></textarea>
+                    <textarea id="up-desc" placeholder="Eleza kwa ufasaha kuhusu bidhaa yako..." rows="3" required></textarea>
                     
                     <label>Bei (TZS)</label>
-                    <input type="number" step="0.01" name="price" placeholder="10000" required>
+                    <input type="number" step="0.01" id="up-price" placeholder="10000" required>
                     
                     <label>Pakia Picha Halisi ya Bidhaa (Chagua kutoka kwenye simu yako)</label>
-                    <input type="file" name="image_file" accept="image/*" required style="background: #fff; padding: 8px;">
+                    <input type="file" id="up-image-file" accept="image/*" required style="background: #fff; padding: 8px;">
                     
                     <label>Kategoria ya Biashara</label>
-                    <input type="text" name="category" placeholder="Mf. Electronics, Mitindo, Digital Services" required>
+                    <input type="text" id="up-cat" placeholder="Mf. Electronics, Mitindo, Digital Services" required>
                     
                     <label>Jina la Muuzaji / Biashara</label>
-                    <input type="text" name="designer_name" id="designer-name-input" placeholder="Jina lako au la duka" required>
+                    <input type="text" id="designer-name-input" placeholder="Jina lako au la duka" required>
                     
                     <button type="submit" class="btn" style="margin-top: 15px;">Wasilisha kwa Ukaguzi</button>
                 </form>
@@ -198,7 +194,6 @@
         </div>
     </div>
 
-    <!-- Footer yenye Namba Rasmi ya Admin / WhatsApp -->
     <footer>
         <p><strong>SokoSmart TZ</strong> - Soko Salama la Kidijitali Tanzania (10% Platform Commission)</p>
         <p>Msaada na Huduma kwa Wateja (Admin Support & WhatsApp): <strong>0623630553</strong></p>
@@ -370,7 +365,50 @@
             }
         }
 
-        // Hapa ndipo picha halisi ya muuzaji inasomwa na kuonyeshwa vizuri kwenye Soko Kuu
+        // Hapa ndipo picha ya Base64 inasomwa na kuonyeshwa kikamilifu bila kukosa
+        function handleUploadWithBase64(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('up-image-file');
+            const file = fileInput.files[0];
+            
+            if(!file) {
+                alert('Tafadhali chagua picha ya bidhaa!');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64Image = event.target.result; 
+                
+                const payload = {
+                    title: document.getElementById('up-title').value,
+                    description: document.getElementById('up-desc').value,
+                    price: parseFloat(document.getElementById('up-price').value),
+                    image_url: base64Image, 
+                    category: document.getElementById('up-cat').value,
+                    designer_name: document.getElementById('designer-name-input').value
+                };
+
+                fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || 'Bidhaa imewasilishwa kikamilifu kwa ukaguzi!');
+                    document.getElementById('upload-form').reset();
+                    switchTab('market');
+                })
+                .catch(err => {
+                    alert('Imeshindikana kupakia bidhaa.');
+                });
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
         function loadDesigns() {
             if(!currentUser) return;
 
@@ -443,7 +481,6 @@
         }
 
         function loadAdminData() {
-            // 1. Load Users
             fetch('/api/admin/users')
                 .then(res => res.json())
                 .then(data => {
@@ -463,7 +500,6 @@
                     `).join('');
                 });
 
-            // 2. Load Designs/Products with Full Admin Control (Approve, Reject with Reason, Delete Even Approved ones)
             fetch('/api/admin/designs')
                 .then(res => res.json())
                 .then(data => {
@@ -491,7 +527,6 @@
                     `).join('');
                 });
 
-            // 3. Load Orders
             fetch('/api/admin/orders')
                 .then(res => res.json())
                 .then(data => {
@@ -515,9 +550,7 @@
         }
 
         function deleteUser(id, username) {
-            if(!confirm(`Una uhakika unataka kumfuta kabisa mtumiaji "${username}" kutoka SokoSmart? Hatua hii itafuta akaunti yake mazima!`)) {
-                return;
-            }
+            if(!confirm(`Una uhakika unataka kumfuta kabisa mtumiaji "${username}" kutoka SokoSmart?`)) return;
 
             fetch('/api/admin/delete-user?id=' + id, { method: 'POST' })
                 .then(res => res.json())
@@ -531,14 +564,14 @@
             fetch('/api/admin/approve?id=' + id, { method: 'POST' })
                 .then(res => {
                     if(res.ok) {
-                        alert('Bidhaa imethibitishwa na kuwekwa sokoni!');
+                        alert('Bidhaa imethibitishwa!');
                         loadAdminData();
                     }
                 });
         }
 
         function rejectDesign(id) {
-            let reason = prompt("Weka sababu ya kukataa bidhaa hii (itafika kwa muuzaji):");
+            let reason = prompt("Weka sababu ya kukataa bidhaa hii:");
             if(reason === null) return;
 
             fetch('/api/admin/reject', {
@@ -547,19 +580,19 @@
                 body: `id=${id}&reason=` + encodeURIComponent(reason)
             }).then(res => {
                 if(res.ok) {
-                    alert('Bidhaa imekataliwa na ujumbe umehifadhiwa!');
+                    alert('Bidhaa imekataliwa!');
                     loadAdminData();
                 }
             });
         }
 
         function deleteDesign(id) {
-            if(!confirm("Una uhakika unataka kufuta kabisa bidhaa hii kwenye mfumo (hata kama ilishawahi kukubaliwa)?")) return;
+            if(!confirm("Una uhakika unataka kufuta kabisa bidhaa hii?")) return;
 
             fetch('/api/admin/delete-design?id=' + id, { method: 'POST' })
                 .then(res => {
                     if(res.ok) {
-                        alert('Bidhaa imefutwa kabisa kwenye mfumo!');
+                        alert('Bidhaa imefutwa kabisa!');
                         loadAdminData();
                     }
                 });
@@ -574,4 +607,3 @@
     </script>
 </body>
 </html>
- 
