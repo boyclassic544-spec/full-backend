@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"text/template"
 
 	_ "github.com/lib/pq"
 )
@@ -15,14 +14,14 @@ import (
 var db *sql.DB
 
 type Design struct {
-	ID           int     `json:"id"`
-	Title        string  `json:"title"`
-	Description  string  `json:"description"`
-	Price        float64 `json:"price"`
-	ImageURL     string  `json:"image_url"`
-	Category     string  `json:"category"`
-	DesignerName string  `json:"designer_name"`
-	Status       string  `json:"status"`
+	ID          int     `json:"id"`
+	Title       string  `json:"title"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
+	ImageURL    string  `json:"image_url"`
+	Category    string  `json:"category"`
+	Designer    string  `json:"designer_name"`
+	Status      string  `json:"status"`
 }
 
 type Order struct {
@@ -34,11 +33,19 @@ type Order struct {
 	CreatedAt     string  `json:"created_at"`
 }
 
+type User struct {
+	ID        int    `json:"id"`
+	Username  string `json:"username"`
+	Password  string `json:"password"`
+	Role      string `json:"role"`
+	CreatedAt string `json:"created_at"`
+}
+
 func main() {
 	var err error
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" {
-		log.Fatal("DATABASE_URL haijapatikana kwenye Railway environment variables!")
+		connStr = "postgres://postgres:password@localhost:5432/designly?sslmode=disable"
 	}
 
 	db, err = sql.Open("postgres", connStr)
@@ -47,86 +54,134 @@ func main() {
 	}
 	defer db.Close()
 
-	err = db.Ping()
-	if err != nil {
-		log.Fatalf("Database haijibu vizuri: %v", err)
+	if err = db.Ping(); err != nil {
+		log.Fatalf("Database haipatikani: %v", err)
 	}
-	fmt.Println("Umeunganishwa kikamilifu na PostgreSQL kwenye Railway!")
 
-	initDatabase()
+	initDB()
 
-	// Routes za Mfumo
+	// Web Routes
 	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/api/designs", designsHandler)
-	http.HandleFunc("/api/upload", uploadHandler)
+	http.HandleFunc("/api/signup", signupHandler)
+	http.HandleFunc("/api/signin", signinHandler)
+	http.HandleFunc("/api/designs", getDesignsHandler)
+	http.HandleFunc("/api/upload", uploadDesignHandler)
+	http.HandleFunc("/api/buy", buyDesignHandler)
+
+	// Admin Routes
 	http.HandleFunc("/api/admin/login", adminLoginHandler)
-	http.HandleFunc("/api/admin/designs", adminDesignsHandler)
-	http.HandleFunc("/api/admin/orders", adminOrdersHandler)
-	http.HandleFunc("/api/admin/approve", approveDesignHandler)
-	http.HandleFunc("/api/buy", buyHandler)
+	http.HandleFunc("/api/admin/designs", adminGetDesignsHandler)
+	http.HandleFunc("/api/admin/approve", adminApproveDesignHandler)
+	http.HandleFunc("/api/admin/orders", adminGetOrdersHandler)
+	http.HandleFunc("/api/admin/users", adminUsersHandler)
+	http.HandleFunc("/api/admin/delete-user", adminDeleteUserHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	fmt.Printf("Seva inaendelea kusikiliza kwenye port %s...\n", port)
+	fmt.Printf("Seva inaanza kusikiliza kwenye bandari (port) %s...\n", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
-func initDatabase() {
+func initDB() {
+	queryUsers := `
+	CREATE TABLE IF NOT EXISTS users (
+		id SERIAL PRIMARY KEY,
+		username TEXT UNIQUE NOT NULL,
+		password TEXT NOT NULL,
+		role TEXT DEFAULT 'user',
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);`
+	_, err := db.Exec(queryUsers)
+	if err != nil {
+		log.Fatalf("Imeshindikana kutengeneza jedwali la users: %v", err)
+	}
+
 	queryDesigns := `
 	CREATE TABLE IF NOT EXISTS designs (
 		id SERIAL PRIMARY KEY,
-		title VARCHAR(150) NOT NULL,
-		description TEXT,
-		price DECIMAL(10, 2) NOT NULL,
+		title TEXT NOT NULL,
+		description TEXT NOT NULL,
+		price NUMERIC NOT NULL,
 		image_url TEXT NOT NULL,
-		category VARCHAR(50),
-		designer_name VARCHAR(100),
-		status VARCHAR(20) DEFAULT 'pending',
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		category TEXT NOT NULL,
+		designer_name TEXT NOT NULL,
+		status TEXT DEFAULT 'pending'
 	);`
+	_, err = db.Exec(queryDesigns)
+	if err != nil {
+		log.Fatalf("Imeshindikana kutengeneza jedwali la designs: %v", err)
+	}
 
 	queryOrders := `
 	CREATE TABLE IF NOT EXISTS orders (
 		id SERIAL PRIMARY KEY,
-		design_id INT REFERENCES designs(id) ON DELETE CASCADE,
-		phone VARCHAR(20) NOT NULL,
-		amount DECIMAL(10, 2) NOT NULL,
-		payment_status VARCHAR(20) DEFAULT 'pending',
+		design_id INT NOT NULL,
+		phone TEXT NOT NULL,
+		amount NUMERIC NOT NULL,
+		payment_status TEXT DEFAULT 'pending_tigo_lipa',
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);`
-
-	_, err := db.Exec(queryDesigns)
-	if err != nil {
-		log.Fatalf("Imeshindikana kutengeneza table ya designs: %v", err)
-	}
-
 	_, err = db.Exec(queryOrders)
 	if err != nil {
-		log.Fatalf("Imeshindikana kutengeneza table ya orders: %v", err)
+		log.Fatalf("Imeshindikana kutengeneza jedwali la orders: %v", err)
 	}
-
-	fmt.Println("Tables za Database zimehakikishwa na ziko tayari!")
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/index.html")
-	if err != nil {
-		http.Error(w, "Imeshindikana kupakia ukurasa: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	tmpl.Execute(w, nil)
+	http.ServeFile(w, r, "templates/index.html")
 }
 
-func designsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+func signupHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
 
-	rows, err := db.Query("SELECT id, title, description, price, image_url, category, designer_name, status FROM designs WHERE status = 'approved' ORDER BY id DESC")
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+
+	if username == "" || password == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza taarifa zote"})
+		return
+	}
+
+	_, err := db.Exec("INSERT INTO users (username, password, role) VALUES ($1, $2, 'user')", username, password)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error": "Imeshindikana kusoma designs"}`))
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari!"})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti imefunguliwa kikamilifu! Sasa unaweza kuingia."})
+}
+
+func signinHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
+
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+
+	var storedPass string
+	err := db.QueryRow("SELECT password FROM users WHERE username = $1", username).Scan(&storedPass)
+	if err != nil || storedPass != password {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina la mtumiaji au nenosiri si sahihi!"})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Umeingia kwa mafanikio!"})
+}
+
+func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
+	rows, err := db.Query("SELECT id, title, description, price, image_url, category, designer_name, status FROM designs WHERE status = 'approved'")
+	if err != nil {
+		http.Error(w, "Imeshindikana kusoma designs", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
@@ -134,21 +189,21 @@ func designsHandler(w http.ResponseWriter, r *http.Request) {
 	var designs []Design
 	for rows.Next() {
 		var d Design
-		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Category, &d.DesignerName, &d.Status); err != nil {
+		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Category, &d.Designer, &d.Status); err != nil {
 			continue
 		}
 		designs = append(designs, d)
 	}
 
 	if designs == nil {
-		w.Write([]byte(`[]`))
-		return
+		designs = []Design{}
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(designs)
 }
 
-func uploadHandler(w http.ResponseWriter, r *http.Request) {
+func uploadDesignHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
 		return
@@ -167,33 +222,56 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := db.Exec("INSERT INTO designs (title, description, price, image_url, category, designer_name, status) VALUES ($1, $2, $3, $4, $5, $6, 'pending')",
 		title, description, price, imageURL, category, designerName)
 	if err != nil {
-		http.Error(w, "Imeshindikana kuhifadhi design: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Imeshindikana kuweka design", http.StatusInternalServerError)
 		return
 	}
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 
-// Uthibitisho wa Admin Password (Weka password yako hapa: admin123 au unaweza kuibadilisha unavyotaka)
-func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
-	password := r.FormValue("password")
-	w.Header().Set("Content-Type", "application/json")
+func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
 
-	// Hapa unaweza kubadilisha 'khalidsec2026' kuwa neno lolote la siri unalolitaka
-	if password == "khalidsec2026" {
-		w.Write([]byte(`{"success": true}`))
+	designID := r.FormValue("design_id")
+	phone := r.FormValue("phone")
+	amountStr := r.FormValue("amount")
+
+	var amount float64
+	fmt.Sscanf(amountStr, "%f", &amount)
+
+	_, err := db.Exec("INSERT INTO orders (design_id, phone, amount, payment_status) VALUES ($1, $2, $3, 'pending_tigo_lipa')", designID, phone, amount)
+	if err != nil {
+		http.Error(w, "Imeshindikana kuweka oda", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Oda imepokelewa! Tafadhalikamilisha malipo kupitia Tigo Lipa Namba 45416553."})
+}
+
+func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
+
+	password := r.FormValue("password")
+	if password == "khalidadmin2026" {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
 	} else {
-		w.Write([]byte(`{"success": false}`))
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false})
 	}
 }
 
-func adminDesignsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
+func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, title, description, price, image_url, category, designer_name, status FROM designs ORDER BY id DESC")
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error": "Imeshindikana kusoma orodha"}`))
+		http.Error(w, "Imeshindikana", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
@@ -201,27 +279,40 @@ func adminDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	var designs []Design
 	for rows.Next() {
 		var d Design
-		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Category, &d.DesignerName, &d.Status); err != nil {
+		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Category, &d.Designer, &d.Status); err != nil {
 			continue
 		}
 		designs = append(designs, d)
 	}
 
 	if designs == nil {
-		w.Write([]byte(`[]`))
-		return
+		designs = []Design{}
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(designs)
 }
 
-func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
+func adminApproveDesignHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
 
+	id := r.URL.Query().Get("id")
+	_, err := db.Exec("UPDATE designs SET status = 'approved' WHERE id = $1", id)
+	if err != nil {
+		http.Error(w, "Imeshindikana kuidhinisha", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func adminGetOrdersHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, design_id, phone, amount, payment_status, created_at FROM orders ORDER BY id DESC")
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error": "Imeshindikana kusoma oda"}`))
+		http.Error(w, "Imeshindikana", http.StatusInternalServerError)
 		return
 	}
 	defer rows.Close()
@@ -236,53 +327,59 @@ func adminOrdersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if orders == nil {
+		orders = []Order{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(orders)
+}
+
+func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	rows, err := db.Query("SELECT id, username, role, created_at FROM users ORDER BY id DESC")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"error": "Imeshindikana kusoma watumiaji"}`))
+		return
+	}
+	defer rows.Close()
+
+	var users []User
+	for rows.Next() {
+		var u User
+		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.CreatedAt); err != nil {
+			continue
+		}
+		users = append(users, u)
+	}
+
+	if users == nil {
 		w.Write([]byte(`[]`))
 		return
 	}
 
-	json.NewEncoder(w).Encode(orders)
+	json.NewEncoder(w).Encode(users)
 }
 
-func approveDesignHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Query().Get("id")
-	if id == "" {
-		http.Error(w, "ID haipatikani", http.StatusBadRequest)
-		return
-	}
-
-	_, err := db.Exec("UPDATE designs SET status = 'approved' WHERE id = $1", id)
-	if err != nil {
-		http.Error(w, "Imeshindikana kusasisha hali", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message": "Imethibitishwa kikamilifu"}`))
-}
-
-func buyHandler(w http.ResponseWriter, r *http.Request) {
+func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
 		return
 	}
 
-	designID := r.FormValue("design_id")
-	phone := r.FormValue("phone")
-	amountStr := r.FormValue("amount")
+	userID := r.URL.Query().Get("id")
+	if userID == "" {
+		http.Error(w, "ID ya mtumiaji haipatikani", http.StatusBadRequest)
+		return
+	}
 
-	var amount float64
-	fmt.Sscanf(amountStr, "%f", &amount)
-
-	_, err := db.Exec("INSERT INTO orders (design_id, phone, amount, payment_status) VALUES ($1, $2, $3, 'pending')",
-		designID, phone, amount)
+	_, err := db.Exec("DELETE FROM users WHERE id = $1", userID)
 	if err != nil {
-		http.Error(w, "Imeshindikana kuweka oda ya malipo", http.StatusInternalServerError)
+		http.Error(w, "Imeshindikana kufuta mtumiaji", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	response := map[string]string{
-		"message": "Oda imepokelewa! Tafadhali fanya malipo kwenda Tigo Lipa Namba 45416553. Admin atakagua na kukutumia bidhaa.",
-	}
-	json.NewEncoder(w).Encode(response)
+	w.Write([]byte(`{"success": true, "message": "Mtumiaji amefutwa kabisa kwenye mfumo (Banned & Deleted)!"}`))
 }
