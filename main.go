@@ -85,7 +85,7 @@ func main() {
 }
 
 func initDB() {
-	// Tunatengeneza tables kwa usahihi kamili
+	// Tunatengeneza jedwali safi kabisa bila takataka za zamani
 	queryUsers := `
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
@@ -157,10 +157,11 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Ingiza moja kwa moja; ikiwa username ipo tayari (kutokana na UNIQUE constraint), postgres itatoa error tutakayoikamata salama
+	// Jaribu kuweka moja kwa moja kwenye database
 	_, err = db.Exec("INSERT INTO users (username, password, role) VALUES ($1, $2, 'user')", username, password)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari! Tafadhali tumia lingine."})
+		// Kama itagoma, hapo ndio tunasema jina limetumika
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari! Tafadhali tumia jina lingine."})
 		return
 	}
 
@@ -395,5 +396,5 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(`{"success": true, "message": "Mtumiaji amefutwa kabisa kwenye mfumo (Banned & Deleted)!"}`))
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa kwenye mfumo (Banned & Deleted)!"})
 }
