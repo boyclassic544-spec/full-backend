@@ -1,571 +1,393 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sw">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SokoSmart TZ - Soko Kuu la Kidijitali Tanzania</title>
     <style>
-        :root {
-            --primary: #1e3799;
-            --accent: #f39c12;
-            --success: #27ae60;
-            --danger: #c0392b;
-            --bg-light: #f4f6f7;
-            --text-dark: #333;
-        }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; }
+        body { font-family: Arial, sans-serif; background-color: #f4f6f9; margin: 0; padding: 0; color: #333; }
+        header { background-color: #1e293b; color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { margin: 0; font-size: 20px; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        button, .btn { background-color: #2563eb; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; text-decoration: none; display: inline-block; }
+        button:hover, .btn:hover { background-color: #1d4ed8; }
+        .btn-danger { background-color: #dc2626; }
+        .btn-danger:hover { background-color: #b91c1c; }
+        .btn-success { background-color: #16a34a; }
+        .btn-success:hover { background-color: #15803d; }
+        .btn-secondary { background-color: #64748b; }
+        .btn-secondary:hover { background-color: #475569; }
+        input, textarea, select { width: 100%; padding: 10px; margin: 8px 0 15px 0; display: inline-block; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .product-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .product-card img { width: 100%; height: 200px; object-fit: cover; background-color: #eee; }
+        .product-info { padding: 15px; flex-grow: 1; }
+        .price { color: #16a34a; font-weight: bold; font-size: 18px; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .badge-pending { background: #fef08a; color: #854d0e; }
+        .badge-approved { background: #bbf7d0; color: #166534; }
+        .badge-rejected { background: #fecaca; color: #991b1b; }
         
-        header { background: var(--primary); color: #fff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .logo { font-size: 1.6em; font-weight: bold; color: #fff; text-decoration: none; }
-        .logo span { color: var(--accent); }
-        .nav-links { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .nav-links button, .nav-links a { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 8px 14px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 0.9em; transition: 0.3s; }
-        .nav-links button:hover, .nav-links a:hover { background: var(--accent); border-color: var(--accent); }
-
-        .hero { background: linear-gradient(135deg, #1e3799, #0c2461); color: white; text-align: center; padding: 40px 20px; margin-bottom: 20px; }
-        .hero h1 { font-size: 2.2em; margin-bottom: 10px; }
-        .hero p { font-size: 1.05em; color: #dcdde1; max-width: 650px; margin: 0 auto 15px auto; }
-        .features-strip { display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
-        .feature-badge { background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 30px; font-size: 0.85em; }
-
-        /* Search Bar Staili ya Jiji */
-        .search-container { max-width: 600px; margin: 20px auto; display: flex; gap: 10px; padding: 0 15px; }
-        .search-container input { flex: 1; padding: 12px; border-radius: 4px; border: 1px solid #ccc; font-size: 1em; }
-
-        /* Security Alert Banner */
-        .security-banner { background: #ffeaa7; color: #d63031; border: 1px solid #ffeaa7; padding: 12px 20px; text-align: center; font-size: 0.9em; font-weight: bold; margin-bottom: 20px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px 40px 20px; flex: 1; width: 100%; box-sizing: border-box; }
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #dcdde1; }
-        .card img { width: 100%; height: 180px; object-fit: cover; }
-        .card-content { padding: 15px; }
-        .card h3 { margin: 0 0 10px 0; font-size: 1.2em; color: var(--primary); }
-        .card p { font-size: 0.9em; color: #666; margin-bottom: 10px; }
-        .price { color: var(--accent); font-weight: bold; font-size: 1.2em; margin-bottom: 10px; display: block; }
-        
-        .vendor-contact-btn { background: #25d366; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 0.9em; width: 100%; font-weight: bold; text-decoration: none; display: block; text-align: center; margin-bottom: 10px; }
-        .vendor-contact-btn:hover { background: #128c7e; }
-
-        .payment-box { background: #e8f8f5; border-top: 1px solid #a3e4d7; padding: 12px 15px; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; }
-        .btn { background: var(--success); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 1em; width: 100%; font-weight: bold; transition: background 0.2s; }
-        .btn:hover { background: #219653; }
-        
-        .section { display: none; }
-        .section.active { display: block; }
-        .form-card { background: #fff; max-width: 450px; margin: 0 auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #ddd; }
-
-        .admin-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-        .badge { background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
-        
-        .auth-banner { background: #fff3cd; color: #856404; padding: 15px; text-align: center; font-size: 1em; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ffeeba; font-weight: bold; }
-
-        /* Footer ya Admin */
-        footer { background: var(--primary); color: #fff; text-align: center; padding: 20px; margin-top: auto; font-size: 0.9em; border-top: 3px solid var(--accent); }
-        footer p { margin: 5px 0; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); overflow: auto; }
+        .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 600px; position: relative; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: black; }
     </style>
 </head>
 <body>
 
     <header>
-        <a href="#" class="logo" onclick="checkMarketAccess()">SokoSmart <span>TZ</span></a>
-        <div class="nav-links" id="nav-menu-container"></div>
-    </header>
-
-    <div class="hero" id="hero-section">
-        <h1>Soko Kuu la Kidijitali Tanzania</h1>
-        <p>Weka biashara au bidhaa yako bure, nunua na uuze kwa usalama kamili kupitia Tigo Lipa Namba (Ada ya usimamizi ni 10% tu).</p>
-        <div class="features-strip">
-            <div class="feature-badge">🔒 Salama 100% (Escrow)</div>
-            <div class="feature-badge">📱 Tigo Lipa Namba: 45416553</div>
-            <div class="feature-badge">🛡️ Commission: 10% Platform Fee</div>
+        <h1>SokoSmart TZ</h1>
+        <div>
+            <button onclick="showSection('home-section')">Nyumbani</button>
+            <button onclick="showSection('upload-section')">Weka Bidhaa</button>
+            <button onclick="showSection('auth-section')">Ingia / Jisajili</button>
+            <button onclick="showSection('admin-login-section')" style="background-color: #475569;">Admin Portal</button>
         </div>
-    </div>
+    </header>
 
     <div class="container">
 
-        <!-- Onyo la Kiusalama na Udanganyifu -->
-        <div class="security-banner">
-            ⚠️ ONYO LA KIUSALAMA: SokoSmart TZ inalindwa chini ya mifumo ya kisasa ya Cyber Security. Vitendo vyote vya udanganyifu au utapeli vinafuatiliwa na akaunti yako itafutwa mara moja!
-        </div>
-
-        <!-- 1. MARKETPLACE SECTION -->
-        <div id="market" class="section">
-            <div id="market-auth-warning" class="auth-banner" style="display:none;">
-                Tafadhali fanya <a href="#" onclick="switchTab('signin')" style="color:var(--accent);">Sign In</a> au <a href="#" onclick="switchTab('signup')" style="color:var(--accent);">Sign Up</a> kwanza ili uweze kuona na kununua bidhaa zote zilizopo kwenye SokoSmart!
+        <!-- UKURASA WA NYUMBANI -->
+        <div id="home-section" class="section">
+            <div class="card">
+                <h2>Karibu SokoSmart TZ - Soko Kuu la Kidijitali</h2>
+                <p>Nunua na uuze bidhaa bora Tanzania kwa urahisi. Malipo hufanywa kupitia Tigo Lipa Namba <strong>45416553</strong>.</p>
             </div>
-            <div id="market-content-area">
-                <h2 style="margin-bottom: 10px; border-left: 4px solid var(--accent); padding-left: 10px;">Bidhaa na Huduma Zilizothibitishwa</h2>
-                
-                <!-- Sehemu ya Kutafuta Bidhaa (Search Bar) -->
-                <div class="search-container">
-                    <input type="text" id="search-input" placeholder="🔍 Tafuta bidhaa, huduma, simu, au vifaa..." oninput="filterDesigns()">
-                </div>
-
-                <div class="grid" id="designs-grid">
-                    <p style="text-align:center; grid-column: 1/-1;">Inapakia bidhaa...</p>
-                </div>
+            <h3>Bidhaa Zilizopo Sokoni</h3>
+            <div id="products-grid" class="grid">
+                <p>Inapakia bidhaa...</p>
             </div>
         </div>
 
-        <!-- 2. SIGN UP SECTION -->
-        <div id="signup" class="section">
-            <div class="form-card">
-                <h2 style="margin-top:0; color: var(--primary); text-align: center;">Fungua Akaunti (Sign Up)</h2>
-                <form id="signup-form" onsubmit="handleSignup(event)">
-                    <label>Jina la Mtumiaji (Username)</label>
-                    <input type="text" id="su-username" placeholder="Weka jina lako" required>
-                    
-                    <label>Nenosiri (Password)</label>
-                    <input type="password" id="su-password" placeholder="Weka nenosiri salama" required>
+        <!-- UKURASA WA KUWEKA BIDHAA -->
+        <div id="upload-section" class="section" style="display:none;">
+            <div class="card" style="max-width: 600px; margin: auto;">
+                <h2>Weka Bidhaa Yako Mpya</h2>
+                <form action="/api/upload" method="POST" enctype="multipart/form-data">
+                    <label>Jina la Bidhaa / Muundo:</label>
+                    <input type="text" name="title" required placeholder="Mf. Classic Full Suit">
 
-                    <label>Thibitisha Nenosiri (Confirm Password)</label>
-                    <input type="password" id="su-confirm-password" placeholder="Rudia nenosiri lako" required>
-                    
-                    <button type="submit" class="btn" style="margin-top: 15px;">Jisajili Sasa</button>
-                </form>
-                <p style="text-align: center; margin-top: 15px; font-size: 0.9em;">Una akaunti tayari? <a href="#" onclick="switchTab('signin')" style="color:var(--accent);">Sign In hapa</a></p>
-            </div>
-        </div>
+                    <label>Maelezo Kamili:</label>
+                    <textarea name="description" rows="4" required placeholder="Elezea vizuri bidhaa yako..."></textarea>
 
-        <!-- 3. SIGN IN SECTION -->
-        <div id="signin" class="section">
-            <div class="form-card">
-                <h2 style="margin-top:0; color: var(--primary); text-align: center;">Ingia Kwenye Akaunti (Sign In)</h2>
-                <form id="signin-form" onsubmit="handleSignin(event)">
-                    <label>Jina la Mtumiaji (Username)</label>
-                    <input type="text" id="si-username" placeholder="Jina lako la usajili" required>
-                    
-                    <label>Nenosiri (Password)</label>
-                    <input type="password" id="si-password" placeholder="Nenosiri lako" required>
-                    
-                    <button type="submit" class="btn" style="margin-top: 15px;">Ingia</button>
-                </form>
-                <p style="text-align: center; margin-top: 15px; font-size: 0.9em;">Huna akaunti? <a href="#" onclick="switchTab('signup')" style="color:var(--accent);">Jisajili hapa</a></p>
-            </div>
-        </div>
+                    <label>Bei (Tsh):</label>
+                    <input type="number" name="price" required placeholder="65000">
 
-        <!-- 4. VENDOR UPLOAD SECTION (Inaruhusu Kupakia Picha, Mkoa, na Namba ya Simu) -->
-        <div id="designer" class="section">
-            <div class="form-card" style="max-width: 600px;">
-                <h2 style="margin-top:0; color: var(--primary);">Weka Bidhaa Yako Bure</h2>
-                <div style="background: #e8f8f5; border-left: 4px solid var(--success); padding: 10px; margin-bottom: 15px; font-size: 0.85em; color: #0e6655;">
-                    💡 <strong>Kumbuka:</strong> SokoSmart TZ inatoza <strong>10% ya ada ya usimamizi na ulinzi wa miamala (Escrow fee)</strong> wakati bidhaa yako inapouzwa na kulipiwa kupitia mfumo wetu.
-                </div>
-                <form action="/api/upload" method="POST" enctype="multipart/form-data" id="upload-form">
-                    <label>Jina la Bidhaa / Huduma</label>
-                    <input type="text" name="title" placeholder="Mf. Simu, Viatu, Logo, au Softwares" required>
-                    
-                    <label>Maelezo Kamili</label>
-                    <textarea name="description" placeholder="Eleza kwa ufasaha kuhusu bidhaa yako..." rows="3" required></textarea>
-                    
-                    <label>Bei (TZS)</label>
-                    <input type="number" step="0.01" name="price" placeholder="10000" required>
-                    
-                    <label>Mkoa / Eneo Ilipo (Mf. Morogoro, Dar es Salaam)</label>
-                    <input type="text" name="location" placeholder="Mkoa au Wilaya" required>
+                    <label>Kategoria:</label>
+                    <select name="category">
+                        <option value="nguo">Nguo na Mitindo</option>
+                        <option value="viatu">Viatu</option>
+                        <option value="electronics">Vifaa vya Kielektroniki</option>
+                        <option value="vinginevyo">Vinginevyo</option>
+                    </select>
 
-                    <label>Namba ya Simu ya Muuzaji (Ya kuwasiliana nawe)</label>
-                    <input type="text" name="vendor_phone" placeholder="Mf. 0712345678" required>
+                    <label>Jina Lako (Muuzaji / Designer):</label>
+                    <input type="text" name="designer_name" required placeholder="Jina lako kamili">
 
-                    <label>Pakia Picha ya Bidhaa (Chagua kutoka kwenye simu)</label>
-                    <input type="file" name="image_file" accept="image/*" required style="background: #fff; padding: 8px;">
-                    
-                    <label>Kategoria ya Biashara</label>
-                    <input type="text" name="category" placeholder="Mf. Electronics, Mitindo, Digital Services" required>
-                    
-                    <label>Jina la Muuzaji / Biashara</label>
-                    <input type="text" name="designer_name" id="designer-name-input" placeholder="Jina lako au la duka" required>
-                    
-                    <button type="submit" class="btn" style="margin-top: 15px;">Wasilisha kwa Ukaguzi</button>
+                    <label>Eneo Ulipo:</label>
+                    <input type="text" name="location" required placeholder="Morogoro">
+
+                    <label>Namba yako ya Simu:</label>
+                    <input type="text" name="vendor_phone" required placeholder="0617726353">
+
+                    <label>Picha ya Bidhaa:</label>
+                    <input type="file" name="image_file" accept="image/*" required>
+
+                    <button type="submit" style="width: 100%;">Wasilisha kwa Ukaguzi wa Admin</button>
                 </form>
             </div>
         </div>
 
-        <!-- 5. ADMIN PANEL SECTION -->
-        <div id="admin" class="section">
-            <div class="form-card" style="max-width: 1000px;">
-                <div class="admin-panel-header">
-                    <div>
-                        <h2 style="margin:0; color: var(--primary);">SokoSmart Admin Portal</h2>
-                        <small style="color: #666;">Udhibiti wa Watumiaji, Tigo Lipa Namba (45416553), na 10% Makato</small>
-                    </div>
-                    <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">Toka (Logout)</button>
-                </div>
-                
-                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 25px;">Watumiaji Waliojisajili (User Management)</h3>
-                <div id="admin-users-list" style="margin-bottom:30px; overflow-x: auto;">
-                    <p>Inapakia orodha ya watumiaji...</p>
-                </div>
-
-                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Oda za Malipo na Makato ya 10%</h3>
-                <div id="admin-orders-list" style="margin-bottom:30px; overflow-x: auto;">
-                    <p>Inapakia oda...</p>
-                </div>
-
-                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Ukaguzi na Udhibiti wa Bidhaa</h3>
-                <div id="admin-designs-list" style="overflow-x: auto;">
-                    <p>Inapakia bidhaa...</p>
-                </div>
+        <!-- UKURASA WA Kuingia / KusaJili -->
+        <div id="auth-section" class="section" style="display:none;">
+            <div class="card" style="max-width: 400px; margin: auto;">
+                <h2>Ingia kwenye Akaunti</h2>
+                <form onsubmit="handleSignin(event)">
+                    <label>Jina la Mtumiaji:</label>
+                    <input type="text" id="signin-user" required>
+                    <label>Nenosiri:</label>
+                    <input type="password" id="signin-pass" required>
+                    <button type="submit" style="width: 100%;">Ingia</button>
+                </form>
+                <hr style="margin: 20px 0;">
+                <h3>Au Fungua Akaunti Mpya</h3>
+                <form onsubmit="handleSignup(event)">
+                    <label>Jina la Mtumiaji:</label>
+                    <input type="text" id="signup-user" required>
+                    <label>Nenosiri:</label>
+                    <input type="password" id="signup-pass" required>
+                    <button type="submit" class="btn-success" style="width: 100%;">Jisajili</button>
+                </form>
+                <p id="auth-msg" style="font-weight: bold; margin-top: 10px;"></p>
             </div>
+        </div>
+
+        <!-- UKURASA WA ADMIN LOGIN -->
+        <div id="admin-login-section" class="section" style="display:none;">
+            <div class="card" style="max-width: 400px; margin: auto;">
+                <h2>Ingia kama Admin</h2>
+                <form onsubmit="handleAdminLogin(event)">
+                    <label>Nenosiri la Admin:</label>
+                    <input type="password" id="admin-password" required placeholder="Weka nenosiri">
+                    <button type="submit" style="width: 100%;">Ingia Admin Portal</button>
+                </form>
+                <p id="admin-login-err" style="color: red; font-weight: bold;"></p>
+            </div>
+        </div>
+
+        <!-- ADMIN PORTAL -->
+        <div id="admin-portal-section" class="section" style="display:none;">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>SokoSmart Admin Portal</h2>
+                    <button onclick="showSection('home-section')" class="btn-danger">Toka (Logout)</button>
+                </div>
+                <p>Udhibiti wa Watumiaji, Tigo Lipa Namba (45416553), na 10% Makato</p>
+            </div>
+
+            <div class="card">
+                <h3>Watumiaji Waliojisajili</h3>
+                <div id="admin-users-list">Inapakia watumiaji...</div>
+            </div>
+
+            <div class="card">
+                <h3>Oda za Malipo na Makato ya 10%</h3>
+                <div id="admin-orders-list">Inapakia oda...</div>
+            </div>
+
+            <div class="card">
+                <h3>Ukaguzi na Udhibiti wa Bidhaa (Ina uwezo wa Kufuta)</h3>
+                <div id="admin-designs-list">Inapakia bidhaa...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL YA KUTAZAMA MAELEZO -->
+    <div id="designModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="modal-body-content"></div>
         </div>
     </div>
 
-    <!-- Footer yenye Namba Rasmi ya Admin / WhatsApp -->
-    <footer>
-        <p><strong>SokoSmart TZ</strong> - Soko Salama la Kidijitali Tanzania (10% Platform Commission)</p>
-        <p>Msaada na Huduma kwa Wateja (Admin Support & WhatsApp): <strong>0623630553</strong></p>
-        <p style="font-size: 0.8em; color: #bdc3c7; margin-top: 5px;">Protected by Advanced Cybersecurity & Fraud Detection Systems © 2026</p>
-    </footer>
+    <!-- MODAL YA KUKATAA BIDHAA -->
+    <div id="rejectModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRejectModal()">&times;</span>
+            <h3>Sababu ya Kukataa Bidhaa Hii</h3>
+            <textarea id="rejection-reason-input" rows="4" placeholder="Andika sababu fupi..."></textarea>
+            <button onclick="submitRejection()" class="btn-danger" style="width: 100%;">Thibitisha Kukataa</button>
+        </div>
+    </div>
 
     <script>
-        let currentUser = localStorage.getItem('sokosmart_user') || null;
-        let allDesigns = []; // Kuhifadhi bidhaa zote kwa ajili ya Search
+        let currentRejectId = null;
+        let allAdminDesigns = [];
 
-        function updateAuthUI() {
-            const navContainer = document.getElementById('nav-menu-container');
-            if(currentUser) {
-                navContainer.innerHTML = `
-                    <button onclick="switchTab('market')">Soko Kuu</button>
-                    <button onclick="switchTab('designer')">Weka Bidhaa</button>
-                    <span style="color:#2ecc71; font-weight:bold; font-size:0.9em; margin-left:5px;">👤 ${currentUser}</span> 
-                    <button onclick="handleLogout()" style="background:#c0392b; border:none;">Toka</button>
-                    <button onclick="openAdminLogin()" style="border-color: var(--accent); color: var(--accent);">Admin Portal</button>
-                `;
-            } else {
-                navContainer.innerHTML = `
-                    <button onclick="switchTab('signin')">Sign In</button>
-                    <button onclick="switchTab('signup')" style="background:var(--accent); border-color:var(--accent);">Sign Up</button>
-                    <button onclick="openAdminLogin()" style="border-color: var(--accent); color: var(--accent);">Admin Portal</button>
-                `;
-            }
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => sec.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+            if(sectionId === 'home-section') loadProducts();
         }
 
-        function checkMarketAccess() {
-            if(!currentUser) {
-                switchTab('signin');
-            } else {
-                switchTab('market');
-            }
-        }
-
-        function switchTab(tabId) {
-            if(!currentUser && (tabId === 'market' || tabId === 'designer')) {
-                tabId = 'signin';
-            }
-
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            
-            const hero = document.getElementById('hero-section');
-            if(tabId === 'market') {
-                hero.style.display = 'block';
-                document.getElementById('market-auth-warning').style.display = 'none';
-                document.getElementById('market-content-area').style.display = 'block';
-                loadDesigns();
-            } else if(tabId === 'signin' || tabId === 'signup') {
-                hero.style.display = 'block';
-                if(tabId === 'market') {
-                    document.getElementById('market-auth-warning').style.display = 'block';
-                    document.getElementById('market-content-area').style.display = 'none';
+        function loadProducts() {
+            fetch('/api/designs')
+            .then(res => res.json())
+            .then(data => {
+                const grid = document.getElementById('products-grid');
+                if(!data || data.length === 0) {
+                    grid.innerHTML = '<p>Hakuna bidhaa zilizoidhinishwa bado kwa sasa.</p>';
+                    return;
                 }
-            } else {
-                hero.style.display = 'none';
-            }
+                grid.innerHTML = data.map(d => `
+                    <div class="product-card">
+                        <img src="${d.image_url}" onerror="this.src='https://via.placeholder.com/300?text=Hakuna+Picha'" alt="${d.title}">
+                        <div class="product-info">
+                            <h3>${d.title}</h3>
+                            <p>${d.description.substring(0, 80)}...</p>
+                            <p class="price">Tsh ${d.price.toLocaleString()}</p>
+                            <p><small>Muuzaji: <strong>${d.designer_name}</strong> (${d.vendor_phone}) | Eneo: <strong>${d.location}</strong></small></p>
+                            <button onclick="buyProduct(${d.id}, ${d.price})">Nunua Sasa</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
 
-            if(tabId === 'designer' && currentUser) {
-                document.getElementById('designer-name-input').value = currentUser;
-            }
+        function buyProduct(designId, price) {
+            const phone = prompt("Weka namba yako ya simu ya Tigo Lipa:");
+            if(!phone) return;
+
+            const formData = new URLSearchParams();
+            formData.append('design_id', designId);
+            formData.append('phone', phone);
+            formData.append('amount', price);
+
+            fetch('/api/buy', { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => alert(data.message));
         }
 
         function handleSignup(e) {
             e.preventDefault();
-            let u = document.getElementById('su-username').value.trim();
-            let p = document.getElementById('su-password').value;
-            let cp = document.getElementById('su-confirm-password').value;
+            const formData = new URLSearchParams();
+            formData.append('username', document.getElementById('signup-user').value);
+            formData.append('password', document.getElementById('signup-pass').value);
 
-            if(p !== cp) {
-                alert('Nenosiri uliloingiza halilingani na uthibitisho!');
-                return;
-            }
-
-            fetch('/api/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`
-            })
+            fetch('/api/signup', { method: 'POST', body: formData })
             .then(res => res.json())
             .then(data => {
-                alert(data.message);
-                if(data.success) {
-                    document.getElementById('signup-form').reset();
-                    switchTab('signin');
-                }
-            })
-            .catch(err => {
-                alert('Imeshindikana kuunganisha na seva!');
+                const msg = document.getElementById('auth-msg');
+                msg.style.color = data.success ? 'green' : 'red';
+                msg.innerText = data.message;
             });
         }
 
         function handleSignin(e) {
             e.preventDefault();
-            let u = document.getElementById('si-username').value.trim();
-            let p = document.getElementById('si-password').value;
+            const formData = new URLSearchParams();
+            formData.append('username', document.getElementById('signin-user').value);
+            formData.append('password', document.getElementById('signin-pass').value);
 
-            fetch('/api/signin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`
-            })
+            fetch('/api/signin', { method: 'POST', body: formData })
             .then(res => res.json())
             .then(data => {
-                alert(data.message);
-                if(data.success) {
-                    currentUser = u;
-                    localStorage.setItem('sokosmart_user', u);
-                    updateAuthUI();
-                    switchTab('market');
-                }
-            })
-            .catch(err => {
-                alert('Imeshindikana kuunganisha na seva!');
+                const msg = document.getElementById('auth-msg');
+                msg.style.color = data.success ? 'green' : 'red';
+                msg.innerText = data.message;
+                if(data.success) setTimeout(() => showSection('home-section'), 1000);
             });
         }
 
-        function handleLogout() {
-            currentUser = null;
-            localStorage.removeItem('sokosmart_user');
-            updateAuthUI();
-            switchTab('signin');
-        }
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const formData = new URLSearchParams();
+            formData.append('password', document.getElementById('admin-password').value);
 
-        function openAdminLogin() {
-            let pwd = prompt("Weka Password ya Admin:");
-            if(!pwd) return;
-
-            fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `password=${encodeURIComponent(pwd)}`
-            })
+            fetch('/api/admin/login', { method: 'POST', body: formData })
             .then(res => res.json())
             .then(data => {
                 if(data.success) {
-                    document.getElementById('hero-section').style.display = 'none';
-                    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-                    document.getElementById('admin').classList.add('active');
+                    showSection('admin-portal-section');
                     loadAdminData();
                 } else {
-                    alert('Password si sahihi! Upatikanaji umezuiwa.');
+                    document.getElementById('admin-login-err').innerText = 'Nenosiri si sahihi!';
                 }
-            });
-        }
-
-        function logoutAdmin() {
-            if(currentUser) {
-                switchTab('market');
-            } else {
-                switchTab('signin');
-            }
-        }
-
-        function loadDesigns() {
-            if(!currentUser) return;
-
-            fetch('/api/designs')
-                .then(res => res.json())
-                .then(data => {
-                    allDesigns = data || [];
-                    displayDesigns(allDesigns);
-                });
-        }
-
-        function displayDesigns(designs) {
-            const grid = document.getElementById('designs-grid');
-            if(!designs || designs.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Hakuna bidhaa zilizopatikana.</p>';
-                return;
-            }
-            grid.innerHTML = designs.map(d => {
-                let vPhone = d.vendor_phone || '255623630553';
-                // Hakikisha namba ya simu ipo katika mfumo wa kimataifa kwa ajili ya WhatsApp (anza na 255...)
-                if(vPhone.startsWith('0')) {
-                    vPhone = '255' + vPhone.substring(1);
-                }
-                let chatMsg = `Habari, nimeona bidhaa yako ya *${d.title}* (Tsh ${d.price.toLocaleString()}) kwenye SokoSmart TZ. Je, bado ipo?`;
-                let whatsappVendorUrl = `https://wa.me/${vPhone}?text=` + encodeURIComponent(chatMsg);
-
-                return `
-                    <div class="card">
-                        <div>
-                            <img src="${d.image_url}" alt="${d.title}">
-                            <div class="card-content">
-                                <span style="font-size: 0.8em; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #4a5568;">${d.category || 'General'}</span>
-                                <span style="font-size: 0.8em; background: #feebc8; padding: 2px 6px; border-radius: 4px; color: #744210; float: right;">📍 ${d.location || 'Tanzania'}</span>
-                                <h3>${d.title}</h3>
-                                <p>${d.description}</p>
-                                <span class="price">Tsh ${d.price.toLocaleString()}</span>
-                                <p style="font-size:0.85em; color:#666; margin:0 0 10px 0;">Muuzaji: <strong>${d.designer_name}</strong></p>
-                                
-                                <!-- Kitufe cha Kuongea na Muuzaji Moja kwa Moja -->
-                                <a href="${whatsappVendorUrl}" target="_blank" class="vendor-contact-btn">💬 Uliza Muuzaji (WhatsApp)</a>
-                            </div>
-                        </div>
-                        <div class="payment-box">
-                            <p style="margin:0 0 6px 0; font-size:0.85em;"><strong>Lipa Tsh ${d.price.toLocaleString()}</strong> kwenda Tigo Lipa Namba: <strong>45416553</strong></p>
-                            <input type="text" id="phone-${d.id}" placeholder="Namba yako ya simu uliyolipia" style="margin-bottom:6px;">
-                            <button class="btn" onclick="buyDesign(${d.id}, '${d.title.replace(/'/g, "\\'")}', ${d.price})">Nimemaliza Kulipa</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function filterDesigns() {
-            let query = document.getElementById('search-input').value.toLowerCase();
-            let filtered = allDesigns.filter(d => 
-                d.title.toLowerCase().includes(query) || 
-                d.description.toLowerCase().includes(query) || 
-                (d.category && d.category.toLowerCase().includes(query)) ||
-                (d.location && d.location.toLowerCase().includes(query))
-            );
-            displayDesigns(filtered);
-        }
-
-        function buyDesign(id, title, price) {
-            if(!currentUser) {
-                alert('Tafadhali fanya Sign In kwanza ndipo uweze kununua bidhaa!');
-                switchTab('signin');
-                return;
-            }
-
-            let phoneInput = document.getElementById('phone-' + id);
-            let phone = phoneInput ? phoneInput.value.trim() : '';
-            
-            if(!phone) {
-                alert('Tafadhali weka namba yako ya simu uliyotumia kufanya malipo!');
-                return;
-            }
-            
-            let platformFee = price * 0.10;
-            let vendorAmount = price - platformFee;
-
-            fetch('/api/buy', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `design_id=${id}&phone=${encodeURIComponent(phone)}&amount=${price}`
-            })
-            .then(res => res.json())
-            .then(data => {
-                let adminPhone = "255623630553";
-                let msg = `Habari Admin, nimelipia bidhaa ifuatayo kwenye SokoSmart TZ:\n\n*Bidhaa:* ${title}\n*Bei Kamili:* Tsh ${price.toLocaleString()}\n*Faida Yako (10%):* Tsh ${platformFee.toLocaleString()}\n*Kiasi cha Muuzaji:* Tsh ${vendorAmount.toLocaleString()}\n*Namba Iliyolipia:* ${phone}\n*Mnunuzi:* ${currentUser}\n*ID ya Oda:* ${id}\n\nTafadhali thibitisha malipo.`;
-                
-                let whatsappUrl = `https://wa.me/${adminPhone}?text=` + encodeURIComponent(msg);
-                
-                alert(data.message || "Oda imepokelewa! Inakuelekeza kwenye WhatsApp ya Admin...");
-                phoneInput.value = '';
-                window.open(whatsappUrl, '_blank');
-            })
-            .catch(err => {
-                alert('Imeshindikana kuwasilisha oda. Tafadhali jaribu tena.');
             });
         }
 
         function loadAdminData() {
             fetch('/api/admin/users')
-                .then(res => res.json())
-                .then(data => {
-                    const usersList = document.getElementById('admin-users-list');
-                    if(!data || data.length === 0) {
-                        usersList.innerHTML = '<p>Hakuna watumiaji waliojisajili bado.</p>';
-                        return;
-                    }
-                    usersList.innerHTML = data.map(u => `
-                        <div style="border-bottom:1px solid #eee; padding:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em;">
-                            <div>
-                                👤 <strong>${u.username}</strong> (Wajibu: <span class="badge">${u.role}</span>) 
-                                <br><small style="color:#666;">Tarehe ya Kusajili: ${u.created_at}</small>
-                            </div>
-                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Futa (Ban/Delete)</button>
-                        </div>
-                    `).join('');
-                });
-
-            fetch('/api/admin/designs')
-                .then(res => res.json())
-                .then(data => {
-                    const list = document.getElementById('admin-designs-list');
-                    if(!data || data.length === 0) {
-                        list.innerHTML = '<p>Hakuna bidhaa zilizowekwa bado.</p>';
-                        return;
-                    }
-                    list.innerHTML = data.map(d => `
-                        <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                            <div>
-                                <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
-                                <small style="color:#666;">Muuzaji: ${d.designer_name} (${d.vendor_phone || 'N/A'}) | Eneo: ${d.location || 'N/A'} | Hali: <span class="badge">${d.status}</span></small>
-                            </div>
-                            <div>
-                                ${d.status === 'pending' ? `<button onclick="approveDesign(${d.id})" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;">Idhinisha</button>` : '<span style="color:var(--success); font-weight:bold;">Imeshatikiwa</span>'}
-                            </div>
-                        </div>
-                    `).join('');
-                });
+            .then(res => res.json())
+            .then(users => {
+                const div = document.getElementById('admin-users-list');
+                if(!users || users.length === 0) { div.innerHTML = '<p>Hakuna watumiaji.</p>'; return; }
+                div.innerHTML = users.map(u => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 8px 0;">
+                        <span>👤 <strong>${u.username}</strong> (${u.role})</span>
+                        <button class="btn-danger" onclick="deleteUser(${u.id})">Futa</button>
+                    </div>
+                `).join('');
+            });
 
             fetch('/api/admin/orders')
-                .then(res => res.json())
-                .then(data => {
-                    const ordersList = document.getElementById('admin-orders-list');
-                    if(!data || data.length === 0) {
-                        ordersList.innerHTML = '<p>Hakuna oda za malipo zilizofanyika bado.</p>';
-                        return;
-                    }
-                    ordersList.innerHTML = data.map(o => {
-                        let fee = o.amount * 0.10;
-                        let vendor = o.amount - fee;
-                        return `
-                            <div style="border-bottom:1px solid #eee; padding:8px 0; font-size:0.9em;">
-                                Mteja namba: <strong>${o.phone}</strong> amelipia Tsh <strong>${o.amount.toLocaleString()}</strong> 
-                                <br><span style="color:var(--success); font-weight:bold;">Faida yako (10%): Tsh ${fee.toLocaleString()}</span> | Mkabidhi muuzaji: Tsh ${vendor.toLocaleString()}
-                                <br><small style="color:#666;">Hali: <span class="badge">${o.payment_status}</span> | Tarehe: ${o.created_at}</small>
-                            </div>
-                        `;
-                    }).join('');
-                });
+            .then(res => res.json())
+            .then(orders => {
+                const div = document.getElementById('admin-orders-list');
+                if(!orders || orders.length === 0) { div.innerHTML = '<p>Hakuna oda.</p>'; return; }
+                div.innerHTML = orders.map(o => `
+                    <div style="border-bottom: 1px solid #eee; padding: 8px 0;">
+                        <p>Oda #${o.id} | Simu: <strong>${o.phone}</strong> | Tsh ${o.amount.toLocaleString()} | <span class="badge badge-pending">${o.payment_status}</span></p>
+                    </div>
+                `).join('');
+            });
+
+            fetch('/api/admin/designs')
+            .then(res => res.json())
+            .then(designs => {
+                allAdminDesigns = designs;
+                const div = document.getElementById('admin-designs-list');
+                if(!designs || designs.length === 0) { div.innerHTML = '<p>Hakuna bidhaa.</p>'; return; }
+                div.innerHTML = designs.map(d => `
+                    <div style="border-bottom: 1px solid #eee; padding: 12px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <div>
+                            <h4 style="margin: 0 0 5px 0;">${d.title} - Tsh ${d.price.toLocaleString()}</h4>
+                            <p style="margin: 0; font-size: 13px; color: #555;">Muuzaji: ${d.designer_name} (${d.vendor_phone}) | Hali: <span class="badge badge-${d.status}">${d.status}</span></p>
+                            ${d.status === 'rejected' ? `<p style="margin: 5px 0 0 0; color: red; font-size: 12px;">Sababu: ${d.rejection_reason}</p>` : ''}
+                        </div>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            <button class="btn-secondary" onclick="viewDesignDetails(${d.id})">Maelezo</button>
+                            ${d.status !== 'approved' ? `<button class="btn-success" onclick="approveDesign(${d.id})">Idhinisha</button>` : ''}
+                            ${d.status !== 'rejected' ? `<button class="btn-danger" onclick="openRejectModal(${d.id})">Kataa</button>` : ''}
+                            <button class="btn-danger" style="background-color: #7f1d1d;" onclick="deleteDesign(${d.id})">Futa Kabisa</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
         }
 
-        function deleteUser(id, username) {
-            if(!confirm(`Una uhakika unataka kumfuta kabisa mtumiaji "${username}" kutoka SokoSmart? Hatua hii itafuta akaunti yake mazima!`)) {
-                return;
-            }
+        function viewDesignDetails(id) {
+            const d = allAdminDesigns.find(item => item.id === id);
+            if(!d) return;
+            document.getElementById('modal-body-content').innerHTML = `
+                <h2>${d.title}</h2>
+                <img src="${d.image_url}" onerror="this.src='https://via.placeholder.com/300?text=Hakuna+Picha'" style="width: 100%; max-height: 220px; object-fit: cover; border-radius: 6px; margin-bottom: 10px;">
+                <p><strong>Bei:</strong> Tsh ${d.price.toLocaleString()}</p>
+                <p><strong>Maelezo:</strong> ${d.description}</p>
+                <p><strong>Muuzaji:</strong> ${d.designer_name} (${d.vendor_phone}) - Eneo: ${d.location}</p>
+            `;
+            document.getElementById('designModal').style.display = 'block';
+        }
 
-            fetch('/api/admin/delete-user?id=' + id, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.message || 'Mtumiaji amefutwa!');
-                    loadAdminData();
-                });
+        function closeModal() { document.getElementById('designModal').style.display = 'none'; }
+
+        function openRejectModal(id) {
+            currentRejectId = id;
+            document.getElementById('rejection-reason-input').value = '';
+            document.getElementById('rejectModal').style.display = 'block';
+        }
+
+        function closeRejectModal() { document.getElementById('rejectModal').style.display = 'none'; currentRejectId = null; }
+
+        function submitRejection() {
+            if(!currentRejectId) return;
+            const reason = document.getElementById('rejection-reason-input').value;
+            const formData = new URLSearchParams();
+            formData.append('reason', reason);
+
+            fetch(`/api/admin/reject?id=${currentRejectId}`, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(data => { alert(data.message); closeRejectModal(); loadAdminData(); });
         }
 
         function approveDesign(id) {
-            fetch('/api/admin/approve?id=' + id, { method: 'POST' })
-                .then(res => {
-                    if(res.ok) {
-                        alert('Bidhaa imethibitishwa na kuwekwa sokoni!');
-                        loadAdminData();
-                    }
-                });
+            fetch(`/api/admin/approve?id=${id}`, { method: 'POST' })
+            .then(() => { alert('Imetosha, bidhaa imeidhinishwa!'); loadAdminData(); });
         }
 
-        updateAuthUI();
-        if (!currentUser) {
-            switchTab('signin');
-        } else {
-            switchTab('market');
+        function deleteDesign(id) {
+            if(!confirm('Una hakika unataka kufuta bidhaa hii kabisa?')) return;
+            fetch(`/api/admin/delete-design?id=${id}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => { alert(data.message); loadAdminData(); });
         }
+
+        function deleteUser(id) {
+            if(!confirm('Una hakika unataka kufuta mtumiaji huyu?')) return;
+            fetch(`/api/admin/delete-user?id=${id}`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => { alert(data.message); loadAdminData(); });
+        }
+
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('designModal')) closeModal();
+            if (event.target == document.getElementById('rejectModal')) closeRejectModal();
+        }
+
+        loadProducts();
     </script>
 </body>
 </html>
- 

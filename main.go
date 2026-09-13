@@ -79,7 +79,8 @@ func main() {
 	http.HandleFunc("/api/admin/login", adminLoginHandler)
 	http.HandleFunc("/api/admin/designs", adminGetDesignsHandler)
 	http.HandleFunc("/api/admin/approve", adminApproveDesignHandler)
-	http.HandleFunc("/api/admin/reject", adminRejectDesignHandler) // Mpya: Kukataa bidhaa na sababu
+	http.HandleFunc("/api/admin/reject", adminRejectDesignHandler)
+	http.HandleFunc("/api/admin/delete-design", adminDeleteDesignHandler) // Mpya: Kufuta bidhaa kama admin
 	http.HandleFunc("/api/admin/orders", adminGetOrdersHandler)
 	http.HandleFunc("/api/admin/users", adminUsersHandler)
 	http.HandleFunc("/api/admin/delete-user", adminDeleteUserHandler)
@@ -126,7 +127,7 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la designs: %v", err)
 	}
 
-	// Auto-migration salama kulinda taarifa zote zilizopo
+	// Auto-migration salama
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS designer_name TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS location TEXT DEFAULT 'Tanzania';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS vendor_phone TEXT DEFAULT '';")
@@ -176,7 +177,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, err = db.Exec("INSERT INTO app_accounts (username, password, role) VALUES ($1, $2, 'user')", username, password)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari! Tafadhali tumia lingine."})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari!"})
 		return
 	}
 
@@ -238,7 +239,7 @@ func uploadDesignHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
-		http.Error(w, "Picha ni kubwa sana au imeshindikana kusomwa", http.StatusBadRequest)
+		http.Error(w, "Picha ni kubwa sana", http.StatusBadRequest)
 		return
 	}
 
@@ -275,8 +276,8 @@ func uploadDesignHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', '')",
 		title, description, price, imageURL, category, designerName, location, vendorPhone)
 	if err != nil {
-		log.Printf("Kosa la database wakati wa kuweka bidhaa: %v", err)
-		http.Error(w, "Imeshindikana kuweka bidhaa kwenye database", http.StatusInternalServerError)
+		log.Printf("Kosa la database: %v", err)
+		http.Error(w, "Imeshindikana kuweka bidhaa", http.StatusInternalServerError)
 		return
 	}
 
@@ -365,7 +366,6 @@ func adminApproveDesignHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Sehemu mpya ya kushughulikia kukataa bidhaa na kuweka sababu
 func adminRejectDesignHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
@@ -381,7 +381,7 @@ func adminRejectDesignHandler(w http.ResponseWriter, r *http.Request) {
 	id := r.URL.Query().Get("id")
 	reason := r.FormValue("reason")
 	if reason == "" {
-		reason = "Haikutimiza vigezo vya ubora vya SokoSmart TZ."
+		reason = "Haikutimiza vigezo vya ubora."
 	}
 
 	_, err = db.Exec("UPDATE designs SET status = 'rejected', rejection_reason = $1 WHERE id = $2", reason, id)
@@ -392,6 +392,28 @@ func adminRejectDesignHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imekataliwa kikamilifu."})
+}
+
+func adminDeleteDesignHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
+
+	designID := r.URL.Query().Get("id")
+	if designID == "" {
+		http.Error(w, "ID haipatikani", http.StatusBadRequest)
+		return
+	}
+
+	_, err := db.Exec("DELETE FROM designs WHERE id = $1", designID)
+	if err != nil {
+		http.Error(w, "Imeshindikana kufuta bidhaa", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imefutwa kabisa na Admin!"})
 }
 
 func adminGetOrdersHandler(w http.ResponseWriter, r *http.Request) {
@@ -455,7 +477,7 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	userID := r.URL.Query().Get("id")
 	if userID == "" {
-		http.Error(w, "ID ya mtumiaji haipatikani", http.StatusBadRequest)
+		http.Error(w, "ID haipatikani", http.StatusBadRequest)
 		return
 	}
 
@@ -468,4 +490,3 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
-
