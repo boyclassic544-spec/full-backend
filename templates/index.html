@@ -240,7 +240,7 @@
 
         function handleSignup(e) {
             e.preventDefault();
-            let u = document.getElementById('su-username').value;
+            let u = document.getElementById('su-username').value.trim();
             let p = document.getElementById('su-password').value;
             let cp = document.getElementById('su-confirm-password').value;
 
@@ -258,14 +258,18 @@
             .then(data => {
                 alert(data.message);
                 if(data.success) {
+                    document.getElementById('signup-form').reset();
                     switchTab('signin');
                 }
+            })
+            .catch(err => {
+                alert('Imeshindikana kuunganisha na seva!');
             });
         }
 
         function handleSignin(e) {
             e.preventDefault();
-            let u = document.getElementById('si-username').value;
+            let u = document.getElementById('si-username').value.trim();
             let p = document.getElementById('si-password').value;
 
             fetch('/api/signin', {
@@ -282,6 +286,9 @@
                     updateAuthUI();
                     switchTab('market');
                 }
+            })
+            .catch(err => {
+                alert('Imeshindikana kuunganisha na seva!');
             });
         }
 
