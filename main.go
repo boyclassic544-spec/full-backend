@@ -66,7 +66,10 @@ func main() {
 	http.HandleFunc("/api/signup", signupHandler)
 	http.HandleFunc("/api/signin", signinHandler)
 	http.HandleFunc("/api/designs", getDesignsHandler)
+	http.HandleFunc("/api/my-designs", getMyDesignsHandler)
 	http.HandleFunc("/api/upload", uploadDesignJSONHandler)
+	http.HandleFunc("/api/update-design", updateDesignJSONHandler)
+	http.HandleFunc("/api/delete-design", deleteMyDesignHandler)
 	http.HandleFunc("/api/buy", buyDesignHandler)
 
 	http.HandleFunc("/api/admin/login", adminLoginHandler)
@@ -124,7 +127,6 @@ func initDB() {
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS location TEXT DEFAULT 'Tanzania';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS vendor_phone TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS rejection_reason TEXT DEFAULT '';")
-	// Kuhakikisha safu ya image_url inasoma TEXT ya kutosha kubeba Base64 ndefu
 	db.Exec("ALTER TABLE designs ALTER COLUMN image_url TYPE TEXT;")
 
 	queryOrders := `
@@ -225,6 +227,32 @@ func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(designs)
 }
 
+func getMyDesignsHandler(w http.ResponseWriter, r *http.Request) {
+	designerName := r.URL.Query().Get("designer")
+	rows, err := db.Query("SELECT id, title, description, price, image_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE designer_name = $1 ORDER BY id DESC", designerName)
+	if err != nil {
+		http.Error(w, "Imeshindikana kusoma bidhaa zako", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var designs []Design
+	for rows.Next() {
+		var d Design
+		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
+			continue
+		}
+		designs = append(designs, d)
+	}
+
+	if designs == nil {
+		designs = []Design{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(designs)
+}
+
 func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
@@ -242,13 +270,11 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		VendorPhone  string  `json:"vendor_phone"`
 	}
 
-	// Kuongeza ukubwa wa kupokea data (MaxBytes) ili picha kubwa za Base64 zisikataliwe na seva
-	r.Body = http.MaxBytesReader(w, r.Body, 15<<20) // 15MB max
+	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		log.Printf("Kosa la kupokea JSON/Image: %v", err)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa au picha ni kubwa sana"})
 		return
 	}
@@ -264,12 +290,68 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Category, payload.DesignerName, payload.Location, payload.VendorPhone)
 	
 	if err != nil {
-		log.Printf("Kosa la database: %v", err)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuweka bidhaa kwenye database"})
 		return
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imewasilishwa kikamilifu kwa ukaguzi!"})
+}
+
+func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var payload struct {
+		ID          int     `json:"id"`
+		Title       string  `json:"title"`
+		Description string  `json:"description"`
+		Price       float64 `json:"price"`
+		ImageURL    string  `json:"image_url"`
+		Category    string  `json:"category"`
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	
+	w.Header().Set("Content-Type", "application/json")
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa za marekebisho"})
+		return
+	}
+
+	if payload.ImageURL != "" {
+		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, category = $5, status = 'pending', rejection_reason = '' WHERE id = $6",
+			payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Category, payload.ID)
+	} else {
+		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, category = $4, status = 'pending', rejection_reason = '' WHERE id = $5",
+			payload.Title, payload.Description, payload.Price, payload.Category, payload.ID)
+	}
+
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi mabadiliko"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imesasishwa na kurudishwa kwenye ukaguzi!"})
+}
+
+func deleteMyDesignHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
+
+	designID := r.URL.Query().Get("id")
+	_, err := db.Exec("DELETE FROM designs WHERE id = $1", designID)
+	w.Header().Set("Content-Type", "application/json")
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kufuta bidhaa"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imefutwa!"})
 }
 
 func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
@@ -388,7 +470,7 @@ func adminDeleteDesignHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	designID := r.URL.Query().Get("id")
+    designID := r.URL.Query().Get("id")
 	if designID == "" {
 		http.Error(w, "ID haipatikani", http.StatusBadRequest)
 		return
@@ -478,4 +560,3 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
-
