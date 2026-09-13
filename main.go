@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	_ "github.com/lib/pq"
 )
@@ -144,6 +145,24 @@ func initDB() {
 	}
 }
 
+// Mtendakazi wa kuhakiki miundo sahihi ya picha
+func isValidImageURL(urlStr string) bool {
+	if urlStr == "" || urlStr == "https://via.placeholder.com/300" {
+		return true
+	}
+	lower := strings.ToLower(urlStr)
+	if strings.HasPrefix(lower, "data:image/") {
+		return true
+	}
+	validExts := []string{".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".svg"}
+	for _, ext := range validExts {
+		if strings.Contains(lower, ext) {
+			return true
+		}
+	}
+	return false
+}
+
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "templates/index.html")
 }
@@ -279,11 +298,17 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Uhakiki wa muundo wa picha (JPG, JPEG, PNG, WEBP, n.k.)
+	if !isValidImageURL(payload.ImageURL) {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Muundo wa picha haukubaliwi! Tafadhali tumia JPG, JPEG, PNG, au WEBP."})
+		return
+	}
+
 	if payload.ImageURL == "" {
 		payload.ImageURL = "https://via.placeholder.com/300"
 	}
 	if payload.Location == "" {
-		payload.Location = "Morogoro, Tanzania" // Imewekwa default ya Morogoro au nchi
+		payload.Location = "Morogoro, Tanzania"
 	}
 
 	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', '')",
@@ -323,8 +348,11 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Imerekebishwa ili iweze kusasisha pia Location na VendorPhone zikiwa zinabadilishwa
 	if payload.ImageURL != "" {
+		if !isValidImageURL(payload.ImageURL) {
+			json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Muundo wa picha mpya haukubaliwi! Tafadhali tumia JPG, JPEG, PNG, au WEBP."})
+			return
+		}
 		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, category = $5, location = $6, vendor_phone = $7, status = 'pending', rejection_reason = '' WHERE id = $8",
 			payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Category, payload.Location, payload.VendorPhone, payload.ID)
 	} else {
@@ -563,4 +591,4 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
- 
+
