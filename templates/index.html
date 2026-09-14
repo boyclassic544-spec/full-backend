@@ -35,6 +35,7 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #dcdde1; }
         .card img { width: 100%; height: 220px; object-fit: contain; background-color: #f9f9f9; padding: 5px; box-sizing: border-box; display: block; }
+        .card video { width: 100%; height: 220px; object-fit: cover; background-color: #000; display: block; }
         .card-content { padding: 15px; }
         .card h3 { margin: 0 0 10px 0; font-size: 1.2em; color: var(--primary); }
         .card p { font-size: 0.9em; color: #666; margin-bottom: 10px; }
@@ -161,9 +162,13 @@
                     <label>Namba ya Simu ya Muuzaji (Vendor Phone)</label>
                     <input type="text" id="up-vendor-phone" placeholder="Mf. 0712345678" required>
 
-                    <label>Pakia Picha Halisi (Weka picha 4 kwa pamoja kwa mtiririko)</label>
+                    <label>Pakia Picha Halisi (Chagua Picha 2)</label>
                     <input type="file" id="up-image-file" accept="image/*" multiple required style="background: #fff; padding: 8px;">
-                    <small style="color: #666; display: block; margin-bottom: 8px;">Tafadhali chagua picha **4** kwa pamoja ili ziweze kuonyeshwa kikamilifu.</small>
+                    <small style="color: #666; display: block; margin-bottom: 8px;">Tafadhali chagua picha **2** haswa.</small>
+
+                    <label>Pakia Video Fupi (Isiyozidi sekunde 30)</label>
+                    <input type="file" id="up-video-file" accept="video/*" style="background: #fff; padding: 8px;">
+                    <small style="color: #666; display: block; margin-bottom: 8px;">Video fupi 1 (Upeo sekunde 30).</small>
 
                     <label>Kategoria ya Biashara</label>
                     <input type="text" id="up-cat" placeholder="Mf. Electronics, Mitindo, Digital Services" required>
@@ -208,8 +213,11 @@
                     <label>Namba ya Simu ya Muuzaji</label>
                     <input type="text" id="edit-vendor-phone" required>
 
-                    <label>Badilisha Picha (Hiari - Picha 4)</label>
+                    <label>Badilisha Picha (Hiari - Picha 2)</label>
                     <input type="file" id="edit-image-file" accept="image/*" multiple style="background: #fff; padding: 8px;">
+
+                    <label>Badilisha Video (Hiari - Sekunde 30 upeo)</label>
+                    <input type="file" id="edit-video-file" accept="video/*" style="background: #fff; padding: 8px;">
 
                     <label>Kategoria ya Biashara</label>
                     <input type="text" id="edit-cat" required>
@@ -259,6 +267,7 @@
             
             <div style="text-align: center; margin-bottom: 15px;">
                 <div id="modal-image-container" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;"></div>
+                <div id="modal-video-container" style="margin-top: 10px;"></div>
             </div>
             
             <p><strong>Jina la Bidhaa:</strong> <span id="modal-prod-title"></span></p>
@@ -468,29 +477,61 @@
             });
         }
 
+        function readVideoAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const videoElement = document.createElement('video');
+                videoElement.preload = 'metadata';
+                videoElement.onloadedmetadata = function() {
+                    window.URL.revokeObjectURL(videoElement.src);
+                    if (videoElement.duration > 30.5) {
+                        alert("Video ni ndefu mno! Tafadhali pakia video isiyozidi sekunde 30.");
+                        reject(new Error("Video exceeds 30 seconds limit"));
+                    } else {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = function(e) {
+                            resolve(e.target.result);
+                        };
+                        reader.onerror = function(err) {
+                            reject(err);
+                        };
+                    }
+                };
+                videoElement.src = URL.createObjectURL(file);
+            });
+        }
+
         async function handleUploadOptimized(e) {
             e.preventDefault();
 
             const fileInput = document.getElementById('up-image-file');
             const files = fileInput.files;
 
-            if(!files || files.length === 0) {
-                alert('Tafadhali chagua angalau picha moja ya bidhaa!');
+            if(!files || files.length !== 2) {
+                alert('Tafadhali chagua picha 2 haswa!');
                 return;
             }
 
-            let maxFiles = Math.min(files.length, 4);
             let compressedImages = [];
-
-            for(let i = 0; i < maxFiles; i++) {
+            for(let i = 0; i < 2; i++) {
                 let compressedDataUrl = await compressImage(files[i]);
                 compressedImages.push(compressedDataUrl);
             }
 
-            sendUploadPayload(compressedImages);
+            let videoBase64 = "";
+            const videoInput = document.getElementById('up-video-file');
+            if(videoInput.files && videoInput.files[0]) {
+                try {
+                    videoBase64 = await readVideoAsDataURL(videoInput.files[0]);
+                } catch(err) {
+                    return;
+                }
+            }
+
+            sendUploadPayload(compressedImages, videoBase64);
         }
 
-        function sendUploadPayload(imagesArray) {
+        function sendUploadPayload(imagesArray, videoBase64) {
             const payload = {
                 title: document.getElementById('up-title').value,
                 description: document.getElementById('up-desc').value,
@@ -498,6 +539,7 @@
                 location: document.getElementById('up-location').value,
                 vendor_phone: document.getElementById('up-vendor-phone').value,
                 image_url: imagesArray.join(','),
+                video_url: videoBase64,
                 category: document.getElementById('up-cat').value,
                 designer_name: document.getElementById('designer-name-input').value
             };
@@ -527,17 +569,22 @@
                         return;
                     }
                     grid.innerHTML = data.map(d => {
-                        let firstImg = 'https://via.placeholder.com/300x180?text=SokoSmart+TZ';
+                        let firstImg = '';
                         if (d.image_url) {
                             let imgs = d.image_url.split(',');
-                            if (imgs[0] && imgs[0].trim() !== '') {
-                                firstImg = imgs[0].trim();
-                            }
+                            firstImg = imgs[0] ? imgs[0].trim() : '';
                         }
+                        let mediaContent = '';
+                        if(d.video_url) {
+                            mediaContent = `<video src="${d.video_url}" controls muted></video>`;
+                        } else {
+                            mediaContent = `<img src="${firstImg}" alt="${d.title}" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x180?text=SokoSmart+TZ';">`;
+                        }
+
                         return `
                         <div class="card">
                             <div>
-                                <img src="${firstImg}" alt="${d.title}" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x180?text=SokoSmart+TZ';">
+                                ${mediaContent}
                                 <div class="card-content">
                                     <span style="font-size: 0.8em; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #4a5568;">${d.category || 'General'}</span>
                                     <h3>${d.title}</h3>
@@ -570,12 +617,10 @@
                         return;
                     }
                     list.innerHTML = data.map(d => {
-                        let firstImg = 'https://via.placeholder.com/50';
+                        let firstImg = '';
                         if (d.image_url) {
                             let imgs = d.image_url.split(',');
-                            if (imgs[0] && imgs[0].trim() !== '') {
-                                firstImg = imgs[0].trim();
-                            }
+                            firstImg = imgs[0] ? imgs[0].trim() : '';
                         }
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -605,6 +650,7 @@
             document.getElementById('edit-vendor-phone').value = d.vendor_phone || '';
             document.getElementById('edit-cat').value = d.category;
             document.getElementById('edit-image-file').value = '';
+            document.getElementById('edit-video-file').value = '';
             switchTab('edit-product');
         }
 
@@ -617,42 +663,54 @@
             const location = document.getElementById('edit-location').value;
             const vendor_phone = document.getElementById('edit-vendor-phone').value;
             const category = document.getElementById('edit-cat').value;
+            
             const fileInput = document.getElementById('edit-image-file');
             const files = fileInput.files;
 
-            const sendUpdatePayload = (imgUrl) => {
-                fetch('/api/update-design', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        id: parseInt(id),
-                        title,
-                        description,
-                        price,
-                        location,
-                        vendor_phone,
-                        image_url: imgUrl,
-                        category
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.message || 'Mabadiliko yamehifadhiwa!');
-                    switchTab('my-products');
-                });
-            };
+            const videoInput = document.getElementById('edit-video-file');
 
+            let imgUrl = "";
             if(files && files.length > 0) {
-                let maxFiles = Math.min(files.length, 4);
                 let compressedImages = [];
-                for(let i = 0; i < maxFiles; i++) {
+                let count = Math.min(files.length, 2);
+                for(let i = 0; i < count; i++) {
                     let compressedDataUrl = await compressImage(files[i]);
                     compressedImages.push(compressedDataUrl);
                 }
-                sendUpdatePayload(compressedImages.join(','));
-            } else {
-                sendUpdatePayload("");
+                imgUrl = compressedImages.join(',');
             }
+
+            let videoUrl = "";
+            if(videoInput.files && videoInput.files[0]) {
+                try {
+                    videoUrl = await readVideoAsDataURL(videoInput.files[0]);
+                } catch(err) {
+                    return;
+                }
+            }
+
+            const payload = {
+                id: parseInt(id),
+                title,
+                description,
+                price,
+                location,
+                vendor_phone,
+                image_url: imgUrl,
+                video_url: videoUrl,
+                category
+            };
+
+            fetch('/api/update-design', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message || 'Mabadiliko yamehifadhiwa!');
+                switchTab('my-products');
+            });
         }
 
         function deleteMyProduct(id) {
@@ -729,12 +787,10 @@
                         return;
                     }
                     list.innerHTML = data.map(d => {
-                        let firstImg = 'https://via.placeholder.com/50';
+                        let firstImg = '';
                         if (d.image_url) {
                             let imgs = d.image_url.split(',');
-                            if (imgs[0] && imgs[0].trim() !== '') {
-                                firstImg = imgs[0].trim();
-                            }
+                            firstImg = imgs[0] ? imgs[0].trim() : '';
                         }
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -784,13 +840,18 @@
             let container = document.getElementById('modal-image-container');
             if(d.image_url) {
                 let imgs = d.image_url.split(',');
-                container.innerHTML = imgs.map(img => {
-                    let cleanImg = img.trim();
-                    if(!cleanImg) return '';
-                    return `<img src="${cleanImg}" alt="Picha" style="width: 80px; height: 80px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/80?text=Hitilafu';">`;
-                }).join('');
+                container.innerHTML = imgs.map(img => `
+                    <img src="${img.trim()}" alt="Picha" style="width: 80px; height: 80px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/80?text=Hitilafu';">
+                `).join('');
             } else {
                 container.innerHTML = `<img src="https://via.placeholder.com/300?text=Hakuna+Picha" alt="" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #eee;">`;
+            }
+
+            let videoContainer = document.getElementById('modal-video-container');
+            if(d.video_url) {
+                videoContainer.innerHTML = `<video src="${d.video_url}" controls style="max-width: 100%; max-height: 200px; border-radius: 6px; background: #000;"></video>`;
+            } else {
+                videoContainer.innerHTML = `<small style="color:#888;">Hakuna video iliyowekwa</small>`;
             }
 
             document.getElementById('modal-prod-title').innerText = d.title;
@@ -872,4 +933,4 @@
     </script>
 </body>
 </html>
- 
+
