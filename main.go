@@ -20,6 +20,9 @@ type Design struct {
 	Description     string  `json:"description"`
 	Price           float64 `json:"price"`
 	ImageURL        string  `json:"image_url"`
+	Image2          string  `json:"image_2"`
+	Image3          string  `json:"image_3"`
+	Image4          string  `json:"image_4"`
 	Category        string  `json:"category"`
 	Designer        string  `json:"designer_name"`
 	Location        string  `json:"location"`
@@ -112,6 +115,9 @@ func initDB() {
 		description TEXT NOT NULL,
 		price NUMERIC NOT NULL,
 		image_url TEXT NOT NULL,
+		image_2 TEXT DEFAULT '',
+		image_3 TEXT DEFAULT '',
+		image_4 TEXT DEFAULT '',
 		category TEXT NOT NULL,
 		designer_name TEXT DEFAULT '',
 		location TEXT DEFAULT 'Tanzania',
@@ -128,6 +134,9 @@ func initDB() {
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS location TEXT DEFAULT 'Tanzania';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS vendor_phone TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS rejection_reason TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS image_2 TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS image_3 TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS image_4 TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE designs ALTER COLUMN image_url TYPE TEXT;")
 
 	queryOrders := `
@@ -145,13 +154,13 @@ func initDB() {
 	}
 }
 
-// Mtendakazi wa kuhakiki miundo sahihi ya picha (Imeboreshwa kusaidia Base64 nyingi zilizounganishwa)
+// Mtendakazi wa kuhakiki miundo sahihi ya picha
 func isValidImageURL(urlStr string) bool {
 	if urlStr == "" || urlStr == "https://via.placeholder.com/300" {
 		return true
 	}
 	lower := strings.ToLower(urlStr)
-	if strings.Contains(lower, "data:image/") {
+	if strings.HasPrefix(lower, "data:image/") {
 		return true
 	}
 	validExts := []string{".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".svg"}
@@ -222,7 +231,7 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, description, price, image_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE status = 'approved'")
+	rows, err := db.Query("SELECT id, title, description, price, image_url, image_2, image_3, image_4, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE status = 'approved'")
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma bidhaa", http.StatusInternalServerError)
 		return
@@ -232,7 +241,7 @@ func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	var designs []Design
 	for rows.Next() {
 		var d Design
-		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
+		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Image2, &d.Image3, &d.Image4, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
 			continue
 		}
 		designs = append(designs, d)
@@ -248,7 +257,7 @@ func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
 
 func getMyDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	designerName := r.URL.Query().Get("designer")
-	rows, err := db.Query("SELECT id, title, description, price, image_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE designer_name = $1 ORDER BY id DESC", designerName)
+	rows, err := db.Query("SELECT id, title, description, price, image_url, image_2, image_3, image_4, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE designer_name = $1 ORDER BY id DESC", designerName)
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma bidhaa zako", http.StatusInternalServerError)
 		return
@@ -258,7 +267,7 @@ func getMyDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	var designs []Design
 	for rows.Next() {
 		var d Design
-		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
+		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Image2, &d.Image3, &d.Image4, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
 			continue
 		}
 		designs = append(designs, d)
@@ -283,14 +292,16 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		Description  string  `json:"description"`
 		Price        float64 `json:"price"`
 		ImageURL     string  `json:"image_url"`
+		Image2       string  `json:"image_2"`
+		Image3       string  `json:"image_3"`
+		Image4       string  `json:"image_4"`
 		Category     string  `json:"category"`
 		DesignerName string  `json:"designer_name"`
 		Location     string  `json:"location"`
 		VendorPhone  string  `json:"vendor_phone"`
 	}
 
-	// Imeongezwa kutoka 15MB hadi 50MB ili picha nne za Base64 zipite bila kukatwa
-	r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
+	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -299,9 +310,13 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !isValidImageURL(payload.ImageURL) {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Muundo wa picha haukubaliwi! Tafadhali tumia JPG, JPEG, PNG, au WEBP."})
-		return
+	// Uhakiki wa miundo ya picha zote nne (kama zipo)
+	imgs := []string{payload.ImageURL, payload.Image2, payload.Image3, payload.Image4}
+	for _, img := range imgs {
+		if img != "" && !isValidImageURL(img) {
+			json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Muundo wa picha haukubaliwi! Tafadhali tumia JPG, JPEG, PNG, au WEBP."})
+			return
+		}
 	}
 
 	if payload.ImageURL == "" {
@@ -311,8 +326,8 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		payload.Location = "Morogoro, Tanzania"
 	}
 
-	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pending', '')",
-		payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Category, payload.DesignerName, payload.Location, payload.VendorPhone)
+	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, image_2, image_3, image_4, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending', '')",
+		payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Image2, payload.Image3, payload.Image4, payload.Category, payload.DesignerName, payload.Location, payload.VendorPhone)
 	
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuweka bidhaa kwenye database"})
@@ -334,13 +349,15 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		Description string  `json:"description"`
 		Price       float64 `json:"price"`
 		ImageURL    string  `json:"image_url"`
+		Image2      string  `json:"image_2"`
+		Image3      string  `json:"image_3"`
+		Image4      string  `json:"image_4"`
 		Category    string  `json:"category"`
 		Location    string  `json:"location"`
 		VendorPhone string  `json:"vendor_phone"`
 	}
 
-	// Imeongezwa kutoka 15MB hadi 50MB kusudi picha nyingi zisihesabiwe kama makosa
-	r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
+	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -349,13 +366,17 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if payload.ImageURL != "" {
-		if !isValidImageURL(payload.ImageURL) {
+	imgs := []string{payload.ImageURL, payload.Image2, payload.Image3, payload.Image4}
+	for _, img := range imgs {
+		if img != "" && !isValidImageURL(img) {
 			json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Muundo wa picha mpya haukubaliwi! Tafadhali tumia JPG, JPEG, PNG, au WEBP."})
 			return
 		}
-		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, category = $5, location = $6, vendor_phone = $7, status = 'pending', rejection_reason = '' WHERE id = $8",
-			payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Category, payload.Location, payload.VendorPhone, payload.ID)
+	}
+
+	if payload.ImageURL != "" {
+		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, image_2 = $5, image_3 = $6, image_4 = $7, category = $8, location = $9, vendor_phone = $10, status = 'pending', rejection_reason = '' WHERE id = $11",
+			payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Image2, payload.Image3, payload.Image4, payload.Category, payload.Location, payload.VendorPhone, payload.ID)
 	} else {
 		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, category = $4, location = $5, vendor_phone = $6, status = 'pending', rejection_reason = '' WHERE id = $7",
 			payload.Title, payload.Description, payload.Price, payload.Category, payload.Location, payload.VendorPhone, payload.ID)
@@ -428,7 +449,7 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, description, price, image_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, title, description, price, image_url, image_2, image_3, image_4, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs ORDER BY id DESC")
 	if err != nil {
 		http.Error(w, "Imeshindikana", http.StatusInternalServerError)
 		return
@@ -438,7 +459,7 @@ func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	var designs []Design
 	for rows.Next() {
 		var d Design
-		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
+		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Image2, &d.Image3, &d.Image4, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
 			continue
 		}
 		designs = append(designs, d)
@@ -560,7 +581,6 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.CreatedAt); err != nil {
 			continue
 		}
-		users = append(users, u)
 	}
 
 	if users == nil {
