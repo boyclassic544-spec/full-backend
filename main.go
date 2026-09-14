@@ -25,8 +25,6 @@ type Design struct {
 	Price           float64 `json:"price"`
 	ImageURL        string  `json:"image_url"`
 	Image2          string  `json:"image_2"`
-	Image3          string  `json:"image_3"`
-	Image4          string  `json:"image_4"`
 	Category        string  `json:"category"`
 	Designer        string  `json:"designer_name"`
 	Location        string  `json:"location"`
@@ -70,7 +68,6 @@ func main() {
 
 	initDB()
 
-	// Ongeza handler ya kusoma picha zilizohifadhiwa kwenye server
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 
 	http.HandleFunc("/", homeHandler)
@@ -102,7 +99,6 @@ func main() {
 }
 
 func initDB() {
-	// Tengeneza folda ya uploads kama haipo
 	if err := os.MkdirAll("./uploads", 0755); err != nil {
 		log.Fatalf("Imeshindikana kutengeneza folder la uploads: %v", err)
 	}
@@ -128,8 +124,6 @@ func initDB() {
 		price NUMERIC NOT NULL,
 		image_url TEXT NOT NULL,
 		image_2 TEXT DEFAULT '',
-		image_3 TEXT DEFAULT '',
-		image_4 TEXT DEFAULT '',
 		category TEXT NOT NULL,
 		designer_name TEXT DEFAULT '',
 		location TEXT DEFAULT 'Tanzania',
@@ -147,8 +141,6 @@ func initDB() {
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS vendor_phone TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS rejection_reason TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS image_2 TEXT DEFAULT '';")
-	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS image_3 TEXT DEFAULT '';")
-	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS image_4 TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE designs ALTER COLUMN image_url TYPE TEXT;")
 
 	queryOrders := `
@@ -166,7 +158,6 @@ func initDB() {
 	}
 }
 
-// Kazi ya kuhifadhi Base64 kama faili halisi kwenye folda ya uploads
 func saveBase64Image(dataURL string) (string, error) {
 	parts := strings.SplitN(dataURL, ",", 2)
 	if len(parts) != 2 {
@@ -198,7 +189,6 @@ func saveBase64Image(dataURL string) (string, error) {
 	return "/uploads/" + filename, nil
 }
 
-// Mtendakazi wa kuhakiki miundo sahihi ya picha
 func isValidImageURL(urlStr string) bool {
 	if urlStr == "" || urlStr == "https://via.placeholder.com/300" {
 		return true
@@ -275,7 +265,7 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, description, price, image_url, image_2, image_3, image_4, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE status = 'approved'")
+	rows, err := db.Query("SELECT id, title, description, price, image_url, image_2, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE status = 'approved'")
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma bidhaa", http.StatusInternalServerError)
 		return
@@ -285,7 +275,7 @@ func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	var designs []Design
 	for rows.Next() {
 		var d Design
-		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Image2, &d.Image3, &d.Image4, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
+		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Image2, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
 			continue
 		}
 		designs = append(designs, d)
@@ -301,7 +291,7 @@ func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
 
 func getMyDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	designerName := r.URL.Query().Get("designer")
-	rows, err := db.Query("SELECT id, title, description, price, image_url, image_2, image_3, image_4, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE designer_name = $1 ORDER BY id DESC", designerName)
+	rows, err := db.Query("SELECT id, title, description, price, image_url, image_2, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE designer_name = $1 ORDER BY id DESC", designerName)
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma bidhaa zako", http.StatusInternalServerError)
 		return
@@ -311,7 +301,7 @@ func getMyDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	var designs []Design
 	for rows.Next() {
 		var d Design
-		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Image2, &d.Image3, &d.Image4, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
+		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Image2, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
 			continue
 		}
 		designs = append(designs, d)
@@ -337,8 +327,6 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		Price        float64 `json:"price"`
 		ImageURL     string  `json:"image_url"`
 		Image2       string  `json:"image_2"`
-		Image3       string  `json:"image_3"`
-		Image4       string  `json:"image_4"`
 		Category     string  `json:"category"`
 		DesignerName string  `json:"designer_name"`
 		Location     string  `json:"location"`
@@ -354,8 +342,8 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	savedURLs := []string{"", "", "", ""}
-	rawImgs := []string{payload.ImageURL, payload.Image2, payload.Image3, payload.Image4}
+	savedURLs := []string{"", ""}
+	rawImgs := []string{payload.ImageURL, payload.Image2}
 
 	for i, raw := range rawImgs {
 		if raw == "" {
@@ -384,8 +372,8 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		payload.Location = "Morogoro, Tanzania"
 	}
 
-	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, image_2, image_3, image_4, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending', '')",
-		payload.Title, payload.Description, payload.Price, savedURLs[0], savedURLs[1], savedURLs[2], savedURLs[3], payload.Category, payload.DesignerName, payload.Location, payload.VendorPhone)
+	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, image_2, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending', '')",
+		payload.Title, payload.Description, payload.Price, savedURLs[0], savedURLs[1], payload.Category, payload.DesignerName, payload.Location, payload.VendorPhone)
 	
 	if err != nil {
 		log.Printf("DB error: %v", err)
@@ -409,8 +397,6 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		Price       float64 `json:"price"`
 		ImageURL    string  `json:"image_url"`
 		Image2      string  `json:"image_2"`
-		Image3      string  `json:"image_3"`
-		Image4      string  `json:"image_4"`
 		Category    string  `json:"category"`
 		Location    string  `json:"location"`
 		VendorPhone string  `json:"vendor_phone"`
@@ -425,8 +411,8 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	savedURLs := []string{"", "", "", ""}
-	rawImgs := []string{payload.ImageURL, payload.Image2, payload.Image3, payload.Image4}
+	savedURLs := []string{"", ""}
+	rawImgs := []string{payload.ImageURL, payload.Image2}
 	for i, raw := range rawImgs {
 		if raw == "" {
 			continue
@@ -446,8 +432,8 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if savedURLs[0] != "" {
-		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, image_2 = $5, image_3 = $6, image_4 = $7, category = $8, location = $9, vendor_phone = $10, status = 'pending', rejection_reason = '' WHERE id = $11",
-			payload.Title, payload.Description, payload.Price, savedURLs[0], savedURLs[1], savedURLs[2], savedURLs[3], payload.Category, payload.Location, payload.VendorPhone, payload.ID)
+		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, image_2 = $5, category = $6, location = $7, vendor_phone = $8, status = 'pending', rejection_reason = '' WHERE id = $9",
+			payload.Title, payload.Description, payload.Price, savedURLs[0], savedURLs[1], payload.Category, payload.Location, payload.VendorPhone, payload.ID)
 	} else {
 		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, category = $4, location = $5, vendor_phone = $6, status = 'pending', rejection_reason = '' WHERE id = $7",
 			payload.Title, payload.Description, payload.Price, payload.Category, payload.Location, payload.VendorPhone, payload.ID)
@@ -520,7 +506,7 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, description, price, image_url, image_2, image_3, image_4, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, title, description, price, image_url, image_2, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs ORDER BY id DESC")
 	if err != nil {
 		http.Error(w, "Imeshindikana", http.StatusInternalServerError)
 		return
@@ -530,7 +516,7 @@ func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	var designs []Design
 	for rows.Next() {
 		var d Design
-		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Image2, &d.Image3, &d.Image4, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
+		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.Image2, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
 			continue
 		}
 		designs = append(designs, d)
@@ -684,3 +670,4 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
+ 
