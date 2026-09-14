@@ -437,6 +437,7 @@
             }
         }
 
+        // --- Kazi ya kubana picha (Image Compression) na kuruhusu picha 4 kwa mtiririko ---
         function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -483,6 +484,7 @@
                 return;
             }
 
+            // Hapa inawezesha hadi picha 4 kwa pamoja
             let maxFiles = Math.min(files.length, 4);
             let compressedImages = [];
 
@@ -531,12 +533,10 @@
                         return;
                     }
                     grid.innerHTML = data.map(d => {
-                        let firstImg = 'https://via.placeholder.com/300x180?text=SokoSmart+TZ';
+                        let firstImg = '';
                         if (d.image_url) {
                             let imgs = d.image_url.split(',');
-                            if(imgs.length > 0 && imgs[0].trim() !== '') {
-                                firstImg = imgs[0].trim();
-                            }
+                            firstImg = imgs[0] ? imgs[0].trim() : '';
                         }
                         return `
                         <div class="card">
@@ -574,12 +574,10 @@
                         return;
                     }
                     list.innerHTML = data.map(d => {
-                        let firstImg = 'https://via.placeholder.com/50';
+                        let firstImg = '';
                         if (d.image_url) {
                             let imgs = d.image_url.split(',');
-                            if(imgs.length > 0 && imgs[0].trim() !== '') {
-                                firstImg = imgs[0].trim();
-                            }
+                            firstImg = imgs[0] ? imgs[0].trim() : '';
                         }
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -733,12 +731,10 @@
                         return;
                     }
                     list.innerHTML = data.map(d => {
-                        let firstImg = 'https://via.placeholder.com/50';
+                        let firstImg = '';
                         if (d.image_url) {
                             let imgs = d.image_url.split(',');
-                            if(imgs.length > 0 && imgs[0].trim() !== '') {
-                                firstImg = imgs[0].trim();
-                            }
+                            firstImg = imgs[0] ? imgs[0].trim() : '';
                         }
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -781,6 +777,7 @@
                 });
         }
 
+        // Hii ndiyo kazi inayomwezesha Admin kusoma maelezo na kuona picha zote 4 kabla ya kuidhinisha/kukataa
         function openAdminModal(id) {
             const d = window.adminAllDesigns.find(item => item.id === id);
             if(!d) return;
@@ -788,13 +785,9 @@
             let container = document.getElementById('modal-image-container');
             if(d.image_url) {
                 let imgs = d.image_url.split(',');
-                container.innerHTML = imgs.map(img => {
-                    let cleanImg = img.trim();
-                    if(cleanImg !== '') {
-                        return `<img src="${cleanImg}" alt="Picha" style="width: 80px; height: 80px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/80?text=Hitilafu';">`;
-                    }
-                    return '';
-                }).join('');
+                container.innerHTML = imgs.map(img => `
+                    <img src="${img.trim()}" alt="Picha" style="width: 80px; height: 80px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/80?text=Hitilafu';">
+                `).join('');
             } else {
                 container.innerHTML = `<img src="https://via.placeholder.com/300?text=Hakuna+Picha" alt="" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #eee;">`;
             }
@@ -878,4 +871,4 @@
     </script>
 </body>
 </html>
- 
+
