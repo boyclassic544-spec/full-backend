@@ -145,13 +145,13 @@ func initDB() {
 	}
 }
 
-// Mtendakazi wa kuhakiki miundo sahihi ya picha
+// Mtendakazi wa kuhakiki miundo sahihi ya picha (Imeboreshwa kusaidia Base64 nyingi zilizounganishwa)
 func isValidImageURL(urlStr string) bool {
 	if urlStr == "" || urlStr == "https://via.placeholder.com/300" {
 		return true
 	}
 	lower := strings.ToLower(urlStr)
-	if strings.HasPrefix(lower, "data:image/") {
+	if strings.Contains(lower, "data:image/") {
 		return true
 	}
 	validExts := []string{".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".svg"}
@@ -289,7 +289,8 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		VendorPhone  string  `json:"vendor_phone"`
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
+	// Imeongezwa kutoka 15MB hadi 50MB ili picha nne za Base64 zipite bila kukatwa
+	r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -338,7 +339,8 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		VendorPhone string  `json:"vendor_phone"`
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
+	// Imeongezwa kutoka 15MB hadi 50MB kusudi picha nyingi zisihesabiwe kama makosa
+	r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -590,3 +592,4 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
+
