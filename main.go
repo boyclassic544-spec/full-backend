@@ -66,9 +66,8 @@ func main() {
 
 	initDB()
 
-	// 1. Ruhusu seva kusoma mafaili na picha zilizopo kwenye folda
-	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
-	http.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("./images"))))
+	// Mabadiliko yaliyoongezwa: Ruhusu seva kusoma folda ya picha/faili za uploads
+	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
 
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/api/signup", signupHandler)
@@ -158,6 +157,7 @@ func initDB() {
 	}
 }
 
+// Mtendakazi wa kuhakiki miundo sahihi ya picha
 func isValidImageURL(urlStr string) bool {
 	if urlStr == "" || urlStr == "https://via.placeholder.com/300" {
 		return true
@@ -389,7 +389,7 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imesasishwa na kurudishwa kwenye ukaguzi!"})
+    json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imesasishwa na kurudishwa kwenye ukaguzi!"})
 }
 
 func deleteMyDesignHandler(w http.ResponseWriter, r *http.Request) {
@@ -583,7 +583,7 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.CreatedAt); err != nil {
 			continue
 		}
-		users = append(users, u)
+		users = append(users, u) // Imerekebishwa hapa kusave watumiaji kwenye slice
 	}
 
 	if users == nil {
@@ -615,4 +615,4 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
- 
+

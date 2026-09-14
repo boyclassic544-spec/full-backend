@@ -251,16 +251,14 @@
         </div>
     </div>
 
-    <!-- ADMIN DETAILS MODAL (Hapa ndipo Admin anasoma maelezo yote na kuona picha nne kabla ya kufanya uamuzi) -->
+    <!-- ADMIN DETAILS MODAL -->
     <div id="admin-detail-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAdminModal()">&times;</span>
             <h2 style="color: var(--primary); margin-top: 0;">Ukaguzi wa Kina wa Bidhaa</h2>
             
             <div style="text-align: center; margin-bottom: 15px;">
-                <div id="modal-image-container" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-                    <!-- Hapa picha zote 4 zitaonekana -->
-                </div>
+                <div id="modal-image-container" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;"></div>
             </div>
             
             <p><strong>Jina la Bidhaa:</strong> <span id="modal-prod-title"></span></p>
@@ -276,9 +274,7 @@
                 <p id="modal-prod-desc" style="margin: 0; white-space: pre-wrap; font-size: 0.95em; color: #444;"></p>
             </div>
 
-            <div id="modal-action-buttons" style="display: flex; gap: 10px; margin-top: 20px;">
-                <!-- Vifungo vya Idhinisha, Kataa, Futa vitajazwa moja kwa moja hapa -->
-            </div>
+            <div id="modal-action-buttons" style="display: flex; gap: 10px; margin-top: 20px;"></div>
         </div>
     </div>
 
@@ -437,7 +433,6 @@
             }
         }
 
-        // --- Kazi ya kubana picha (Image Compression) na kuruhusu picha 4 kwa mtiririko ---
         function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -532,10 +527,12 @@
                         return;
                     }
                     grid.innerHTML = data.map(d => {
-                        let firstImg = '';
+                        let firstImg = 'https://via.placeholder.com/300x180?text=SokoSmart+TZ';
                         if (d.image_url) {
                             let imgs = d.image_url.split(',');
-                            firstImg = imgs[0] ? imgs[0].trim() : '';
+                            if (imgs[0] && imgs[0].trim() !== '') {
+                                firstImg = imgs[0].trim();
+                            }
                         }
                         return `
                         <div class="card">
@@ -573,10 +570,12 @@
                         return;
                     }
                     list.innerHTML = data.map(d => {
-                        let firstImg = '';
+                        let firstImg = 'https://via.placeholder.com/50';
                         if (d.image_url) {
                             let imgs = d.image_url.split(',');
-                            firstImg = imgs[0] ? imgs[0].trim() : '';
+                            if (imgs[0] && imgs[0].trim() !== '') {
+                                firstImg = imgs[0].trim();
+                            }
                         }
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -730,10 +729,12 @@
                         return;
                     }
                     list.innerHTML = data.map(d => {
-                        let firstImg = '';
+                        let firstImg = 'https://via.placeholder.com/50';
                         if (d.image_url) {
                             let imgs = d.image_url.split(',');
-                            firstImg = imgs[0] ? imgs[0].trim() : '';
+                            if (imgs[0] && imgs[0].trim() !== '') {
+                                firstImg = imgs[0].trim();
+                            }
                         }
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
@@ -783,9 +784,11 @@
             let container = document.getElementById('modal-image-container');
             if(d.image_url) {
                 let imgs = d.image_url.split(',');
-                container.innerHTML = imgs.map(img => `
-                    <img src="${img.trim()}" alt="Picha" style="width: 80px; height: 80px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/80?text=Hitilafu';">
-                `).join('');
+                container.innerHTML = imgs.map(img => {
+                    let cleanImg = img.trim();
+                    if(!cleanImg) return '';
+                    return `<img src="${cleanImg}" alt="Picha" style="width: 80px; height: 80px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/80?text=Hitilafu';">`;
+                }).join('');
             } else {
                 container.innerHTML = `<img src="https://via.placeholder.com/300?text=Hakuna+Picha" alt="" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #eee;">`;
             }
