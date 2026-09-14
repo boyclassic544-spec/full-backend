@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -355,7 +354,6 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Geuza Base64 kuwa mafaili halisi kwa kila picha iliyopo
 	savedURLs := []string{"", "", "", ""}
 	rawImgs := []string{payload.ImageURL, payload.Image2, payload.Image3, payload.Image4}
 
@@ -686,4 +684,3 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
- 
