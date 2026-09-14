@@ -66,7 +66,7 @@ func main() {
 
 	initDB()
 
-	// 1. Ruhusu Go kusoma folda za picha na static files (Badilisha "uploads" au "images" kulingana na folda yako halisi)
+	// 1. Ruhusu seva kusoma mafaili na picha zilizopo kwenye folda
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 	http.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("./images"))))
 
@@ -583,7 +583,6 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.CreatedAt); err != nil {
 			continue
 		}
-		// IMEREKEBISHWA: Sasa tunaongeza mtumiaji kwenye slice badala ya kuiacha tupu
 		users = append(users, u)
 	}
 
