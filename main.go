@@ -2,12 +2,17 @@ package main
 
 import (
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	_ "github.com/lib/pq"
 )
@@ -66,8 +71,8 @@ func main() {
 
 	initDB()
 
-	// Mabadiliko yaliyoongezwa: Ruhusu seva kusoma folda ya picha/faili za uploads
-	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads"))))
+	// Ongeza handler ya kusoma picha zilizohifadhiwa kwenye server
+	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/api/signup", signupHandler)
@@ -98,6 +103,11 @@ func main() {
 }
 
 func initDB() {
+	// Tengeneza folda ya uploads kama haipo
+	if err := os.MkdirAll("./uploads", 0755); err != nil {
+		log.Fatalf("Imeshindikana kutengeneza folder la uploads: %v", err)
+	}
+
 	queryUsers := `
 	CREATE TABLE IF NOT EXISTS app_accounts (
 		id SERIAL PRIMARY KEY,
@@ -157,13 +167,45 @@ func initDB() {
 	}
 }
 
+// Kazi ya kuhifadhi Base64 kama faili halisi kwenye folda ya uploads
+func saveBase64Image(dataURL string) (string, error) {
+	parts := strings.SplitN(dataURL, ",", 2)
+	if len(parts) != 2 {
+		return "", fmt.Errorf("muundo wa data URL si sahihi")
+	}
+
+	meta := parts[0]
+	ext := ".jpg"
+	if strings.Contains(meta, "image/png") {
+		ext = ".png"
+	} else if strings.Contains(meta, "image/webp") {
+		ext = ".webp"
+	} else if strings.Contains(meta, "image/gif") {
+		ext = ".gif"
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", err
+	}
+
+	filename := fmt.Sprintf("%d_%d%s", time.Now().UnixNano(), rand.Intn(100000), ext)
+	filePath := filepath.Join("./uploads", filename)
+
+	if err := os.WriteFile(filePath, decoded, 0644); err != nil {
+		return "", err
+	}
+
+	return "/uploads/" + filename, nil
+}
+
 // Mtendakazi wa kuhakiki miundo sahihi ya picha
 func isValidImageURL(urlStr string) bool {
 	if urlStr == "" || urlStr == "https://via.placeholder.com/300" {
 		return true
 	}
 	lower := strings.ToLower(urlStr)
-	if strings.HasPrefix(lower, "data:image/") {
+	if strings.HasPrefix(lower, "data:image/") || strings.HasPrefix(lower, "/uploads/") {
 		return true
 	}
 	validExts := []string{".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp", ".svg"}
@@ -304,7 +346,7 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		VendorPhone  string  `json:"vendor_phone"`
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
+	r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -313,25 +355,42 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imgs := []string{payload.ImageURL, payload.Image2, payload.Image3, payload.Image4}
-	for _, img := range imgs {
-		if img != "" && !isValidImageURL(img) {
-			json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Muundo wa picha haukubaliwi! Tafadhali tumia JPG, JPEG, PNG, au WEBP."})
+	// Geuza Base64 kuwa mafaili halisi kwa kila picha iliyopo
+	savedURLs := []string{"", "", "", ""}
+	rawImgs := []string{payload.ImageURL, payload.Image2, payload.Image3, payload.Image4}
+
+	for i, raw := range rawImgs {
+		if raw == "" {
+			continue
+		}
+		if !isValidImageURL(raw) {
+			json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Muundo wa picha haukubaliwi!"})
 			return
+		}
+		if strings.HasPrefix(raw, "data:image/") {
+			url, saveErr := saveBase64Image(raw)
+			if saveErr != nil {
+				log.Printf("Hitilafu kuhifadhi picha %d: %v", i, saveErr)
+				continue
+			}
+			savedURLs[i] = url
+		} else {
+			savedURLs[i] = raw
 		}
 	}
 
-	if payload.ImageURL == "" {
-		payload.ImageURL = "https://via.placeholder.com/300"
+	if savedURLs[0] == "" {
+		savedURLs[0] = "https://via.placeholder.com/300"
 	}
 	if payload.Location == "" {
 		payload.Location = "Morogoro, Tanzania"
 	}
 
 	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, image_2, image_3, image_4, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending', '')",
-		payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Image2, payload.Image3, payload.Image4, payload.Category, payload.DesignerName, payload.Location, payload.VendorPhone)
+		payload.Title, payload.Description, payload.Price, savedURLs[0], savedURLs[1], savedURLs[2], savedURLs[3], payload.Category, payload.DesignerName, payload.Location, payload.VendorPhone)
 	
 	if err != nil {
+		log.Printf("DB error: %v", err)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuweka bidhaa kwenye database"})
 		return
 	}
@@ -359,7 +418,7 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		VendorPhone string  `json:"vendor_phone"`
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 15<<20)
+	r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -368,17 +427,29 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imgs := []string{payload.ImageURL, payload.Image2, payload.Image3, payload.Image4}
-	for _, img := range imgs {
-		if img != "" && !isValidImageURL(img) {
-			json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Muundo wa picha mpya haukubaliwi! Tafadhali tumia JPG, JPEG, PNG, au WEBP."})
+	savedURLs := []string{"", "", "", ""}
+	rawImgs := []string{payload.ImageURL, payload.Image2, payload.Image3, payload.Image4}
+	for i, raw := range rawImgs {
+		if raw == "" {
+			continue
+		}
+		if !isValidImageURL(raw) {
+			json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Muundo wa picha mpya haukubaliwi!"})
 			return
+		}
+		if strings.HasPrefix(raw, "data:image/") {
+			url, saveErr := saveBase64Image(raw)
+			if saveErr == nil {
+				savedURLs[i] = url
+			}
+		} else {
+			savedURLs[i] = raw
 		}
 	}
 
-	if payload.ImageURL != "" {
+	if savedURLs[0] != "" {
 		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, image_2 = $5, image_3 = $6, image_4 = $7, category = $8, location = $9, vendor_phone = $10, status = 'pending', rejection_reason = '' WHERE id = $11",
-			payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Image2, payload.Image3, payload.Image4, payload.Category, payload.Location, payload.VendorPhone, payload.ID)
+			payload.Title, payload.Description, payload.Price, savedURLs[0], savedURLs[1], savedURLs[2], savedURLs[3], payload.Category, payload.Location, payload.VendorPhone, payload.ID)
 	} else {
 		_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, category = $4, location = $5, vendor_phone = $6, status = 'pending', rejection_reason = '' WHERE id = $7",
 			payload.Title, payload.Description, payload.Price, payload.Category, payload.Location, payload.VendorPhone, payload.ID)
@@ -389,7 +460,7 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imesasishwa na kurudishwa kwenye ukaguzi!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imesasishwa na kurudishwa kwenye ukaguzi!"})
 }
 
 func deleteMyDesignHandler(w http.ResponseWriter, r *http.Request) {
@@ -583,7 +654,7 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.CreatedAt); err != nil {
 			continue
 		}
-		users = append(users, u) // Imerekebishwa hapa kusave watumiaji kwenye slice
+		users = append(users, u)
 	}
 
 	if users == nil {
@@ -615,4 +686,4 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
-
+ 
