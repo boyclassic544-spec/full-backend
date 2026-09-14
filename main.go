@@ -581,6 +581,7 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.CreatedAt); err != nil {
 			continue
 		}
+		users = append(users, u)
 	}
 
 	if users == nil {
@@ -612,4 +613,4 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
-
+ 
