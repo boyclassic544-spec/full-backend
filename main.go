@@ -66,6 +66,10 @@ func main() {
 
 	initDB()
 
+	// 1. Ruhusu Go kusoma folda za picha na static files (Badilisha "uploads" au "images" kulingana na folda yako halisi)
+	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
+	http.Handle("/images/", http.StripPrefix("/images/", http.FileServer(http.Dir("./images"))))
+
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/api/signup", signupHandler)
 	http.HandleFunc("/api/signin", signinHandler)
@@ -154,7 +158,6 @@ func initDB() {
 	}
 }
 
-// Mtendakazi wa kuhakiki miundo sahihi ya picha
 func isValidImageURL(urlStr string) bool {
 	if urlStr == "" || urlStr == "https://via.placeholder.com/300" {
 		return true
@@ -310,7 +313,6 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Uhakiki wa miundo ya picha zote nne (kama zipo)
 	imgs := []string{payload.ImageURL, payload.Image2, payload.Image3, payload.Image4}
 	for _, img := range imgs {
 		if img != "" && !isValidImageURL(img) {
@@ -581,6 +583,7 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.CreatedAt); err != nil {
 			continue
 		}
+		// IMEREKEBISHWA: Sasa tunaongeza mtumiaji kwenye slice badala ya kuiacha tupu
 		users = append(users, u)
 	}
 
