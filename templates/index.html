@@ -75,7 +75,7 @@
         <p>Weka biashara au bidhaa yako bure, nunua na uuze kwa usalama kamili kupitia Tigo Lipa Namba (Ada ya usimamizi ni 10% tu).</p>
         <div class="features-strip">
             <div class="feature-badge">🔒 Salama 100% (Escrow)</div>
-            <div class="feature-badge">📱 Tigo Lipa Namba: 45416553</div>
+            <div class="feature-badge">📱 Tigo Lipa Namba: 45416553 (SALMIN TAMIMU HUSEIN)</div>
             <div class="feature-badge">🛡️ Commission: 10% Platform Fee</div>
         </div>
     </div>
@@ -160,8 +160,9 @@
                     <label>Namba ya Simu ya Muuzaji (Vendor Phone)</label>
                     <input type="text" id="up-vendor-phone" placeholder="Mf. 0712345678" required>
 
-                    <label>Pakia Picha Halisi ya Bidhaa</label>
-                    <input type="file" id="up-image-file" accept="image/*" required style="background: #fff; padding: 8px;">
+                    <label>Pakia Picha Halisi za Bidhaa (Hadi picha 4)</label>
+                    <input type="file" id="up-image-file" accept="image/*" multiple required style="background: #fff; padding: 8px;">
+                    <small style="color: #666; display: block; margin-bottom: 8px;">Unaweza kuchagua hadi picha 4 kwa pamoja.</small>
 
                     <label>Kategoria ya Biashara</label>
                     <input type="text" id="up-cat" placeholder="Mf. Electronics, Mitindo, Digital Services" required>
@@ -206,8 +207,8 @@
                     <label>Namba ya Simu ya Muuzaji</label>
                     <input type="text" id="edit-vendor-phone" required>
 
-                    <label>Badilisha Picha (Hiari)</label>
-                    <input type="file" id="edit-image-file" accept="image/*" style="background: #fff; padding: 8px;">
+                    <label>Badilisha Picha (Hiari - Hadi picha 4)</label>
+                    <input type="file" id="edit-image-file" accept="image/*" multiple style="background: #fff; padding: 8px;">
 
                     <label>Kategoria ya Biashara</label>
                     <input type="text" id="edit-cat" required>
@@ -226,7 +227,7 @@
                 <div class="admin-panel-header">
                     <div>
                         <h2 style="margin:0; color: var(--primary);">SokoSmart Admin Portal</h2>
-                        <small style="color: #666;">Udhibiti wa Watumiaji, Tigo Lipa Namba (45416553), na 10% Makato</small>
+                        <small style="color: #666;">Udhibiti wa Watumiaji, Tigo Lipa Namba (45416553 - SALMIN TAMIMU HUSEIN), na 10% Makato</small>
                     </div>
                     <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">Toka (Logout)</button>
                 </div>
@@ -255,7 +256,9 @@
             <span class="close-modal" onclick="closeAdminModal()">&times;</span>
             <h2 id="modal-title" style="color: var(--primary); margin-top: 0;">Maelezo Kamili ya Bidhaa</h2>
             <div style="text-align: center; margin-bottom: 15px;">
-                <img id="modal-image" src="" alt="" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #eee;" onerror="this.src='https://via.placeholder.com/300';">
+                <div id="modal-image-container" style="display: flex; gap: 5px; justify-content: center; flex-wrap: wrap;">
+                    <img id="modal-image" src="" alt="" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #eee;" onerror="this.src='https://via.placeholder.com/300';">
+                </div>
             </div>
             <p><strong>Jina la Bidhaa:</strong> <span id="modal-prod-title"></span></p>
             <p><strong>Bei:</strong> <span id="modal-prod-price" style="color: var(--accent); font-weight: bold;"></span></p>
@@ -431,39 +434,57 @@
             e.preventDefault();
 
             const fileInput = document.getElementById('up-image-file');
-            const file = fileInput.files[0];
+            const files = fileInput.files;
 
-            if(!file) {
-                alert('Tafadhali chagua picha ya bidhaa!');
+            if(!files || files.length === 0) {
+                alert('Tafadhali chagua angalau picha moja ya bidhaa!');
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const payload = {
-                    title: document.getElementById('up-title').value,
-                    description: document.getElementById('up-desc').value,
-                    price: parseFloat(document.getElementById('up-price').value),
-                    location: document.getElementById('up-location').value,
-                    vendor_phone: document.getElementById('up-vendor-phone').value,
-                    image_url: event.target.result,
-                    category: document.getElementById('up-cat').value,
-                    designer_name: document.getElementById('designer-name-input').value
-                };
+            if(files.length > 4) {
+                alert('Unaweza kuchagua hadi picha 4 pekee!');
+                return;
+            }
 
-                fetch('/api/upload', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.message || 'Bidhaa imewasilishwa kikamilifu kwa ukaguzi!');
-                    document.getElementById('upload-form').reset();
-                    switchTab('my-products');
-                });
+            let base64Images = [];
+            let processed = 0;
+
+            for(let i = 0; i < files.length; i++) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    base64Images.push(event.target.result);
+                    processed++;
+                    if(processed === files.length) {
+                        sendUploadPayload(base64Images);
+                    }
+                };
+                reader.readAsDataURL(files[i]);
+            }
+        }
+
+        function sendUploadPayload(imagesArray) {
+            const payload = {
+                title: document.getElementById('up-title').value,
+                description: document.getElementById('up-desc').value,
+                price: parseFloat(document.getElementById('up-price').value),
+                location: document.getElementById('up-location').value,
+                vendor_phone: document.getElementById('up-vendor-phone').value,
+                image_url: imagesArray.join(','),
+                category: document.getElementById('up-cat').value,
+                designer_name: document.getElementById('designer-name-input').value
             };
-            reader.readAsDataURL(file);
+
+            fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message || 'Bidhaa imewasilishwa kikamilifu kwa ukaguzi!');
+                document.getElementById('upload-form').reset();
+                switchTab('my-products');
+            });
         }
 
         function loadDesigns() {
@@ -477,10 +498,12 @@
                         grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Hakuna bidhaa zilizoidhinishwa bado kwenye SokoSmart.</p>';
                         return;
                     }
-                    grid.innerHTML = data.map(d => `
+                    grid.innerHTML = data.map(d => {
+                        let firstImg = d.image_url ? d.image_url.split(',')[0] : '';
+                        return `
                         <div class="card">
                             <div>
-                                <img src="${d.image_url}" alt="${d.title}" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x180?text=SokoSmart+TZ';">
+                                <img src="${firstImg}" alt="${d.title}" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x180?text=SokoSmart+TZ';">
                                 <div class="card-content">
                                     <span style="font-size: 0.8em; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #4a5568;">${d.category || 'General'}</span>
                                     <h3>${d.title}</h3>
@@ -492,12 +515,12 @@
                                 </div>
                             </div>
                             <div class="payment-box">
-                                <p style="margin:0 0 6px 0; font-size:0.85em;"><strong>Lipa Tsh ${d.price.toLocaleString()}</strong> kwenda Tigo Lipa Namba: <strong>45416553</strong></p>
+                                <p style="margin:0 0 6px 0; font-size:0.85em;"><strong>Lipa Tsh ${d.price.toLocaleString()}</strong> kwenda Tigo Lipa Namba: <strong>45416553</strong> (SALMIN TAMIMU HUSEIN)</p>
                                 <input type="text" id="phone-${d.id}" placeholder="Namba yako ya simu uliyolipia" style="margin-bottom:6px;">
                                 <button class="btn" onclick="buyDesign(${d.id}, '${d.title.replace(/'/g, "\\'")}', ${d.price})">Nimemaliza Kulipa</button>
                             </div>
                         </div>
-                    `).join('');
+                    `}).join('');
                 });
         }
 
@@ -512,10 +535,12 @@
                         list.innerHTML = '<p style="text-align:center;">Huna bidhaa yoyote uliyoweka bado.</p>';
                         return;
                     }
-                    list.innerHTML = data.map(d => `
+                    list.innerHTML = data.map(d => {
+                        let firstImg = d.image_url ? d.image_url.split(',')[0] : '';
+                        return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
+                                <img src="${firstImg}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
                                     <small style="color:#666;">Eneo: ${d.location} | Simu: ${d.vendor_phone} | Hali: <span class="badge">${d.status}</span></small>
@@ -527,7 +552,7 @@
                                 <button onclick="deleteMyProduct(${d.id})" style="background:var(--danger); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Futa</button>
                             </div>
                         </div>
-                    `).join('');
+                    `}).join('');
                 });
         }
 
@@ -553,21 +578,21 @@
             const vendor_phone = document.getElementById('edit-vendor-phone').value;
             const category = document.getElementById('edit-cat').value;
             const fileInput = document.getElementById('edit-image-file');
-            const file = fileInput.files[0];
+            const files = fileInput.files;
 
-            const sendPayload = (imgUrl) => {
+            const sendUpdatePayload = (imgUrl) => {
                 fetch('/api/update-design', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        id: parseInt(id), 
-                        title, 
-                        description, 
-                        price, 
-                        location, 
-                        vendor_phone, 
-                        image_url: imgUrl, 
-                        category 
+                    body: JSON.stringify({
+                        id: parseInt(id),
+                        title,
+                        description,
+                        price,
+                        location,
+                        vendor_phone,
+                        image_url: imgUrl,
+                        category
                     })
                 })
                 .then(res => res.json())
@@ -577,12 +602,22 @@
                 });
             };
 
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = function(event) { sendPayload(event.target.result); };
-                reader.readAsDataURL(file);
+            if(files && files.length > 0) {
+                let base64Images = [];
+                let processed = 0;
+                for(let i = 0; i < files.length; i++) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        base64Images.push(event.target.result);
+                        processed++;
+                        if(processed === files.length) {
+                            sendUpdatePayload(base64Images.join(','));
+                        }
+                    };
+                    reader.readAsDataURL(files[i]);
+                }
             } else {
-                sendPayload("");
+                sendUpdatePayload("");
             }
         }
 
@@ -621,7 +656,7 @@
             .then(res => res.json())
             .then(data => {
                 let adminPhone = "255623630553";
-                let msg = `Habari Admin, nimelipia bidhaa ifuatayo kwenye SokoSmart TZ:\n\n*Bidhaa:* ${title}\n*Bei Kamili:* Tsh ${price.toLocaleString()}\n*Faida Yako (10%):* Tsh ${platformFee.toLocaleString()}\n*Kiasi cha Muuzaji:* Tsh ${vendorAmount.toLocaleString()}\n*Namba Iliyolipia:* ${phone}\n*Mnunuzi:* ${currentUser}\n*ID ya Oda:* ${id}\n\nTafadhali thibitisha malipo.`;
+                let msg = `Habari Admin, nimelipia bidhaa ifuatayo kwenye SokoSmart TZ:\n\n*Bidhaa:* ${title}\n*Bei Kamili:* Tsh ${price.toLocaleString()}\n*Faida Yako (10%):* Tsh ${platformFee.toLocaleString()}\n*Kiasi cha Muuzaji:* Tsh ${vendorAmount.toLocaleString()}\n*Namba Iliyolipia:* ${phone}\n*Mnunuzi:* ${currentUser}\n*ID ya Oda:* ${id}\n\nTafadhali thibitisha malipo (Lipa Namba: 45416553 - SALMIN TAMIMU HUSEIN).`;
                 let whatsappUrl = `https://wa.me/${adminPhone}?text=` + encodeURIComponent(msg);
 
                 alert(data.message || "Oda imepokelewa! Inakuelekeza kwenye WhatsApp ya Admin...");
@@ -659,10 +694,12 @@
                         list.innerHTML = '<p>Hakuna bidhaa zilizowekwa bado.</p>';
                         return;
                     }
-                    list.innerHTML = data.map(d => `
+                    list.innerHTML = data.map(d => {
+                        let firstImg = d.image_url ? d.image_url.split(',')[0] : '';
+                        return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
+                                <img src="${firstImg}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
                                     <small style="color:#666;">Muuzaji: ${d.designer_name} | Eneo: ${d.location} | Hali: <span class="badge">${d.status}</span></small>
@@ -675,7 +712,7 @@
                                 <button onclick="deleteDesign(${d.id})" style="background:var(--danger); color:#fff; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Futa</button>
                             </div>
                         </div>
-                    `).join('');
+                    `}).join('');
                 });
 
             fetch('/api/admin/orders')
@@ -704,7 +741,14 @@
             const d = window.adminAllDesigns.find(item => item.id === id);
             if(!d) return;
 
-            document.getElementById('modal-image').src = d.image_url;
+            let container = document.getElementById('modal-image-container');
+            if(d.image_url) {
+                let imgs = d.image_url.split(',');
+                container.innerHTML = imgs.map(img => `<img src="${img}" alt="" style="width: 80px; height: 80px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/80';">`).join('');
+            } else {
+                container.innerHTML = `<img src="https://via.placeholder.com/300" alt="" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #eee;">`;
+            }
+
             document.getElementById('modal-prod-title').innerText = d.title;
             document.getElementById('modal-prod-price').innerText = "Tsh " + d.price.toLocaleString();
             document.getElementById('modal-prod-location').innerText = d.location || 'Tanzania';
