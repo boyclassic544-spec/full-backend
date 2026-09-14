@@ -34,7 +34,7 @@
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #dcdde1; }
-        .card img { width: 100%; height: 220px; object-fit: contain; background-color: #f9f9f9; padding: 5px; box-sizing: border-box; }
+        .card img { width: 100%; height: 220px; object-fit: contain; background-color: #f9f9f9; padding: 5px; box-sizing: border-box; display: block; }
         .card-content { padding: 15px; }
         .card h3 { margin: 0 0 10px 0; font-size: 1.2em; color: var(--primary); }
         .card p { font-size: 0.9em; color: #666; margin-bottom: 10px; }
@@ -441,20 +441,16 @@
                 return;
             }
 
-            if(files.length > 4) {
-                alert('Unaweza kuchagua hadi picha 4 pekee!');
-                return;
-            }
-
+            let maxFiles = Math.min(files.length, 4);
             let base64Images = [];
             let processed = 0;
 
-            for(let i = 0; i < files.length; i++) {
+            for(let i = 0; i < maxFiles; i++) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     base64Images.push(event.target.result);
                     processed++;
-                    if(processed === files.length) {
+                    if(processed === maxFiles) {
                         sendUploadPayload(base64Images);
                     }
                 };
@@ -499,7 +495,7 @@
                         return;
                     }
                     grid.innerHTML = data.map(d => {
-                        let firstImg = d.image_url ? d.image_url.split(',')[0] : '';
+                        let firstImg = d.image_url ? d.image_url.split(',')[0].trim() : '';
                         return `
                         <div class="card">
                             <div>
@@ -536,11 +532,11 @@
                         return;
                     }
                     list.innerHTML = data.map(d => {
-                        let firstImg = d.image_url ? d.image_url.split(',')[0] : '';
+                        let firstImg = d.image_url ? d.image_url.split(',')[0].trim() : '';
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <img src="${firstImg}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
+                                <img src="${firstImg}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
                                     <small style="color:#666;">Eneo: ${d.location} | Simu: ${d.vendor_phone} | Hali: <span class="badge">${d.status}</span></small>
@@ -603,14 +599,15 @@
             };
 
             if(files && files.length > 0) {
+                let maxFiles = Math.min(files.length, 4);
                 let base64Images = [];
                 let processed = 0;
-                for(let i = 0; i < files.length; i++) {
+                for(let i = 0; i < maxFiles; i++) {
                     const reader = new FileReader();
                     reader.onload = function(event) {
                         base64Images.push(event.target.result);
                         processed++;
-                        if(processed === files.length) {
+                        if(processed === maxFiles) {
                             sendUpdatePayload(base64Images.join(','));
                         }
                     };
@@ -695,11 +692,11 @@
                         return;
                     }
                     list.innerHTML = data.map(d => {
-                        let firstImg = d.image_url ? d.image_url.split(',')[0] : '';
+                        let firstImg = d.image_url ? d.image_url.split(',')[0].trim() : '';
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <img src="${firstImg}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
+                                <img src="${firstImg}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
                                     <small style="color:#666;">Muuzaji: ${d.designer_name} | Eneo: ${d.location} | Hali: <span class="badge">${d.status}</span></small>
@@ -744,7 +741,7 @@
             let container = document.getElementById('modal-image-container');
             if(d.image_url) {
                 let imgs = d.image_url.split(',');
-                container.innerHTML = imgs.map(img => `<img src="${img}" alt="" style="width: 80px; height: 80px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/80';">`).join('');
+                container.innerHTML = imgs.map(img => `<img src="${img.trim()}" alt="" style="width: 80px; height: 80px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/80';">`).join('');
             } else {
                 container.innerHTML = `<img src="https://via.placeholder.com/300" alt="" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #eee;">`;
             }
