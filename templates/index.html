@@ -162,9 +162,9 @@
                     <label>Namba ya Simu ya Muuzaji (Vendor Phone)</label>
                     <input type="text" id="up-vendor-phone" placeholder="Mf. 0712345678" required>
 
-                    <label>Pakia Picha Halisi (Chagua Picha 2)</label>
-                    <input type="file" id="up-image-file" accept="image/*" multiple required style="background: #fff; padding: 8px;">
-                    <small style="color: #666; display: block; margin-bottom: 8px;">Tafadhali chagua picha **2** haswa.</small>
+                    <label>Pakia Picha Halisi (Chagua Picha 1)</label>
+                    <input type="file" id="up-image-file" accept="image/*" required style="background: #fff; padding: 8px;">
+                    <small style="color: #666; display: block; margin-bottom: 8px;">Tafadhali chagua picha **1** tu.</small>
 
                     <label>Pakia Video Fupi (Isiyozidi sekunde 30)</label>
                     <input type="file" id="up-video-file" accept="video/*" style="background: #fff; padding: 8px;">
@@ -213,8 +213,8 @@
                     <label>Namba ya Simu ya Muuzaji</label>
                     <input type="text" id="edit-vendor-phone" required>
 
-                    <label>Badilisha Picha (Hiari - Picha 2)</label>
-                    <input type="file" id="edit-image-file" accept="image/*" multiple style="background: #fff; padding: 8px;">
+                    <label>Badilisha Picha (Hiari - Picha 1)</label>
+                    <input type="file" id="edit-image-file" accept="image/*" style="background: #fff; padding: 8px;">
 
                     <label>Badilisha Video (Hiari - Sekunde 30 upeo)</label>
                     <input type="file" id="edit-video-file" accept="video/*" style="background: #fff; padding: 8px;">
@@ -505,18 +505,14 @@
             e.preventDefault();
 
             const fileInput = document.getElementById('up-image-file');
-            const files = fileInput.files;
+            const file = fileInput.files[0];
 
-            if(!files || files.length !== 2) {
-                alert('Tafadhali chagua picha 2 haswa!');
+            if(!file) {
+                alert('Tafadhali chagua picha 1!');
                 return;
             }
 
-            let compressedImages = [];
-            for(let i = 0; i < 2; i++) {
-                let compressedDataUrl = await compressImage(files[i]);
-                compressedImages.push(compressedDataUrl);
-            }
+            let compressedImage = await compressImage(file);
 
             let videoBase64 = "";
             const videoInput = document.getElementById('up-video-file');
@@ -528,17 +524,17 @@
                 }
             }
 
-            sendUploadPayload(compressedImages, videoBase64);
+            sendUploadPayload(compressedImage, videoBase64);
         }
 
-        function sendUploadPayload(imagesArray, videoBase64) {
+        function sendUploadPayload(imageUrl, videoBase64) {
             const payload = {
                 title: document.getElementById('up-title').value,
                 description: document.getElementById('up-desc').value,
                 price: parseFloat(document.getElementById('up-price').value),
                 location: document.getElementById('up-location').value,
                 vendor_phone: document.getElementById('up-vendor-phone').value,
-                image_url: imagesArray.join(','),
+                image_url: imageUrl,
                 video_url: videoBase64,
                 category: document.getElementById('up-cat').value,
                 designer_name: document.getElementById('designer-name-input').value
@@ -569,16 +565,11 @@
                         return;
                     }
                     grid.innerHTML = data.map(d => {
-                        let firstImg = '';
-                        if (d.image_url) {
-                            let imgs = d.image_url.split(',');
-                            firstImg = imgs[0] ? imgs[0].trim() : '';
-                        }
                         let mediaContent = '';
                         if(d.video_url) {
                             mediaContent = `<video src="${d.video_url}" controls muted></video>`;
                         } else {
-                            mediaContent = `<img src="${firstImg}" alt="${d.title}" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x180?text=SokoSmart+TZ';">`;
+                            mediaContent = `<img src="${d.image_url}" alt="${d.title}" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x180?text=SokoSmart+TZ';">`;
                         }
 
                         return `
@@ -617,15 +608,10 @@
                         return;
                     }
                     list.innerHTML = data.map(d => {
-                        let firstImg = '';
-                        if (d.image_url) {
-                            let imgs = d.image_url.split(',');
-                            firstImg = imgs[0] ? imgs[0].trim() : '';
-                        }
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <img src="${firstImg}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
+                                <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
                                     <small style="color:#666;">Eneo: ${d.location} | Simu: ${d.vendor_phone} | Hali: <span class="badge">${d.status}</span></small>
@@ -665,19 +651,11 @@
             const category = document.getElementById('edit-cat').value;
             
             const fileInput = document.getElementById('edit-image-file');
-            const files = fileInput.files;
-
             const videoInput = document.getElementById('edit-video-file');
 
             let imgUrl = "";
-            if(files && files.length > 0) {
-                let compressedImages = [];
-                let count = Math.min(files.length, 2);
-                for(let i = 0; i < count; i++) {
-                    let compressedDataUrl = await compressImage(files[i]);
-                    compressedImages.push(compressedDataUrl);
-                }
-                imgUrl = compressedImages.join(',');
+            if(fileInput.files && fileInput.files[0]) {
+                imgUrl = await compressImage(fileInput.files[0]);
             }
 
             let videoUrl = "";
@@ -787,15 +765,10 @@
                         return;
                     }
                     list.innerHTML = data.map(d => {
-                        let firstImg = '';
-                        if (d.image_url) {
-                            let imgs = d.image_url.split(',');
-                            firstImg = imgs[0] ? imgs[0].trim() : '';
-                        }
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <img src="${firstImg}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
+                                <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
                                     <small style="color:#666;">Muuzaji: ${d.designer_name} | Eneo: ${d.location} | Hali: <span class="badge">${d.status}</span></small>
@@ -839,10 +812,7 @@
 
             let container = document.getElementById('modal-image-container');
             if(d.image_url) {
-                let imgs = d.image_url.split(',');
-                container.innerHTML = imgs.map(img => `
-                    <img src="${img.trim()}" alt="Picha" style="width: 80px; height: 80px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/80?text=Hitilafu';">
-                `).join('');
+                container.innerHTML = `<img src="${d.image_url}" alt="Picha" style="width: 100px; height: 100px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/100?text=Hitilafu';">`;
             } else {
                 container.innerHTML = `<img src="https://via.placeholder.com/300?text=Hakuna+Picha" alt="" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #eee;">`;
             }
@@ -933,4 +903,4 @@
     </script>
 </body>
 </html>
-
+ 
