@@ -263,8 +263,6 @@
             <p><strong>Jina la Bidhaa:</strong> <span id="modal-prod-title"></span></p>
             <p><strong>Bei:</strong> <span id="modal-prod-price" style="color: var(--accent); font-weight: bold;"></span></p>
             <p><strong>Eneo (Location):</strong> <span id="modal-prod-location"></span></p>
-            <p><strong>Simu ya Muuzaji:</strong> <span id="modal-prod-vendor-phone"></span></p>
-            <p><strong>Kategoria:</strong> <span id="modal-prod-cat"></span></p>
             <p><strong>Muuzaji:</strong> <span id="modal-prod-designer"></span></p>
             <p><strong>Hali ya Sasa:</strong> <span id="modal-prod-status" class="badge"></span></p>
             <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin: 15px 0;">
@@ -401,21 +399,6 @@
         }
 
         function openAdminLogin() {
-            let pwd = prompt("Weka Password ya Admin:");
-            if(!pwd) return;
-
-            fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `password=${encodeURIComponent(pwd)}`
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    document.getElementById('hero-section').style.display = 'none';
-                    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-                    document.getElementById('admin').classList.add('active');
-                    loadAdminData();
                 } else {
                     alert('Password si sahihi! Upatikanaji umezuiwa.');
                 }
@@ -466,9 +449,6 @@
             });
         }
 
-        async function handleUploadOptimized(e) {
-            e.preventDefault();
-
             const fileInput = document.getElementById('up-image-file');
             const files = fileInput.files;
 
@@ -495,7 +475,7 @@
                 price: parseFloat(document.getElementById('up-price').value),
                 location: document.getElementById('up-location').value,
                 vendor_phone: document.getElementById('up-vendor-phone').value,
-                image_url: imagesArray.join(','),
+                image_url: imagesArray.join('|||'),
                 category: document.getElementById('up-cat').value,
                 designer_name: document.getElementById('designer-name-input').value
             };
@@ -519,15 +499,7 @@
             fetch('/api/designs')
                 .then(res => res.json())
                 .then(data => {
-                    const grid = document.getElementById('designs-grid');
-                    if(!data || data.length === 0) {
-                        grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Hakuna bidhaa zilizoidhinishwa bado kwenye SokoSmart.</p>';
-                        return;
-                    }
-                    grid.innerHTML = data.map(d => {
-                        let firstImg = '';
-                        if (d.image_url) {
-                            let imgs = d.image_url.split(',');
+                            let imgs = d.image_url.split('|||');
                             firstImg = imgs[0] ? imgs[0].trim() : '';
                         }
                         return `
@@ -568,7 +540,7 @@
                     list.innerHTML = data.map(d => {
                         let firstImg = '';
                         if (d.image_url) {
-                            let imgs = d.image_url.split(',');
+                            let imgs = d.image_url.split('|||');
                             firstImg = imgs[0] ? imgs[0].trim() : '';
                         }
                         return `
@@ -577,139 +549,6 @@
                                 <img src="${firstImg}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
-                                    <small style="color:#666;">Eneo: ${d.location} | Simu: ${d.vendor_phone} | Hali: <span class="badge">${d.status}</span></small>
-                                    ${d.rejection_reason ? `<br><small style="color:var(--danger);">Sababu ya kukataliwa: ${d.rejection_reason}</small>` : ''}
-                                </div>
-                            </div>
-                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                                <button onclick='openEditProduct(${JSON.stringify(d)})' style="background:var(--accent); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Hariri</button>
-                                <button onclick="deleteMyProduct(${d.id})" style="background:var(--danger); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Futa</button>
-                            </div>
-                        </div>
-                    `}).join('');
-                });
-        }
-
-        function openEditProduct(d) {
-            document.getElementById('edit-id').value = d.id;
-            document.getElementById('edit-title').value = d.title;
-            document.getElementById('edit-desc').value = d.description;
-            document.getElementById('edit-price').value = d.price;
-            document.getElementById('edit-location').value = d.location || '';
-            document.getElementById('edit-vendor-phone').value = d.vendor_phone || '';
-            document.getElementById('edit-cat').value = d.category;
-            document.getElementById('edit-image-file').value = '';
-            switchTab('edit-product');
-        }
-
-        async function handleUpdateProductOptimized(e) {
-            e.preventDefault();
-            const id = document.getElementById('edit-id').value;
-            const title = document.getElementById('edit-title').value;
-            const description = document.getElementById('edit-desc').value;
-            const price = parseFloat(document.getElementById('edit-price').value);
-            const location = document.getElementById('edit-location').value;
-            const vendor_phone = document.getElementById('edit-vendor-phone').value;
-            const category = document.getElementById('edit-cat').value;
-            const fileInput = document.getElementById('edit-image-file');
-            const files = fileInput.files;
-
-            const sendUpdatePayload = (imgUrl) => {
-                fetch('/api/update-design', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        id: parseInt(id),
-                        title,
-                        description,
-                        price,
-                        location,
-                        vendor_phone,
-                        image_url: imgUrl,
-                        category
-                    })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.message || 'Mabadiliko yamehifadhiwa!');
-                    switchTab('my-products');
-                });
-            };
-
-            if(files && files.length > 0) {
-                let maxFiles = Math.min(files.length, 4);
-                let compressedImages = [];
-                for(let i = 0; i < maxFiles; i++) {
-                    let compressedDataUrl = await compressImage(files[i]);
-                    compressedImages.push(compressedDataUrl);
-                }
-                sendUpdatePayload(compressedImages.join(','));
-            } else {
-                sendUpdatePayload("");
-            }
-        }
-
-        function deleteMyProduct(id) {
-            if(!confirm("Una uhakika unataka kufuta bidhaa hii?")) return;
-            fetch('/api/delete-design?id=' + id, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.message || 'Bidhaa imefutwa!');
-                    loadMyProducts();
-                });
-        }
-
-        function buyDesign(id, title, price) {
-            if(!currentUser) {
-                alert('Tafadhali fanya Sign In kwanza ndipo uweze kununua bidhaa!');
-                switchTab('signin');
-                return;
-            }
-
-            let phoneInput = document.getElementById('phone-' + id);
-            let phone = phoneInput ? phoneInput.value.trim() : '';
-            if(!phone) {
-                alert('Tafadhali weka namba yako ya simu uliyotumia kufanya malipo!');
-                return;
-            }
-
-            let platformFee = price * 0.10;
-            let vendorAmount = price - platformFee;
-
-            fetch('/api/buy', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `design_id=${id}&phone=${encodeURIComponent(phone)}&amount=${price}`
-            })
-            .then(res => res.json())
-            .then(data => {
-                let adminPhone = "255623630553";
-                let msg = `Habari Admin, nimelipia bidhaa ifuatayo kwenye SokoSmart TZ:\n\n*Bidhaa:* ${title}\n*Bei Kamili:* Tsh ${price.toLocaleString()}\n*Faida Yako (10%):* Tsh ${platformFee.toLocaleString()}\n*Kiasi cha Muuzaji:* Tsh ${vendorAmount.toLocaleString()}\n*Namba Iliyolipia:* ${phone}\n*Mnunuzi:* ${currentUser}\n*ID ya Oda:* ${id}\n\nTafadhali thibitisha malipo (Lipa Namba: 45416553 - SALMIN TAMIMU HUSEIN).`;
-                let whatsappUrl = `https://wa.me/${adminPhone}?text=` + encodeURIComponent(msg);
-
-                alert(data.message || "Oda imepokelewa! Inakuelekeza kwenye WhatsApp ya Admin...");
-                phoneInput.value = '';
-                window.open(whatsappUrl, '_blank');
-            });
-        }
-
-        function loadAdminData() {
-            fetch('/api/admin/users')
-                .then(res => res.json())
-                .then(data => {
-                    const usersList = document.getElementById('admin-users-list');
-                    if(!data || data.length === 0) {
-                        usersList.innerHTML = '<p>Hakuna watumiaji waliojisajili bado.</p>';
-                        return;
-                    }
-                    usersList.innerHTML = data.map(u => `
-                        <div style="border-bottom:1px solid #eee; padding:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em;">
-                            <div>
-                                👤 <strong>${u.username}</strong> (Wajibu: <span class="badge">${u.role}</span>)
-                                <br><small style="color:#666;">Tarehe ya Kusajili: ${u.created_at}</small>
-                            </div>
-                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Futa</button>
-                        </div>
                     `).join('');
                 });
 
@@ -725,7 +564,7 @@
                     list.innerHTML = data.map(d => {
                         let firstImg = '';
                         if (d.image_url) {
-                            let imgs = d.image_url.split(',');
+                            let imgs = d.image_url.split('|||');
                             firstImg = imgs[0] ? imgs[0].trim() : '';
                         }
                         return `
@@ -759,23 +598,13 @@
                         let fee = o.amount * 0.10;
                         let vendor = o.amount - fee;
                         return `
-                            <div style="border-bottom:1px solid #eee; padding:8px 0; font-size:0.9em;">
-                                Mteja namba: <strong>${o.phone}</strong> amelipia Tsh <strong>${o.amount.toLocaleString()}</strong>
-                                <br><span style="color:var(--success); font-weight:bold;">Faida yako (10%): Tsh ${fee.toLocaleString()}</span> | Mkabidhi muuzaji: Tsh ${vendor.toLocaleString()}
-                                <br><small style="color:#666;">Hali: <span class="badge">${o.payment_status}</span> | Tarehe: ${o.created_at}</small>
-                            </div>
-                        `;
-                    }).join('');
-                });
-        }
-
         function openAdminModal(id) {
             const d = window.adminAllDesigns.find(item => item.id === id);
             if(!d) return;
 
             let container = document.getElementById('modal-image-container');
             if(d.image_url) {
-                let imgs = d.image_url.split(',');
+                let imgs = d.image_url.split('|||');
                 container.innerHTML = imgs.map(img => `<img src="${img.trim()}" alt="" style="width: 80px; height: 80px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/80';">`).join('');
             } else {
                 container.innerHTML = `<img src="https://via.placeholder.com/300" alt="" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #eee;">`;
