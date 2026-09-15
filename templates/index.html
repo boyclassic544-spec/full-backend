@@ -30,17 +30,25 @@
 
         .security-banner { background: #ffeaa7; color: #d63031; border: 1px solid #ffeaa7; padding: 12px 20px; text-align: center; font-size: 0.9em; font-weight: bold; margin-bottom: 20px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
+        /* MARKETPLACE PRO CONTROLS (SEARCH, FILTER CHIPS, SORT) */
+        .marketplace-controls { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #dcdde1; }
+        .search-sort-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .search-sort-row input, .search-sort-row select { margin: 0; flex: 1; min-width: 220px; }
+        
+        .category-chips { display: flex; gap: 8px; flex-wrap: wrap; overflow-x: auto; padding-bottom: 5px; }
+        .chip { background: #e2e8f0; color: #2d3748; padding: 6px 14px; border-radius: 20px; font-size: 0.85em; cursor: pointer; border: 1px solid #cbd5e0; transition: all 0.2s; white-space: nowrap; font-weight: 600; }
+        .chip:hover, .chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
         .container { max-width: 1200px; margin: 0 auto; padding: 0 20px 40px 20px; flex: 1; width: 100%; box-sizing: border-box; }
 
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
-        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #dcdde1; }
+        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #dcdde1; transition: transform 0.2s, box-shadow 0.2s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
         
-        /* MAREKEBISHO YA PICHA ILI ISIKATIKE (FULL DISPLAY) */
         .card-img-wrapper { position: relative; width: 100%; background-color: #111; display: flex; align-items: center; justify-content: center; height: 260px; overflow: hidden; }
         .card img { width: 100%; height: 100%; object-fit: contain; display: block; cursor: pointer; transition: transform 0.2s; }
         .card img:hover { transform: scale(1.02); }
         
-        /* Kitufe cha kukuza picha */
         .zoom-btn { position: absolute; bottom: 10px; right: 10px; background: rgba(0, 0, 0, 0.75); color: #fff; border: 1px solid rgba(255,255,255,0.5); padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; display: flex; align-items: center; gap: 5px; z-index: 10; transition: background 0.2s; }
         .zoom-btn:hover { background: rgba(0, 0, 0, 0.95); border-color: var(--accent); color: var(--accent); }
 
@@ -65,13 +73,11 @@
 
         .auth-banner { background: #fff3cd; color: #856404; padding: 15px; text-align: center; font-size: 1em; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ffeeba; font-weight: bold; }
 
-        /* MODAL YA ADMIN */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
         .modal-content { background-color: #fff; margin: auto; padding: 25px; border-radius: 8px; width: 90%; max-width: 600px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; max-height: 90vh; overflow-y: auto; }
         .close-modal { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
         .close-modal:hover { color: #000; }
 
-        /* LIGHTBOX YA KUKUZA PICHA YA SOKO KUU KWA UKUBWA KAMILI (FULLSCREEN) */
         #market-image-modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.95); align-items: center; justify-content: center; padding: 15px; box-sizing: border-box; }
         #market-image-modal img { max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: 4px; box-shadow: 0 5px 30px rgba(0,0,0,0.7); }
         .close-market-modal { position: absolute; top: 15px; right: 25px; color: #fff; font-size: 45px; font-weight: bold; cursor: pointer; z-index: 10000; }
@@ -110,6 +116,22 @@
                 Tafadhali fanya <a href="#" onclick="switchTab('signin')" style="color:var(--accent);">Sign In</a> au <a href="#" onclick="switchTab('signup')" style="color:var(--accent);">Sign Up</a> kwanza ili uweze kuona na kununua bidhaa zote zilizopo kwenye SokoSmart!
             </div>
             <div id="market-content-area">
+                
+                <!-- PRO CONTROLS: SEARCH, SORT & CATEGORY CHIPS -->
+                <div class="marketplace-controls">
+                    <div class="search-sort-row">
+                        <input type="text" id="searchInput" placeholder="🔍 Tafuta bidhaa kwa jina au eneo..." oninput="filterAndRenderProducts()">
+                        <select id="sortSelect" onchange="filterAndRenderProducts()">
+                            <option value="newest">Mpya Zaidi (Newest)</option>
+                            <option value="price-low">Bei: Chini kwenda Juu</option>
+                            <option value="price-high">Bei: Juu kwenda Chini</option>
+                        </select>
+                    </div>
+                    <div class="category-chips" id="categoryChipsContainer">
+                        <!-- Dynamic Categories will load here -->
+                    </div>
+                </div>
+
                 <h2 style="margin-bottom: 20px; border-left: 4px solid var(--accent); padding-left: 10px;">Bidhaa na Huduma Zilizothibitishwa</h2>
                 <div class="grid" id="designs-grid">
                     <p style="text-align:center; grid-column: 1/-1;">Inapakia bidhaa...</p>
@@ -317,6 +339,8 @@
 
     <script>
         let currentUser = localStorage.getItem('sokosmart_user') || null;
+        let allMarketDesigns = []; // Hifadhi ya bidhaa kwa ajili ya filtering ya papo hapo
+        let selectedCategory = 'All';
 
         function updateAuthUI() {
             const navContainer = document.getElementById('nav-menu-container');
@@ -581,52 +605,95 @@
             fetch('/api/designs')
                 .then(res => res.json())
                 .then(data => {
-                    const grid = document.getElementById('designs-grid');
-                    if(!data || data.length === 0) {
-                        grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Hakuna bidhaa zilizoidhinishwa bado kwenye SokoSmart.</p>';
-                        return;
-                    }
-                    
-                    grid.innerHTML = data.map(d => {
-                        let safeImg = d.image_url ? d.image_url : 'https://via.placeholder.com/300x260?text=SokoSmart+TZ';
-                        
-                        let imageHTML = d.image_url ? `
-                            <div class="card-img-wrapper">
-                                <img src="${safeImg}" alt="${d.title}" onclick="openMarketImageModal('${safeImg}')" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x260?text=SokoSmart+TZ';">
-                                <button type="button" class="zoom-btn" onclick="openMarketImageModal('${safeImg}')" title="Panua Picha">
-                                    🔍 <span>Panua</span>
-                                </button>
-                            </div>
-                        ` : '';
-                        
-                        let videoHTML = d.video_url ? `<video src="${d.video_url}" controls muted></video>` : '';
-
-                        return `
-                        <div class="card">
-                            <div>
-                                ${imageHTML}
-                                ${videoHTML}
-                                <div class="card-content">
-                                    <span style="font-size: 0.8em; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #4a5568;">${d.category || 'General'}</span>
-                                    <h3>${d.title}</h3>
-                                    <p>${d.description}</p>
-                                    <span class="price">Tsh ${d.price.toLocaleString()}</span>
-                                    <p style="font-size:0.85em; color:#666; margin:2px 0;">📍 Eneo: <strong>${d.location || 'Tanzania'}</strong></p>
-                                    <p style="font-size:0.85em; color:#666; margin:2px 0;">📞 Simu: <strong>${d.vendor_phone || 'N/A'}</strong></p>
-                                    <p style="font-size:0.85em; color:#888; margin:5px 0 0 0;">Muuzaji: <strong>${d.designer_name}</strong></p>
-                                </div>
-                            </div>
-                            <div class="payment-box">
-                                <p style="margin:0 0 6px 0; font-size:0.85em;"><strong>Lipa Tsh ${d.price.toLocaleString()}</strong> kwenda Tigo Lipa Namba: <strong>45416553</strong> (SALMIN TAMIMU HUSEIN)</p>
-                                <input type="text" id="phone-${d.id}" placeholder="Namba yako ya simu uliyolipia" style="margin-bottom:6px;">
-                                <button class="btn" onclick="buyDesign(${d.id}, '${d.title.replace(/'/g, "\\'")}', ${d.price})">Nimemaliza Kulipa</button>
-                            </div>
-                        </div>
-                    `}).join('');
+                    allMarketDesigns = data || [];
+                    buildCategoryChips();
+                    filterAndRenderProducts();
                 });
         }
 
-        // Kazi za kufungua na kufunga Modal ya picha ya Soko Kuu (Fullscreen Lightbox)
+        function buildCategoryChips() {
+            const chipsContainer = document.getElementById('categoryChipsContainer');
+            const categories = ['All', ...new Set(allMarketDesigns.map(d => d.category || 'General'))];
+            
+            chipsContainer.innerHTML = categories.map(cat => `
+                <div class="chip ${selectedCategory === cat ? 'active' : ''}" onclick="selectCategory('${cat}')">${cat}</div>
+            `).join('');
+        }
+
+        function selectCategory(cat) {
+            selectedCategory = cat;
+            buildCategoryChips();
+            filterAndRenderProducts();
+        }
+
+        function filterAndRenderProducts() {
+            const grid = document.getElementById('designs-grid');
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            const sortBy = document.getElementById('sortSelect').value;
+
+            let filtered = allMarketDesigns.filter(d => {
+                let matchesCat = (selectedCategory === 'All') || ((d.category || 'General') === selectedCategory);
+                let matchesSearch = !searchQuery || 
+                    (d.title && d.title.toLowerCase().includes(searchQuery)) || 
+                    (d.description && d.description.toLowerCase().includes(searchQuery)) || 
+                    (d.location && d.location.toLowerCase().includes(searchQuery)) ||
+                    (d.designer_name && d.designer_name.toLowerCase().includes(searchQuery));
+                return matchesCat && matchesSearch;
+            });
+
+            // Sorting logic
+            if (sortBy === 'price-low') {
+                filtered.sort((a, b) => a.price - b.price);
+            } else if (sortBy === 'price-high') {
+                filtered.sort((a, b) => b.price - a.price);
+            } else {
+                // newest (assume higher id or default order)
+                filtered.sort((a, b) => b.id - a.id);
+            }
+
+            if(!filtered || filtered.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Hakuna bidhaa zilizopatikana zenye vigezo hivi.</p>';
+                return;
+            }
+            
+            grid.innerHTML = filtered.map(d => {
+                let safeImg = d.image_url ? d.image_url : 'https://via.placeholder.com/300x260?text=SokoSmart+TZ';
+                
+                let imageHTML = d.image_url ? `
+                    <div class="card-img-wrapper">
+                        <img src="${safeImg}" alt="${d.title}" onclick="openMarketImageModal('${safeImg}')" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x260?text=SokoSmart+TZ';">
+                        <button type="button" class="zoom-btn" onclick="openMarketImageModal('${safeImg}')" title="Panua Picha">
+                            🔍 <span>Panua</span>
+                        </button>
+                    </div>
+                ` : '';
+                
+                let videoHTML = d.video_url ? `<video src="${d.video_url}" controls muted></video>` : '';
+
+                return `
+                <div class="card">
+                    <div>
+                        ${imageHTML}
+                        ${videoHTML}
+                        <div class="card-content">
+                            <span style="font-size: 0.8em; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #4a5568;">${d.category || 'General'}</span>
+                            <h3>${d.title}</h3>
+                            <p>${d.description}</p>
+                            <span class="price">Tsh ${d.price.toLocaleString()}</span>
+                            <p style="font-size:0.85em; color:#666; margin:2px 0;">📍 Eneo: <strong>${d.location || 'Tanzania'}</strong></p>
+                            <p style="font-size:0.85em; color:#666; margin:2px 0;">📞 Simu: <strong>${d.vendor_phone || 'N/A'}</strong></p>
+                            <p style="font-size:0.85em; color:#888; margin:5px 0 0 0;">Muuzaji: <strong>${d.designer_name}</strong></p>
+                        </div>
+                    </div>
+                    <div class="payment-box">
+                        <p style="margin:0 0 6px 0; font-size:0.85em;"><strong>Lipa Tsh ${d.price.toLocaleString()}</strong> kwenda Tigo Lipa Namba: <strong>45416553</strong> (SALMIN TAMIMU HUSEIN)</p>
+                        <input type="text" id="phone-${d.id}" placeholder="Namba yako ya simu uliyolipia" style="margin-bottom:6px;">
+                        <button class="btn" onclick="buyDesign(${d.id}, '${d.title.replace(/'/g, "\\'")}', ${d.price})">Nimemaliza Kulipa</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
         function openMarketImageModal(imgSrc) {
             const modal = document.getElementById('market-image-modal');
             const modalImg = document.getElementById('market-modal-img');
@@ -949,5 +1016,4 @@
         }
     </script>
 </body>
-</html>
- 
+</html> 
