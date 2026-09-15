@@ -47,6 +47,9 @@ type User struct {
 	Username           string `json:"username"`
 	Role               string `json:"role"`
 	VerificationStatus string `json:"verification_status"`
+	IDType             string `json:"id_type"`
+	IDNumber           string `json:"id_number"`
+	IDImageURL         string `json:"id_image_url"`
 	CreatedAt          string `json:"created_at"`
 }
 
@@ -88,6 +91,8 @@ func main() {
 	http.HandleFunc("/api/admin/delete-design", adminDeleteDesignHandler)
 	http.HandleFunc("/api/admin/orders", adminGetOrdersHandler)
 	http.HandleFunc("/api/admin/users", adminUsersHandler)
+	http.HandleFunc("/api/admin/approve-user", adminApproveUserHandler)
+	http.HandleFunc("/api/admin/reject-user", adminRejectUserHandler)
 	http.HandleFunc("/api/admin/delete-user", adminDeleteUserHandler)
 
 	port := os.Getenv("PORT")
@@ -686,7 +691,7 @@ func adminGetOrdersHandler(w http.ResponseWriter, r *http.Request) {
 func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	rows, err := db.Query("SELECT id, username, role, verification_status, created_at FROM app_accounts ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), created_at FROM app_accounts ORDER BY id DESC")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"error": "Imeshindikana kusoma watumiaji"}`))
@@ -697,7 +702,7 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.CreatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.CreatedAt); err != nil {
 			continue
 		}
 		users = append(users, u)
@@ -709,6 +714,50 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(users)
+}
+
+func adminApproveUserHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := r.URL.Query().Get("id")
+	if userID == "" {
+		http.Error(w, "ID haipatikani", http.StatusBadRequest)
+		return
+	}
+
+	_, err := db.Exec("UPDATE app_accounts SET verification_status = 'approved' WHERE id = $1", userID)
+	w.Header().Set("Content-Type", "application/json")
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuidhinisha mtumiaji"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Muuzaji amepitishwa kikamilifu!"})
+}
+
+func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID := r.URL.Query().Get("id")
+	if userID == "" {
+		http.Error(w, "ID haipatikani", http.StatusBadRequest)
+		return
+	}
+
+	_, err := db.Exec("UPDATE app_accounts SET verification_status = 'rejected' WHERE id = $1", userID)
+	w.Header().Set("Content-Type", "application/json")
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kukataa mtumiaji"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti ya muuzaji imekataliwa!"})
 }
 
 func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
