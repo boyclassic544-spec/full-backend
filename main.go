@@ -78,7 +78,7 @@ func main() {
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/api/signup", signupHandler)
 	http.HandleFunc("/api/signin", signinHandler)
-	http.HandleFunc("/api/profile", profileHandler) // Imeongezwa kupata profile na ujumbe wa kukataa
+	http.HandleFunc("/api/profile", profileHandler)
 	http.HandleFunc("/api/designs", getDesignsHandler)
 	http.HandleFunc("/api/my-designs", getMyDesignsHandler)
 	http.HandleFunc("/api/upload", uploadDesignJSONHandler)
@@ -352,7 +352,6 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// Endpoint mpya ya kupata taarifa za mtumiaji zikiwemo sababu ya kukataliwa endapo status ni rejected
 func profileHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	username := r.URL.Query().Get("username")
@@ -362,7 +361,6 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var u User
-	var rejReason sql.NullString
 	err := db.QueryRow("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, '') FROM app_accounts WHERE username = $1", username).
 		Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason)
 
@@ -815,7 +813,6 @@ func adminApproveUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID := r.URL.Query().Get("id")
-	// Tunapitisha mtumiaji na kusafisha ujumbe wowote wa kukataliwa uliokuwepo
 	_, err := db.Exec("UPDATE app_accounts SET verification_status = 'approved', rejection_reason = '' WHERE id = $1", userID)
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
@@ -826,7 +823,6 @@ func adminApproveUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Muuzaji amepitishwa kikamilifu!"})
 }
 
-// Marejeo yaliyofanyiwa marekebisho: Inapokea sababu (reason) na kuihifadhi kwenye database
 func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
