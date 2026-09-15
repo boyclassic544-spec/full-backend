@@ -162,7 +162,7 @@
             </div>
         </div>
 
-        <!-- 1.1 PRODUCT DETAILS SECTION (UKURASA WA MAELEZO YA BIDHAA NA MAWASILIANO YA SELLER) -->
+        <!-- 1.1 PRODUCT DETAILS SECTION -->
         <div id="product-details" class="section">
             <div class="form-card" style="max-width: 650px; padding: 20px;">
                 <button onclick="switchTab('market')" style="background: none; border: none; color: var(--primary); font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 1em;">← Rudi kwenye Orodha</button>
@@ -186,13 +186,13 @@
                 <p style="font-size: 0.85em; color: #666; margin: 5px 0;">📍 <span id="detail-location"></span></p>
                 <p style="font-size: 0.8em; color: #888; margin: 0 0 15px 0;">Muuzaji: <strong id="detail-designer"></strong></p>
 
-                <!-- MAWASILIANO NA MUUZAJI (SELLER CONTACTS AS IN JIJICOTZ) -->
+                <!-- MAWASILIANO NA MUUZAJI -->
                 <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                     <button class="btn" style="background: #fff; color: var(--primary); border: 1px solid var(--primary); font-size: 0.9em;" onclick="alert('Ombi la kupigiwa simu limetumwa kwa muuzaji!')">Request call back</button>
                     <a id="detail-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 07XXXXXXXX</a>
                 </div>
 
-                <!-- CHAT WITH THE SELLER SECTION -->
+                <!-- CHAT WITH THE SELLER -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
                     <h4 style="margin: 0 0 10px 0; color: var(--primary);">Chat with the seller</h4>
                     <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
@@ -217,13 +217,16 @@
             </div>
         </div>
 
-        <!-- 2. SIGN UP SECTION -->
+        <!-- 2. SIGN UP SECTION (PAMOJA NA SEHEMU YA NIDA / KITAMBULISHO) -->
         <div id="signup" class="section">
             <div class="form-card">
                 <h2 style="margin-top:0; color: var(--primary); text-align: center;">Fungua Akaunti (Sign Up)</h2>
                 <form id="signup-form" onsubmit="handleSignup(event)">
                     <label>Jina la Mtumiaji (Username)</label>
                     <input type="text" id="su-username" placeholder="Weka jina lako" required>
+
+                    <label>Namba ya Kitambulisho / NIDA (Hiari / Muhimu kwa Wauzaji)</label>
+                    <input type="text" id="su-nida" placeholder="Namba ya NIDA au Kura">
 
                     <label>Nenosiri (Password)</label>
                     <input type="password" id="su-password" placeholder="Weka nenosiri salama" required>
@@ -451,7 +454,7 @@
     <!-- LIGHTBOX MODAL YA KUKUZA PICHA KWENYE SOKO KUU (FULLSCREEN) -->
     <div id="market-image-modal" onclick="closeMarketImageModal()">
         <span class="close-market-modal">&times;</span>
-        <img id="market-modal-img" src="" alt="Picha kubwa">
+        <img id="market-modal-img" alt="Picha kubwa">
     </div>
 
     <footer>
@@ -505,7 +508,6 @@
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
 
-            // Bottom Nav Active Update
             document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
             if(tabId === 'market') {
                 const btn = document.getElementById('nav-btn-market');
@@ -553,6 +555,7 @@
         function handleSignup(e) {
             e.preventDefault();
             let u = document.getElementById('su-username').value.trim();
+            let nida = document.getElementById('su-nida').value.trim();
             let p = document.getElementById('su-password').value;
             let cp = document.getElementById('su-confirm-password').value;
 
@@ -564,7 +567,7 @@
             fetch('/api/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`
+                body: `username=${encodeURIComponent(u)}&nida=${encodeURIComponent(nida)}&password=${encodeURIComponent(p)}`
             })
             .then(res => res.json())
             .then(data => {
@@ -1028,7 +1031,7 @@
                     usersList.innerHTML = data.map(u => `
                         <div style="border-bottom:1px solid #eee; padding:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em;">
                             <div>
-                                👤 <strong>${u.username}</strong> (Wajibu: <span class="badge">${u.role}</span>)
+                                👤 <strong>${u.username}</strong> (NIDA: ${u.nida || 'N/A'}) - Wajibu: <span class="badge">${u.role}</span>
                                 <br><small style="color:#666;">Tarehe ya Kusajili: ${u.created_at}</small>
                             </div>
                             <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Futa</button>
