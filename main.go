@@ -114,6 +114,7 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza folder la uploads: %v", err)
 	}
 
+	queryUsers := `
 	CREATE TABLE IF NOT EXISTS app_accounts (
 		id SERIAL PRIMARY KEY,
 		username TEXT UNIQUE NOT NULL,
@@ -531,6 +532,9 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
 	w.Header().Set("Content-Type", "application/json")
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Faili ni kubwa sana au kuna tatizo kwenye data!"})
+		return
 	}
 
 	finalImg := payload.ImageURL
@@ -625,6 +629,8 @@ func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	defer rows.Close()
 
 	var designs []Design
+	for rows.Next() {
+		var d Design
 		if err := rows.Scan(&d.ID, &d.Title, &d.Description, &d.Price, &d.ImageURL, &d.VideoURL, &d.Category, &d.Designer, &d.Location, &d.VendorPhone, &d.Status, &d.RejectionReason); err != nil {
 			continue
 		}
@@ -674,6 +680,10 @@ func adminRejectDesignHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.WriteHeader(http.StatusOK)
+}
+
+func adminDeleteDesignHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
 		return
@@ -724,6 +734,12 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"error": "Imeshindikana kusoma watumiaji"}`))
 		return
 	}
+	defer rows.Close()
+
+	var users []User
+	for rows.Next() {
+		var u User
+		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.CreatedAt); err != nil {
 			continue
 		}
 		users = append(users, u)
@@ -845,4 +861,3 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
-
