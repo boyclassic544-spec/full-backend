@@ -167,7 +167,7 @@
             <div class="form-card" style="max-width: 650px; padding: 20px;">
                 <button onclick="switchTab('market')" style="background: none; border: none; color: var(--primary); font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 1em;">← Rudi kwenye Orodha</button>
                 
-                <div id="detail-image-box" style="position: relative; width: 1000%; max-width: 100%; height: 280px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 15px; display: flex; align-items: center; justify-content: center;">
+                <div id="detail-image-box" style="position: relative; width: 100%; max-width: 100%; height: 280px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 15px; display: flex; align-items: center; justify-content: center;">
                     <img id="detail-img" src="" alt="" style="width: 100%; height: 100%; object-fit: contain; cursor: pointer;" onclick="openMarketImageModal(this.src)">
                 </div>
                 <div id="detail-video-box" style="margin-bottom: 15px;"></div>
@@ -813,7 +813,6 @@
             `}).join('');
         }
 
-        // KAZI YA KUFUNGUA UKURASA WA MAELEZO YA BIDHAA (DETAILS VIEW)
         function openProductDetails(id) {
             const d = allApprovedDesigns.find(item => item.id === id);
             if(!d) return;
@@ -840,7 +839,6 @@
             phoneBtn.innerText = phoneNum;
             phoneBtn.href = `tel:${phoneNum}`;
 
-            // Kifungo cha malipo kwenye ukurasa wa maelezo
             let payBtn = document.getElementById('detail-pay-btn');
             payBtn.onclick = function() {
                 buyDesign(d.id, d.title, d.price, 'detail-pay-phone');

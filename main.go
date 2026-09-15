@@ -43,10 +43,11 @@ type Order struct {
 }
 
 type User struct {
-	ID        int    `json:"id"`
-	Username  string `json:"username"`
-	Role      string `json:"role"`
-	CreatedAt string `json:"created_at"`
+	ID                 int    `json:"id"`
+	Username           string `json:"username"`
+	Role               string `json:"role"`
+	VerificationStatus string `json:"verification_status"`
+	CreatedAt          string `json:"created_at"`
 }
 
 func main() {
@@ -108,13 +109,24 @@ func initDB() {
 		id SERIAL PRIMARY KEY,
 		username TEXT UNIQUE NOT NULL,
 		password TEXT NOT NULL,
-		role TEXT DEFAULT 'user',
+		role TEXT DEFAULT 'buyer',
+		verification_status TEXT DEFAULT 'approved',
+		id_type TEXT DEFAULT '',
+		id_number TEXT DEFAULT '',
+		id_image_url TEXT DEFAULT '',
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);`
 	_, err := db.Exec(queryUsers)
 	if err != nil {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la app_accounts: %v", err)
 	}
+
+	// Kuhakikisha safu mpya za uthibitisho zipo kwenye jedwali la app_accounts
+	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'buyer';")
+	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS verification_status TEXT DEFAULT 'approved';")
+	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS id_type TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS id_number TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS id_image_url TEXT DEFAULT '';")
 
 	queryDesigns := `
 	CREATE TABLE IF NOT EXISTS designs (
@@ -136,7 +148,6 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la designs: %v", err)
 	}
 
-	// Kuhakikisha nguzo zinazohitajika zipo kwenye database
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS designer_name TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS location TEXT DEFAULT 'Tanzania';")
 	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS vendor_phone TEXT DEFAULT '';")
@@ -205,30 +216,68 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Ruhusu mpaka MB 25 kwa ajili ya picha ya uthibitisho (kitambulisho)
+	r.Body = http.MaxBytesReader(w, r.Body, 25<<20)
 	err := r.ParseForm()
+	
+	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa"})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa au faili ni kubwa sana"})
 		return
 	}
 
 	username := r.FormValue("username")
 	password := r.FormValue("password")
-
-	w.Header().Set("Content-Type", "application/json")
+	role := r.FormValue("role") // 'buyer' au 'seller'
+	if role == "" {
+		role = "buyer"
+	}
 
 	if username == "" || password == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina la mtumiaji na nenosiri!"})
 		return
 	}
 
-	_, err = db.Exec("INSERT INTO app_accounts (username, password, role) VALUES ($1, $2, 'user')", username, password)
+	var verificationStatus = "approved"
+	var idType = ""
+	var idNumber = ""
+	var idImageURL = ""
+
+	// Kama ni muuzaji, lazima ahakikiwe na angetakiwa kuweka taarifa za kitambulisho
+	if role == "seller" {
+		verificationStatus = "pending"
+		idType = r.FormValue("id_type")
+		idNumber = r.FormValue("id_number")
+		rawIDImage := r.FormValue("id_image")
+
+		if rawIDImage != "" && strings.HasPrefix(rawIDImage, "data:") {
+			if savedURL, saveErr := saveBase64Media(rawIDImage); saveErr == nil {
+				idImageURL = savedURL
+			}
+		}
+	}
+
+	_, err = db.Exec(`
+		INSERT INTO app_accounts (username, password, role, verification_status, id_type, id_number, id_image_url) 
+		VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+		username, password, role, verificationStatus, idType, idNumber, idImageURL)
+
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari!"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti imefunguliwa kikamilifu! Sasa unaweza kuingia."})
+	msg := "Akaunti imefunguliwa kikamilifu! Sasa unaweza kuingia."
+	if role == "seller" {
+		msg = "Akaunti ya muuzaji imefunguliwa! Tafadhali subiri uthibitisho kutoka kwa uongozi kabla ya kuweka bidhaa."
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true, 
+		"message": msg,
+		"role": role,
+		"verification_status": verificationStatus,
+	})
 }
 
 func signinHandler(w http.ResponseWriter, r *http.Request) {
@@ -243,14 +292,20 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	var storedPass string
-	err := db.QueryRow("SELECT password FROM app_accounts WHERE username = $1", username).Scan(&storedPass)
+	var storedPass, role, verificationStatus string
+	err := db.QueryRow("SELECT password, role, verification_status FROM app_accounts WHERE username = $1", username).Scan(&storedPass, &role, &verificationStatus)
 	if err != nil || storedPass != password {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina la mtumiaji au nenosiri si sahihi!"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Umeingia kwa mafanikio!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true, 
+		"message": "Umeingia kwa mafanikio!",
+		"username": username,
+		"role": role,
+		"verification_status": verificationStatus,
+	})
 }
 
 func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
@@ -322,7 +377,6 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		VendorPhone  string  `json:"vendor_phone"`
 	}
 
-	// Ruhusu hadi MB 25 kwa ajili ya video na picha kupita vizuri
 	r.Body = http.MaxBytesReader(w, r.Body, 25<<20)
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
@@ -332,7 +386,19 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Kusindika Picha Moja (Image URL) kama Base64
+	// Kuhakikisha muuzaji amethibitishwa (Verified) kabla ya kuruhusiwa kuweka bidhaa
+	if payload.DesignerName != "" {
+		var vStatus string
+		err = db.QueryRow("SELECT verification_status FROM app_accounts WHERE username = $1", payload.DesignerName).Scan(&vStatus)
+		if err == nil && vStatus != "approved" {
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false, 
+				"message": "Akaunti yako haijathibitishwa na Admin bado. Huwezi kupost bidhaa kwa sasa.",
+			})
+			return
+		}
+	}
+
 	finalImg := payload.ImageURL
 	if strings.HasPrefix(payload.ImageURL, "data:") {
 		if url, saveErr := saveBase64Media(payload.ImageURL); saveErr == nil {
@@ -340,7 +406,6 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Kusindika Video Moja (Video URL) kama Base64 (Kama ipo)
 	finalVideo := payload.VideoURL
 	if strings.HasPrefix(payload.VideoURL, "data:") {
 		if url, saveErr := saveBase64Media(payload.VideoURL); saveErr == nil {
@@ -589,14 +654,14 @@ func adminGetOrdersHandler(w http.ResponseWriter, r *http.Request) {
 		orders = []Order{}
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+  w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(orders)
 }
 
 func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	rows, err := db.Query("SELECT id, username, role, created_at FROM app_accounts ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, username, role, verification_status, created_at FROM app_accounts ORDER BY id DESC")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"error": "Imeshindikana kusoma watumiaji"}`))
@@ -607,7 +672,7 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.CreatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.CreatedAt); err != nil {
 			continue
 		}
 		users = append(users, u)
@@ -642,4 +707,3 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
-
