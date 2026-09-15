@@ -215,27 +215,42 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 25<<20)
 	w.Header().Set("Content-Type", "application/json")
 
-	var payload struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-		Role     string `json:"role"`
-		IDType   string `json:"id_type"`
-		IDNumber string `json:"id_number"`
-		IDImage  string `json:"id_image"`
+	var username, password, role, idType, idNumber, rawIDImage string
+
+	contentType := r.Header.Get("Content-Type")
+	if strings.Contains(contentType, "application/json") {
+		var payload struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+			Role     string `json:"role"`
+			IDType   string `json:"id_type"`
+			IDNumber string `json:"id_number"`
+			IDImage  string `json:"id_image"`
+		}
+		r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
+		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
+			username = payload.Username
+			password = payload.Password
+			role = payload.Role
+			idType = payload.IDType
+			idNumber = payload.IDNumber
+			rawIDImage = payload.IDImage
+		}
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&payload)
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa au faili ni kubwa sana"})
-		return
+	if username == "" {
+		r.ParseMultipartForm(50 << 20)
+		r.ParseForm()
+		username = r.FormValue("username")
+		password = r.FormValue("password")
+		role = r.FormValue("role")
+		idType = r.FormValue("id_type")
+		idNumber = r.FormValue("id_number")
+		rawIDImage = r.FormValue("id_image")
 	}
 
-	username := payload.Username
-	password := payload.Password
-	role := payload.Role
 	if role == "" {
 		role = "buyer"
 	}
@@ -246,16 +261,10 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var verificationStatus = "approved"
-	var idType = ""
-	var idNumber = ""
 	var idImageURL = ""
 
 	if role == "seller" {
 		verificationStatus = "pending"
-		idType = payload.IDType
-		idNumber = payload.IDNumber
-		rawIDImage := payload.IDImage
-
 		if rawIDImage != "" && strings.HasPrefix(rawIDImage, "data:") {
 			if savedURL, saveErr := saveBase64Media(rawIDImage); saveErr == nil {
 				idImageURL = savedURL
@@ -263,7 +272,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, err = db.Exec(`
+	_, err := db.Exec(`
 		INSERT INTO app_accounts (username, password, role, verification_status, id_type, id_number, id_image_url) 
 		VALUES ($1, $2, $3, $4, $5, $6, $7)`,
 		username, password, role, verificationStatus, idType, idNumber, idImageURL)
@@ -294,20 +303,29 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	var payload struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
+	var username, password string
+
+	contentType := r.Header.Get("Content-Type")
+	if strings.Contains(contentType, "application/json") {
+		var payload struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
+			username = payload.Username
+			password = payload.Password
+		}
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&payload)
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa za kuingia"})
-		return
+	if username == "" {
+		r.ParseForm()
+		username = r.FormValue("username")
+		password = r.FormValue("password")
 	}
 
 	var storedPass, role, verificationStatus string
-	err = db.QueryRow("SELECT password, role, verification_status FROM app_accounts WHERE username = $1", payload.Username).Scan(&storedPass, &role, &verificationStatus)
-	if err != nil || storedPass != payload.Password {
+	err := db.QueryRow("SELECT password, role, verification_status FROM app_accounts WHERE username = $1", username).Scan(&storedPass, &role, &verificationStatus)
+	if err != nil || storedPass != password {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina la mtumiaji au nenosiri si sahihi!"})
 		return
 	}
@@ -315,7 +333,7 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true, 
 		"message": "Umeingia kwa mafanikio!",
-		"username": payload.Username,
+		"username": username,
 		"role": role,
 		"verification_status": verificationStatus,
 	})
@@ -390,7 +408,7 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		VendorPhone  string  `json:"vendor_phone"`
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 25<<20)
+	r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -441,7 +459,7 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa yako (pamoja na picha na video) imewasilishwa kwa ukaguzi!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa yako imewasilishwa kwa ukaguzi!"})
 }
 
 func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
@@ -462,7 +480,7 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		VendorPhone string  `json:"vendor_phone"`
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 25<<20)
+	r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
 	err := json.NewDecoder(r.Body).Decode(&payload)
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -601,19 +619,14 @@ func adminRejectDesignHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, "Taarifa mbovu", http.StatusBadRequest)
-		return
-	}
-
+	r.ParseForm()
 	id := r.URL.Query().Get("id")
 	reason := r.FormValue("reason")
 	if reason == "" {
 		reason = "Haikutimiza vigezo vya ubora."
 	}
 
-	_, err = db.Exec("UPDATE designs SET status = 'rejected', rejection_reason = $1 WHERE id = $2", reason, id)
+	_, err := db.Exec("UPDATE designs SET status = 'rejected', rejection_reason = $1 WHERE id = $2", reason, id)
 	if err != nil {
 		http.Error(w, "Imeshindikana kukataa bidhaa", http.StatusInternalServerError)
 		return
