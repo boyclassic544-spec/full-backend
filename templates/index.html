@@ -323,14 +323,20 @@
                     <p style="margin: 0; font-size: 0.9em; color: #dcdde1;" id="profile-role-display">Mwanachama rasmi wa SokoSmart TZ</p>
                 </div>
 
-                <div id="seller-product-management-section">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-bottom: 2px solid #ddd; padding-bottom: 8px;">
-                        <h3 style="margin:0; color: var(--primary);">Bidhaa Zangu Zilizowekwa</h3>
-                        <button onclick="switchTab('designer')" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85em; font-weight:bold;">+ Weka Mpya</button>
+                <div id="seller-product-management-section" style="display:none;">
+                    <div id="seller-pending-warning" class="auth-banner" style="background:#fff3cd; color:#856404; display:none;">
+                        ⚠️ Akaunti yako inasubiri ithibati (Pending Verification) kutoka kwa Admin. Fomu na kitufe cha kuweka bidhaa vimefichwa mpaka utakapoidhinishwa na kuwekewa tiki ya kijani!
                     </div>
                     
-                    <div id="my-products-list" style="margin-top: 15px;">
-                        <p>Inapakia bidhaa zako...</p>
+                    <div id="seller-active-content" style="display:none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-bottom: 2px solid #ddd; padding-bottom: 8px;">
+                            <h3 style="margin:0; color: var(--primary);">Bidhaa Zangu Zilizowekwa</h3>
+                            <button onclick="switchTab('designer')" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85em; font-weight:bold;">+ Weka Mpya</button>
+                        </div>
+                        
+                        <div id="my-products-list" style="margin-top: 15px;">
+                            <p>Inapakia bidhaa zako...</p>
+                        </div>
                     </div>
                 </div>
 
@@ -429,7 +435,7 @@
             <span class="icon">❤️</span>
             <span>Saved</span>
         </button>
-        <!-- Kitufe cha kuweka bidhaa kitaonekana kwa wauzaji (Sellers) pekee -->
+        <!-- Kitufe cha kuweka bidhaa kitaonekana kwa wauzaji (Sellers) waliothibitishwa pekee -->
         <button class="bottom-nav-item" id="nav-btn-designer" onclick="checkSellerAccessAndSwitch()" style="display:none;">
             <span class="icon">➕</span>
             <span>Weka Ad</span>
@@ -506,6 +512,7 @@
     <script>
         let currentUser = localStorage.getItem('sokosmart_user') || null;
         let currentUserRole = localStorage.getItem('sokosmart_role') || 'buyer';
+        let currentUserStatus = localStorage.getItem('sokosmart_status') || 'pending';
         let allApprovedDesigns = [];
         let currentSelectedCategory = 'All';
 
@@ -515,20 +522,20 @@
             const designerBottomBtn = document.getElementById('nav-btn-designer');
 
             if(currentUser) {
-                let sellerNavLinks = currentUserRole === 'seller' ? `<button onclick="switchTab('designer')">Weka Bidhaa</button>` : '';
+                let sellerNavLinks = (currentUserRole === 'seller' && currentUserStatus === 'approved') ? `<button onclick="switchTab('designer')">Weka Bidhaa</button>` : '';
                 
                 navContainer.innerHTML = `
                     <button onclick="switchTab('market')">Soko Kuu</button>
                     ${sellerNavLinks}
                     <button onclick="switchTab('my-products')">Profile</button>
-                    <span style="color:#2ecc71; font-weight:bold; font-size:0.85em; margin-left:2px;">👤 ${currentUser} (${currentUserRole})</span>
+                    <span style="color:#2ecc71; font-weight:bold; font-size:0.85em; margin-left:2px;">👤 ${currentUser} (${currentUserRole}) ${currentUserStatus === 'approved' ? '✅' : '⏳'}</span>
                     <button onclick="handleLogout()" style="background:#c0392b; border:none;">Toka</button>
                     <button onclick="openAdminLogin()" style="border-color: var(--accent); color: var(--accent);">Admin</button>
                 `;
                 if(bottomNavBar) bottomNavBar.style.display = 'flex';
                 
                 if(designerBottomBtn) {
-                    designerBottomBtn.style.display = (currentUserRole === 'seller') ? 'flex' : 'none';
+                    designerBottomBtn.style.display = (currentUserRole === 'seller' && currentUserStatus === 'approved') ? 'flex' : 'none';
                 }
             } else {
                 navContainer.innerHTML = `
@@ -551,6 +558,10 @@
         function checkSellerAccessAndSwitch() {
             if(currentUserRole !== 'seller') {
                 alert('Akaunti yako imesajiliwa kama Mnunuzi (Buyer). Wanunuzi hawaruhusiwi kuweka bidhaa sokoni!');
+                return;
+            }
+            if(currentUserStatus !== 'approved') {
+                alert('Akaunti yako bado haijathibitishwa na Admin. Tafadhali subiri upate tiki ya kijani (Approved).');
                 return;
             }
             switchTab('designer');
@@ -576,9 +587,14 @@
         }
 
         function switchTab(tabId) {
-            if(tabId === 'designer' && currentUserRole !== 'seller') {
-                alert('Samahani, akaunti ya mnunuzi haina ruhusa ya kuweka bidhaa.');
-                tabId = 'market';
+            if(tabId === 'designer') {
+                if(currentUserRole !== 'seller') {
+                    alert('Samahani, akaunti ya mnunuzi haina ruhusa ya kuweka bidhaa.');
+                    tabId = 'market';
+                } else if(currentUserStatus !== 'approved') {
+                    alert('Samahani, fomu ya kuweka bidhaa imefichwa mpaka pale utakapoidhinishwa na kuwekewa tiki ya kijani na Admin.');
+                    tabId = 'my-products';
+                }
             }
 
             if(!currentUser && (tabId === 'market' || tabId === 'designer' || tabId === 'my-products' || tabId === 'product-details')) {
@@ -634,10 +650,18 @@
                 const roleDisplay = document.getElementById('profile-role-display');
 
                 if(currentUserRole === 'seller') {
-                    roleDisplay.innerText = "Muuzaji Rasmi (Verified Seller)";
+                    if(currentUserStatus === 'approved') {
+                        roleDisplay.innerHTML = "Muuzaji Rasmi (Verified Seller) ✅";
+                        document.getElementById('seller-pending-warning').style.display = 'none';
+                        document.getElementById('seller-active-content').style.display = 'block';
+                        loadMyProducts();
+                    } else {
+                        roleDisplay.innerHTML = "Muuzaji - Inasubiri Ithibati ⏳";
+                        document.getElementById('seller-pending-warning').style.display = 'block';
+                        document.getElementById('seller-active-content').style.display = 'none';
+                    }
                     sellerSection.style.display = 'block';
                     buyerSection.style.display = 'none';
-                    loadMyProducts();
                 } else {
                     roleDisplay.innerText = "Mnunuzi Rasmi (Verified Buyer)";
                     sellerSection.style.display = 'none';
@@ -697,9 +721,11 @@
                 if(data.success) {
                     currentUser = u;
                     currentUserRole = data.role || 'buyer'; 
+                    currentUserStatus = data.status || 'pending';
                     
                     localStorage.setItem('sokosmart_user', u);
                     localStorage.setItem('sokosmart_role', currentUserRole);
+                    localStorage.setItem('sokosmart_status', currentUserStatus);
 
                     updateAuthUI();
                     switchTab('market');
@@ -710,8 +736,10 @@
         function handleLogout() {
             currentUser = null;
             currentUserRole = 'buyer';
+            currentUserStatus = 'pending';
             localStorage.removeItem('sokosmart_user');
             localStorage.removeItem('sokosmart_role');
+            localStorage.removeItem('sokosmart_status');
             updateAuthUI();
             switchTab('signin');
         }
@@ -808,8 +836,8 @@
 
         async function handleUploadOptimized(e) {
             e.preventDefault();
-            if(currentUserRole !== 'seller') {
-                alert('Uzuiaji wa kiusalama: Wanunuzi hawaruhusiwi kuweka bidhaa!');
+            if(currentUserRole !== 'seller' || currentUserStatus !== 'approved') {
+                alert('Uzuiaji wa kiusalama: Wauzaji ambao hawajaidhinishwa hawaruhusiwi kuweka bidhaa!');
                 return;
             }
 
@@ -1129,7 +1157,6 @@
         }
 
         function loadAdminData() {
-            // Kupitia wauzaji (sellers) pekee wanaosubiri ithibati (pending) au walioidhinishwa
             fetch('/api/admin/sellers')
                 .then(res => res.json())
                 .then(data => {
@@ -1160,7 +1187,6 @@
                     `}).join('');
                 });
 
-            // Kupitia wateja (buyers)
             fetch('/api/admin/buyers')
                 .then(res => res.json())
                 .then(data => {

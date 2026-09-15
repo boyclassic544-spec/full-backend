@@ -91,7 +91,6 @@ func main() {
 	http.HandleFunc("/api/admin/delete-design", adminDeleteDesignHandler)
 	http.HandleFunc("/api/admin/orders", adminGetOrdersHandler)
 	
-	// Njia za Watumiaji (Zilizoboreshwa kulingana na mahitaji yako)
 	http.HandleFunc("/api/admin/users", adminUsersHandler)
 	http.HandleFunc("/api/admin/buyers", adminGetBuyersHandler)
 	http.HandleFunc("/api/admin/sellers", adminGetSellersHandler)
@@ -269,7 +268,6 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// MANTIKI: Buyer anapata 'approved' moja kwa moja, Seller anaanza na 'pending'
 	var verificationStatus = "approved"
 	var idImageURL = ""
 
@@ -427,14 +425,13 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ULINZI WA BACKEND: Kuzuia kabisa seller ambaye hajaidhinishwa (approved) kuposti bidhaa
 	if payload.DesignerName != "" {
 		var vStatus string
 		err = db.QueryRow("SELECT verification_status FROM app_accounts WHERE username = $1", payload.DesignerName).Scan(&vStatus)
 		if err != nil || vStatus != "approved" {
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"success": false, 
-				"message": "Akaunti yako bado haijapitishwa na Admin au haipo. Huwezi kupost bidhaa kwa sasa.",
+				"message": "Akaunti yako bado haijapitishwa na Admin au imefutwa. Huwezi kupost bidhaa kwa sasa.",
 			})
 			return
 		}
@@ -467,7 +464,6 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		payload.Location = "Morogoro, Tanzania"
 	}
 
-	// KUBADILISHWA HAPA: Kwa kuwa muuzaji amekwishaidhinishwa, bidhaa inaingia ikiwa 'approved' moja kwa moja
 	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, video_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'approved', '')",
 		payload.Title, payload.Description, payload.Price, finalImg, finalVideo, payload.Category, payload.DesignerName, payload.Location, payload.VendorPhone)
 	
@@ -521,7 +517,6 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Mabadiliko ya bidhaa yanabaki kuwa approved moja kwa moja kwa wauzaji waliothibitishwa
 	_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, video_url = $5, category = $6, location = $7, vendor_phone = $8, status = 'approved', rejection_reason = '' WHERE id = $9",
 		payload.Title, payload.Description, payload.Price, finalImg, finalVideo, payload.Category, payload.Location, payload.VendorPhone, payload.ID)
 
@@ -794,23 +789,31 @@ func adminApproveUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Muuzaji amepitishwa kikamilifu!"})
 }
 
+// Marejeo yaliyofanyiwa marekebisho: Inapokea sababu (reason) kutoka kwa admin wakati wa kukataa
 func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
 		return
 	}
 
+	r.ParseForm()
 	userID := r.URL.Query().Get("id")
+	reason := r.FormValue("reason")
+	if reason == "" {
+		reason = "Akaunti imekataliwa na Msimamizi."
+	}
+
 	_, err := db.Exec("UPDATE app_accounts SET verification_status = 'rejected' WHERE id = $1", userID)
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kukataa"})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kukataa akaunti"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti ya muuzaji imekataliwa!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti ya muuzaji imekataliwa kikamilifu!"})
 }
 
+// Marejeo yaliyofanyiwa marekebisho: Inafuta kabisa akaunti ya mtumiaji
 func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
@@ -819,11 +822,11 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	userID := r.URL.Query().Get("id")
 	_, err := db.Exec("DELETE FROM app_accounts WHERE id = $1", userID)
+	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		http.Error(w, "Imeshindikana kufuta", http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kufuta mtumiaji"})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
