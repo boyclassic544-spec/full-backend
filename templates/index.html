@@ -1167,14 +1167,14 @@
                         return;
                     }
                     sellersList.innerHTML = data.map(u => {
-                        let statusBadge = u.status === 'approved' 
+                        let statusBadge = u.verification_status === 'approved' 
                             ? `<span class="badge-success">✅ Imethibitishwa (Verified)</span>` 
                             : `<span class="badge">⏳ Inasubiri (Pending)</span>`;
 
                         return `
                         <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; flex-wrap:wrap; gap:10px;">
                             <div>
-                                👤 <strong>${u.username}</strong> (NIDA: ${u.nida || 'N/A'}) - Hali: ${statusBadge}
+                                👤 <strong>${u.username}</strong> (NIDA: ${u.id_number || 'N/A'}) - Hali: ${statusBadge}
                                 <br><small style="color:#666;">Tarehe: ${u.created_at}</small>
                             </div>
                             <div style="display:flex; gap:5px; flex-wrap:wrap;">
@@ -1266,7 +1266,7 @@
                 
                 if (response.ok && result.success !== false) {
                     alert(result.message || 'Muuzaji amepitishwa (Approved)!');
-                    loadAdminData();
+                    location.reload();
                 } else {
                     alert("Imeshindikana: " + (result.message || "Hitilafu imetokea"));
                 }
@@ -1297,15 +1297,15 @@
             if(!u) return;
 
             let container = document.getElementById('modal-seller-id-container');
-            if(u.id_card) {
-                container.innerHTML = `<img src="${u.id_card}" alt="Kitambulisho" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #111; border: 1px solid #ddd; cursor: pointer;" onclick="openMarketImageModal('${u.id_card}')" title="Bonyeza kukuza">`;
+            if(u.id_image_url) {
+                container.innerHTML = `<img src="${u.id_image_url}" alt="Kitambulisho" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #111; border: 1px solid #ddd; cursor: pointer;" onclick="openMarketImageModal('${u.id_image_url}')" title="Bonyeza kukuza">`;
             } else {
                 container.innerHTML = `<small style="color:var(--danger);">Hakuna picha ya kitambulisho iliyowekwa na muuzaji huyu.</small>`;
             }
 
             document.getElementById('modal-seller-username').innerText = u.username;
-            document.getElementById('modal-seller-nida').innerText = u.nida || 'N/A';
-            document.getElementById('modal-seller-status').innerText = u.status || 'pending';
+            document.getElementById('modal-seller-nida').innerText = u.id_number || 'N/A';
+            document.getElementById('modal-seller-status').innerText = u.verification_status || 'pending';
             document.getElementById('modal-seller-date').innerText = u.created_at || 'N/A';
 
             const actionsDiv = document.getElementById('modal-seller-action-buttons');
@@ -1419,3 +1419,4 @@
     </script>
 </body>
 </html>
+
