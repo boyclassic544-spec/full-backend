@@ -547,6 +547,26 @@
             }
         }
 
+        // === MPYA: Rejesha (refresh) status ya mtumiaji kutoka kwenye seva ===
+        // Hii inatatua tatizo la mtumiaji kubaki na status ya zamani (mf. "pending")
+        // kwenye localStorage hata baada ya Admin kumpitisha (approve) kwenye database.
+        async function refreshUserProfile() {
+            if (!currentUser) return;
+            try {
+                const res = await fetch('/api/profile?username=' + encodeURIComponent(currentUser));
+                const data = await res.json();
+                if (data.success) {
+                    currentUserRole = data.role;
+                    currentUserStatus = data.verification_status;
+                    localStorage.setItem('sokosmart_role', currentUserRole);
+                    localStorage.setItem('sokosmart_status', currentUserStatus);
+                    updateAuthUI();
+                }
+            } catch (e) {
+                console.error('Imeshindikana kupata taarifa mpya za profile', e);
+            }
+        }
+
         function checkMarketAccess() {
             if(!currentUser) {
                 switchTab('signin');
@@ -642,31 +662,34 @@
             }
 
             if(tabId === 'my-products' && currentUser) {
-                document.getElementById('profile-username-display').innerText = currentUser;
-                document.getElementById('profile-avatar-initial').innerText = currentUser.charAt(0).toUpperCase();
-                
-                const sellerSection = document.getElementById('seller-product-management-section');
-                const buyerSection = document.getElementById('buyer-profile-info-section');
-                const roleDisplay = document.getElementById('profile-role-display');
+                // Pata status mpya ya kweli kutoka seva kabla ya kuonyesha profile
+                refreshUserProfile().then(() => {
+                    document.getElementById('profile-username-display').innerText = currentUser;
+                    document.getElementById('profile-avatar-initial').innerText = currentUser.charAt(0).toUpperCase();
 
-                if(currentUserRole === 'seller') {
-                    if(currentUserStatus === 'approved') {
-                        roleDisplay.innerHTML = "Muuzaji Rasmi (Verified Seller) ✅";
-                        document.getElementById('seller-pending-warning').style.display = 'none';
-                        document.getElementById('seller-active-content').style.display = 'block';
-                        loadMyProducts();
+                    const sellerSection = document.getElementById('seller-product-management-section');
+                    const buyerSection = document.getElementById('buyer-profile-info-section');
+                    const roleDisplay = document.getElementById('profile-role-display');
+
+                    if(currentUserRole === 'seller') {
+                        if(currentUserStatus === 'approved') {
+                            roleDisplay.innerHTML = "Muuzaji Rasmi (Verified Seller) ✅";
+                            document.getElementById('seller-pending-warning').style.display = 'none';
+                            document.getElementById('seller-active-content').style.display = 'block';
+                            loadMyProducts();
+                        } else {
+                            roleDisplay.innerHTML = "Muuzaji - Inasubiri Ithibati ⏳";
+                            document.getElementById('seller-pending-warning').style.display = 'block';
+                            document.getElementById('seller-active-content').style.display = 'none';
+                        }
+                        sellerSection.style.display = 'block';
+                        buyerSection.style.display = 'none';
                     } else {
-                        roleDisplay.innerHTML = "Muuzaji - Inasubiri Ithibati ⏳";
-                        document.getElementById('seller-pending-warning').style.display = 'block';
-                        document.getElementById('seller-active-content').style.display = 'none';
+                        roleDisplay.innerText = "Mnunuzi Rasmi (Verified Buyer)";
+                        sellerSection.style.display = 'none';
+                        buyerSection.style.display = 'block';
                     }
-                    sellerSection.style.display = 'block';
-                    buyerSection.style.display = 'none';
-                } else {
-                    roleDisplay.innerText = "Mnunuzi Rasmi (Verified Buyer)";
-                    sellerSection.style.display = 'none';
-                    buyerSection.style.display = 'block';
-                }
+                });
             }
         }
 
@@ -1414,7 +1437,7 @@
         if (!currentUser) {
             switchTab('signin');
         } else {
-            switchTab('market');
+            refreshUserProfile().then(() => switchTab('market'));
         }
     </script>
 </body>
