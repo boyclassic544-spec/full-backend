@@ -265,7 +265,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// MABADILIKO HAPA: Buyers wanakuwa approved moja kwa moja bila kusubiri
+	// MANTIKI MPYA: Buyer anakuwa approved moja kwa moja bila pending, Seller anaanza na pending
 	var verificationStatus = "approved"
 	var idImageURL = ""
 
@@ -423,6 +423,7 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// ULINZI WA SEVER: Kukataa kama muuzaji hajaidhinishwa (status !== 'approved') hata akipita mlango wa nyuma
 	if payload.DesignerName != "" {
 		var vStatus string
 		err = db.QueryRow("SELECT verification_status FROM app_accounts WHERE username = $1", payload.DesignerName).Scan(&vStatus)
@@ -714,7 +715,6 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    // Inarudisha orodha kamili ya watumiaji wote (Buyers na Sellers) ili frontend iwachuje vizuri kwenye tabs tofauti
 	json.NewEncoder(w).Encode(users)
 }
 
