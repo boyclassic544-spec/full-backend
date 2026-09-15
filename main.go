@@ -91,6 +91,7 @@ func main() {
 	http.HandleFunc("/api/admin/delete-design", adminDeleteDesignHandler)
 	http.HandleFunc("/api/admin/orders", adminGetOrdersHandler)
 	
+	// Njia za Watumiaji (Zilizoboreshwa kulingana na mahitaji yako)
 	http.HandleFunc("/api/admin/users", adminUsersHandler)
 	http.HandleFunc("/api/admin/buyers", adminGetBuyersHandler)
 	http.HandleFunc("/api/admin/sellers", adminGetSellersHandler)
@@ -147,7 +148,7 @@ func initDB() {
 		designer_name TEXT DEFAULT '',
 		location TEXT DEFAULT 'Tanzania',
 		vendor_phone TEXT DEFAULT '',
-		status TEXT DEFAULT 'pending',
+		status TEXT DEFAULT 'approved',
 		rejection_reason TEXT DEFAULT ''
 	);`
 	_, err = db.Exec(queryDesigns)
@@ -268,6 +269,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// MANTIKI: Buyer anapata 'approved' moja kwa moja, Seller anaanza na 'pending'
 	var verificationStatus = "approved"
 	var idImageURL = ""
 
@@ -429,13 +431,19 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if payload.DesignerName != "" {
 		var vStatus string
 		err = db.QueryRow("SELECT verification_status FROM app_accounts WHERE username = $1", payload.DesignerName).Scan(&vStatus)
-		if err == nil && vStatus != "approved" {
+		if err != nil || vStatus != "approved" {
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"success": false, 
-				"message": "Akaunti yako bado haijapitishwa na Admin. Huwezi kupost bidhaa kwa sasa.",
+				"message": "Akaunti yako bado haijapitishwa na Admin au haipo. Huwezi kupost bidhaa kwa sasa.",
 			})
 			return
 		}
+	} else {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false, 
+			"message": "Jina la mtengenezaji (designer_name) linahitajika.",
+		})
+		return
 	}
 
 	finalImg := payload.ImageURL
@@ -459,7 +467,8 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		payload.Location = "Morogoro, Tanzania"
 	}
 
-	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, video_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending', '')",
+	// KUBADILISHWA HAPA: Kwa kuwa muuzaji amekwishaidhinishwa, bidhaa inaingia ikiwa 'approved' moja kwa moja
+	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, video_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'approved', '')",
 		payload.Title, payload.Description, payload.Price, finalImg, finalVideo, payload.Category, payload.DesignerName, payload.Location, payload.VendorPhone)
 	
 	if err != nil {
@@ -468,7 +477,7 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imewasilishwa kwa ukaguzi!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imechapishwa sokoni kwa mafanikio!"})
 }
 
 func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
@@ -512,7 +521,8 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, video_url = $5, category = $6, location = $7, vendor_phone = $8, status = 'pending', rejection_reason = '' WHERE id = $9",
+	// Mabadiliko ya bidhaa yanabaki kuwa approved moja kwa moja kwa wauzaji waliothibitishwa
+	_, err = db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, video_url = $5, category = $6, location = $7, vendor_phone = $8, status = 'approved', rejection_reason = '' WHERE id = $9",
 		payload.Title, payload.Description, payload.Price, finalImg, finalVideo, payload.Category, payload.Location, payload.VendorPhone, payload.ID)
 
 	if err != nil {
@@ -520,7 +530,7 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imesasishwa!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa imesasishwa kikamilifu!"})
 }
 
 func deleteMyDesignHandler(w http.ResponseWriter, r *http.Request) {
@@ -798,7 +808,7 @@ func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Akaunti ya muuzaji imekataliwa!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti ya muuzaji imekataliwa!"})
 }
 
 func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {

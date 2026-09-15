@@ -68,6 +68,7 @@
 
         .admin-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
         .badge { background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+        .badge-success { background: var(--success); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
 
         .auth-banner { background: #fff3cd; color: #856404; padding: 12px; text-align: center; font-size: 0.9em; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ffeeba; font-weight: bold; }
 
@@ -471,6 +472,25 @@
         </div>
     </div>
 
+    <!-- ADMIN SELLER DETAILS MODAL -->
+    <div id="admin-seller-detail-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAdminSellerModal()">&times;</span>
+            <h2 style="color: var(--primary); margin-top: 0;">Taarifa na Kitambulisho cha Muuzaji</h2>
+            
+            <div style="text-align: center; margin-bottom: 15px;">
+                <div id="modal-seller-id-container" style="display: flex; justify-content: center; margin-top: 10px;"></div>
+            </div>
+            
+            <p><strong>Jina la Muuzaji (Username):</strong> <span id="modal-seller-username"></span></p>
+            <p><strong>Namba ya NIDA:</strong> <span id="modal-seller-nida" style="color: var(--primary); font-weight: bold;"></span></p>
+            <p><strong>Hali ya Ithibati:</strong> <span id="modal-seller-status" class="badge"></span></p>
+            <p><strong>Tarehe ya Usajili:</strong> <span id="modal-seller-date"></span></p>
+
+            <div id="modal-seller-action-buttons" style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;"></div>
+        </div>
+    </div>
+
     <!-- LIGHTBOX MODAL -->
     <div id="market-image-modal" onclick="closeMarketImageModal()">
         <span class="close-market-modal">&times;</span>
@@ -849,7 +869,7 @@
                 .then(res => res.json())
                 .then(data => {
                     allApprovedDesigns = data || [];
-                    filterDesigns(); // Imebadilishwa ili iite filterDesigns badala ya renderDesignsGrid moja kwa moja ili kuzingatia uchujaji wa sasa
+                    renderDesignsGrid(allApprovedDesigns);
                 });
         }
 
@@ -1109,31 +1129,38 @@
         }
 
         function loadAdminData() {
-            // Kupitia wauzaji (sellers) pekee wanaosubiri ithibati (pending)
+            // Kupitia wauzaji (sellers) pekee wanaosubiri ithibati (pending) au walioidhinishwa
             fetch('/api/admin/sellers')
                 .then(res => res.json())
                 .then(data => {
+                    window.adminAllSellers = data;
                     const sellersList = document.getElementById('admin-sellers-list');
                     if(!data || data.length === 0) {
                         sellersList.innerHTML = '<p>Hakuna wauzaji wapya wanaosubiri ithibati.</p>';
                         return;
                     }
-                    sellersList.innerHTML = data.map(u => `
+                    sellersList.innerHTML = data.map(u => {
+                        let statusBadge = u.status === 'approved' 
+                            ? `<span class="badge-success">✅ Imethibitishwa (Verified)</span>` 
+                            : `<span class="badge">⏳ Inasubiri (Pending)</span>`;
+
+                        return `
                         <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; flex-wrap:wrap; gap:10px;">
                             <div>
-                                👤 <strong>${u.username}</strong> (NIDA: ${u.nida || 'N/A'}) - Hali: <span class="badge" style="background:var(--accent);">${u.status || 'pending'}</span>
+                                👤 <strong>${u.username}</strong> (NIDA: ${u.nida || 'N/A'}) - Hali: ${statusBadge}
                                 <br><small style="color:#666;">Tarehe: ${u.created_at}</small>
-                                ${u.id_card ? `<br><button onclick="openMarketImageModal('${u.id_card}')" style="background:none; border:none; color:var(--primary); text-decoration:underline; cursor:pointer; padding:0; font-size:0.85em;">🔍 Tazama Kitambulisho</button>` : ''}
                             </div>
-                            <div style="display:flex; gap:5px;">
-                                <button onclick="approveUser(${u.id})" style="background:var(--success); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Idhinisha</button>
-                                <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Futa</button>
+                            <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                                <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">🔍 Angalia Kitambulisho</button>
+                                <button onclick="approveUser(${u.id})" style="background:var(--success); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">✅ Idhinisha</button>
+                                <button onclick="rejectUser(${u.id})" style="background:var(--accent); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">❌ Kataa na Sababu</button>
+                                <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">🗑️ Futa Kabisa</button>
                             </div>
                         </div>
-                    `).join('');
+                    `}).join('');
                 });
 
-            // Kupitia wateja (buyers) ambao tayari wameidhinishwa moja kwa moja
+            // Kupitia wateja (buyers)
             fetch('/api/admin/buyers')
                 .then(res => res.json())
                 .then(data => {
@@ -1145,7 +1172,7 @@
                     buyersList.innerHTML = data.map(u => `
                         <div style="border-bottom:1px solid #eee; padding:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; flex-wrap:wrap; gap:10px;">
                             <div>
-                                🛒 <strong>${u.username}</strong> - Hali: <span class="badge" style="background:var(--success);">${u.status || 'approved'}</span>
+                                🛒 <strong>${u.username}</strong> - Hali: <span class="badge-success">✅ Approved Buyer</span>
                                 <br><small style="color:#666;">Tarehe: ${u.created_at}</small>
                             </div>
                             <div>
@@ -1210,6 +1237,52 @@
                     alert(data.message || 'Muuzaji amepitishwa (Approved)!');
                     loadAdminData();
                 });
+        }
+
+        function rejectUser(id) {
+            let reason = prompt("Weka sababu ya kukataa ombi la muuzaji huyu:");
+            if(reason === null) return;
+
+            fetch('/api/admin/reject-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${id}&reason=` + encodeURIComponent(reason)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message || 'Muuzaji amekataliwa!');
+                loadAdminData();
+            });
+        }
+
+        function openAdminSellerModal(id) {
+            const u = window.adminAllSellers.find(item => item.id === id);
+            if(!u) return;
+
+            let container = document.getElementById('modal-seller-id-container');
+            if(u.id_card) {
+                container.innerHTML = `<img src="${u.id_card}" alt="Kitambulisho" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #111; border: 1px solid #ddd; cursor: pointer;" onclick="openMarketImageModal('${u.id_card}')" title="Bonyeza kukuza">`;
+            } else {
+                container.innerHTML = `<small style="color:var(--danger);">Hakuna picha ya kitambulisho iliyowekwa na muuzaji huyu.</small>`;
+            }
+
+            document.getElementById('modal-seller-username').innerText = u.username;
+            document.getElementById('modal-seller-nida').innerText = u.nida || 'N/A';
+            document.getElementById('modal-seller-status').innerText = u.status || 'pending';
+            document.getElementById('modal-seller-date').innerText = u.created_at || 'N/A';
+
+            const actionsDiv = document.getElementById('modal-seller-action-buttons');
+            actionsDiv.innerHTML = `
+                <button onclick="approveUser(${u.id}); closeAdminSellerModal();" class="btn" style="background:var(--success); flex:1;">✅ Idhinisha Muuzaji</button>
+                <button onclick="rejectUser(${u.id}); closeAdminSellerModal();" class="btn" style="background:var(--accent); flex:1;">❌ Kataa Muuzaji</button>
+                <button onclick="deleteUser(${u.id}, '${u.username}'); closeAdminSellerModal();" class="btn" style="background:var(--danger); flex:1;">🗑️ Futa Kabisa</button>
+            `;
+
+            document.getElementById('admin-seller-detail-modal').style.display = 'flex';
+        }
+
+        function closeAdminSellerModal() {
+            document.getElementById('admin-seller-detail-modal').style.display = 'none';
         }
 
         function openAdminModal(id) {
