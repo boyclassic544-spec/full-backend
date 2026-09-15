@@ -162,9 +162,10 @@
             <div class="form-card" style="max-width: 650px; padding: 20px;">
                 <button onclick="switchTab('market')" style="background: none; border: none; color: var(--primary); font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 1em;">← Rudi kwenye Orodha</button>
                 
-                <div id="detail-image-box" style="position: relative; width: 100%; max-width: 100%; height: 280px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 15px; display: flex; align-items: center; justify-content: center;">
+                <div id="detail-image-box" style="position: relative; width: 100%; max-width: 100%; height: 280px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 8px; display: flex; align-items: center; justify-content: center;">
                     <img id="detail-img" src="" alt="" style="width: 100%; height: 100%; object-fit: contain; cursor: pointer;" onclick="openMarketImageModal(this.src)">
                 </div>
+                <div id="detail-thumbs-row" style="display: flex; gap: 6px; margin-bottom: 15px;"></div>
                 <div id="detail-video-box" style="margin-bottom: 15px;"></div>
 
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
@@ -289,13 +290,25 @@
                     <label>Namba ya Simu ya Muuzaji (Vendor Phone)</label>
                     <input type="text" id="up-vendor-phone" placeholder="Mf. 0712345678" required>
 
-                    <label>Pakia Picha Halisi (Chagua Picha 1)</label>
-                    <input type="file" id="up-image-file" accept="image/*" required style="background: #fff; padding: 8px;">
-                    <small style="color: #666; display: block; margin-bottom: 8px;">Chagua picha 1 ya bidhaa yako kutoka kwenye simu.</small>
+                    <label>Picha ya 1 (Lazima)</label>
+                    <input type="file" id="up-image-file-1" accept="image/*" required style="background: #fff; padding: 8px;">
+                    <small style="color: #666; display: block; margin-bottom: 8px;">Picha kuu ya bidhaa yako - hii ni lazima.</small>
 
-                    <label>Pakia Video Fupi (Hiari - Isiyozidi sekunde 30)</label>
+                    <label>Picha ya 2 (Hiari)</label>
+                    <input type="file" id="up-image-file-2" accept="image/*" style="background: #fff; padding: 8px;">
+                    <small style="color: #666; display: block; margin-bottom: 8px;">Picha ya ziada (si lazima).</small>
+
+                    <label>Picha ya 3 (Hiari)</label>
+                    <input type="file" id="up-image-file-3" accept="image/*" style="background: #fff; padding: 8px;">
+                    <small style="color: #666; display: block; margin-bottom: 8px;">Picha ya ziada (si lazima).</small>
+
+                    <label>Picha ya 4 (Hiari)</label>
+                    <input type="file" id="up-image-file-4" accept="image/*" style="background: #fff; padding: 8px;">
+                    <small style="color: #666; display: block; margin-bottom: 8px;">Picha ya ziada (si lazima).</small>
+
+                    <label>Pakia Video Fupi (Hiari)</label>
                     <input type="file" id="up-video-file" accept="video/*" style="background: #fff; padding: 8px;">
-                    <small style="color: #666; display: block; margin-bottom: 8px;">Video fupi 1 (Upeo sekunde 30).</small>
+                    <small style="color: #666; display: block; margin-bottom: 8px;">Video fupi 1 (si lazima). Jaribu isiwe kubwa mno ili kuepuka hitilafu ya kutuma.</small>
 
                     <label>Kategoria ya Biashara</label>
                     <select id="up-cat" required>
@@ -353,6 +366,11 @@
                 <h2 style="margin-top:0; color: var(--primary);">Hariri Bidhaa Yako</h2>
                 <form id="edit-form" onsubmit="handleUpdateProductOptimized(event)">
                     <input type="hidden" id="edit-id">
+                    <input type="hidden" id="edit-image-url-1">
+                    <input type="hidden" id="edit-image-url-2">
+                    <input type="hidden" id="edit-image-url-3">
+                    <input type="hidden" id="edit-image-url-4">
+                    <input type="hidden" id="edit-video-url">
                     <label>Jina la Bidhaa / Huduma</label>
                     <input type="text" id="edit-title" required>
 
@@ -368,10 +386,20 @@
                     <label>Namba ya Simu ya Muuzaji</label>
                     <input type="text" id="edit-vendor-phone" required>
 
-                    <label>Badilisha Picha (Hiari)</label>
-                    <input type="file" id="edit-image-file" accept="image/*" style="background: #fff; padding: 8px;">
+                    <label>Badilisha Picha ya 1 (Hiari)</label>
+                    <input type="file" id="edit-image-file-1" accept="image/*" style="background: #fff; padding: 8px;">
+                    <small style="color: #666; display: block; margin-bottom: 8px;">Acha wazi kama hutaki kubadilisha picha hii.</small>
 
-                    <label>Badilisha Video (Hiari - Sekunde 30 upeo)</label>
+                    <label>Badilisha Picha ya 2 (Hiari)</label>
+                    <input type="file" id="edit-image-file-2" accept="image/*" style="background: #fff; padding: 8px;">
+
+                    <label>Badilisha Picha ya 3 (Hiari)</label>
+                    <input type="file" id="edit-image-file-3" accept="image/*" style="background: #fff; padding: 8px;">
+
+                    <label>Badilisha Picha ya 4 (Hiari)</label>
+                    <input type="file" id="edit-image-file-4" accept="image/*" style="background: #fff; padding: 8px;">
+
+                    <label>Badilisha Video (Hiari)</label>
                     <input type="file" id="edit-video-file" accept="video/*" style="background: #fff; padding: 8px;">
 
                     <label>Kategoria ya Biashara</label>
@@ -833,27 +861,17 @@
             });
         }
 
+        // Hakuna tena kikomo cha sekunde 30 - video yoyote inakubaliwa (kigezo hicho kimeondolewa).
         function readVideoAsDataURL(file) {
             return new Promise((resolve, reject) => {
-                const videoElement = document.createElement('video');
-                videoElement.preload = 'metadata';
-                videoElement.onloadedmetadata = function() {
-                    window.URL.revokeObjectURL(videoElement.src);
-                    if (videoElement.duration > 30.5) {
-                        alert("Video ni ndefu mno! Tafadhali pakia video isiyozidi sekunde 30.");
-                        reject(new Error("Video exceeds 30 seconds limit"));
-                    } else {
-                        const reader = new FileReader();
-                        reader.readAsDataURL(file);
-                        reader.onload = function(e) {
-                            resolve(e.target.result);
-                        };
-                        reader.onerror = function(err) {
-                            reject(err);
-                        };
-                    }
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function(e) {
+                    resolve(e.target.result);
                 };
-                videoElement.src = URL.createObjectURL(file);
+                reader.onerror = function(err) {
+                    reject(err);
+                };
             });
         }
 
@@ -864,30 +882,42 @@
                 return;
             }
 
-            const fileInput = document.getElementById('up-image-file');
-            const file = fileInput.files[0];
-
-            if(!file) {
-                alert('Tafadhali chagua picha 1!');
+            const file1 = document.getElementById('up-image-file-1').files[0];
+            if(!file1) {
+                alert('Tafadhali chagua Picha ya 1 (ni lazima)!');
                 return;
             }
 
-            let compressedImage = await compressImage(file);
+            const submitBtn = document.querySelector('#upload-form button[type="submit"]');
+            if(submitBtn) { submitBtn.disabled = true; submitBtn.innerText = 'Inatuma...'; }
 
-            let videoBase64 = "";
-            const videoInput = document.getElementById('up-video-file');
-            if(videoInput.files && videoInput.files[0]) {
-                try {
+            try {
+                const compressedImage1 = await compressImage(file1);
+
+                const file2 = document.getElementById('up-image-file-2').files[0];
+                const file3 = document.getElementById('up-image-file-3').files[0];
+                const file4 = document.getElementById('up-image-file-4').files[0];
+
+                const compressedImage2 = file2 ? await compressImage(file2) : "";
+                const compressedImage3 = file3 ? await compressImage(file3) : "";
+                const compressedImage4 = file4 ? await compressImage(file4) : "";
+
+                let videoBase64 = "";
+                const videoInput = document.getElementById('up-video-file');
+                if(videoInput.files && videoInput.files[0]) {
                     videoBase64 = await readVideoAsDataURL(videoInput.files[0]);
-                } catch(err) {
-                    return;
                 }
-            }
 
-            sendUploadPayload(compressedImage, videoBase64);
+                await sendUploadPayload(compressedImage1, compressedImage2, compressedImage3, compressedImage4, videoBase64);
+            } catch(err) {
+                console.error(err);
+                alert('Imeshindikana kuandaa faili lako. Jaribu tena na faili ndogo kidogo.');
+            } finally {
+                if(submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'Wasilisha kwa Ukaguzi'; }
+            }
         }
 
-        function sendUploadPayload(imageUrl, videoBase64) {
+        async function sendUploadPayload(imageUrl, imageUrl2, imageUrl3, imageUrl4, videoBase64) {
             const payload = {
                 title: document.getElementById('up-title').value,
                 description: document.getElementById('up-desc').value,
@@ -895,22 +925,41 @@
                 location: document.getElementById('up-location').value,
                 vendor_phone: document.getElementById('up-vendor-phone').value,
                 image_url: imageUrl,
+                image_url2: imageUrl2,
+                image_url3: imageUrl3,
+                image_url4: imageUrl4,
                 video_url: videoBase64,
                 category: document.getElementById('up-cat').value,
                 designer_name: currentUser
             };
 
-            fetch('/api/upload', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
+            try {
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                let data;
+                try {
+                    data = await res.json();
+                } catch(parseErr) {
+                    alert('Seva imeshindwa kupokea data (labda faili ni kubwa mno). Jaribu tena na video/picha ndogo zaidi.');
+                    return;
+                }
+
+                if(!res.ok || data.success === false) {
+                    alert(data.message || 'Imeshindikana kuwasilisha bidhaa. Jaribu tena.');
+                    return;
+                }
+
                 alert(data.message || 'Bidhaa imewasilishwa kikamilifu kwa ukaguzi!');
                 document.getElementById('upload-form').reset();
                 switchTab('my-products');
-            });
+            } catch(networkErr) {
+                console.error(networkErr);
+                alert('Imeshindikana kuunganisha na seva. Angalia mtandao wako kisha jaribu tena.');
+            }
         }
 
         function loadDesigns() {
@@ -992,6 +1041,16 @@
 
             let imgEl = document.getElementById('detail-img');
             imgEl.src = d.image_url || 'https://via.placeholder.com/300?text=SokoSmart';
+
+            let allImages = [d.image_url, d.image_url2, d.image_url3, d.image_url4].filter(u => u && u.trim() !== '');
+            let thumbsRow = document.getElementById('detail-thumbs-row');
+            if(allImages.length > 1) {
+                thumbsRow.innerHTML = allImages.map(u => `
+                    <img src="${u}" style="width: 56px; height: 56px; object-fit: cover; border-radius: 6px; border: 2px solid #ddd; cursor: pointer; background:#000;" onclick="document.getElementById('detail-img').src='${u}'">
+                `).join('');
+            } else {
+                thumbsRow.innerHTML = '';
+            }
 
             let videoBox = document.getElementById('detail-video-box');
             if(d.video_url) {
@@ -1082,7 +1141,18 @@
             document.getElementById('edit-location').value = d.location || '';
             document.getElementById('edit-vendor-phone').value = d.vendor_phone || '';
             document.getElementById('edit-cat').value = d.category;
-            document.getElementById('edit-image-file').value = '';
+
+            // Hifadhi picha/video za sasa ili zisipotee endapo muuzaji hatabadilisha faili
+            document.getElementById('edit-image-url-1').value = d.image_url || '';
+            document.getElementById('edit-image-url-2').value = d.image_url2 || '';
+            document.getElementById('edit-image-url-3').value = d.image_url3 || '';
+            document.getElementById('edit-image-url-4').value = d.image_url4 || '';
+            document.getElementById('edit-video-url').value = d.video_url || '';
+
+            document.getElementById('edit-image-file-1').value = '';
+            document.getElementById('edit-image-file-2').value = '';
+            document.getElementById('edit-image-file-3').value = '';
+            document.getElementById('edit-image-file-4').value = '';
             document.getElementById('edit-video-file').value = '';
             switchTab('edit-product');
         }
@@ -1096,46 +1166,71 @@
             const location = document.getElementById('edit-location').value;
             const vendor_phone = document.getElementById('edit-vendor-phone').value;
             const category = document.getElementById('edit-cat').value;
-            
-            const fileInput = document.getElementById('edit-image-file');
-            const videoInput = document.getElementById('edit-video-file');
 
-            let imgUrl = "";
-            if(fileInput.files && fileInput.files[0]) {
-                imgUrl = await compressImage(fileInput.files[0]);
-            }
+            const submitBtn = document.querySelector('#edit-form button[type="submit"]');
+            if(submitBtn) { submitBtn.disabled = true; submitBtn.innerText = 'Inahifadhi...'; }
 
-            let videoUrl = "";
-            if(videoInput.files && videoInput.files[0]) {
-                try {
+            try {
+                // Kwa kila picha: kama faili mpya limechaguliwa tumia hilo, la sivyo tunatunza lililopo tayari
+                async function resolveImage(fileInputId, hiddenId) {
+                    const f = document.getElementById(fileInputId).files[0];
+                    if(f) return await compressImage(f);
+                    return document.getElementById(hiddenId).value || "";
+                }
+
+                const imgUrl1 = await resolveImage('edit-image-file-1', 'edit-image-url-1');
+                const imgUrl2 = await resolveImage('edit-image-file-2', 'edit-image-url-2');
+                const imgUrl3 = await resolveImage('edit-image-file-3', 'edit-image-url-3');
+                const imgUrl4 = await resolveImage('edit-image-file-4', 'edit-image-url-4');
+
+                const videoInput = document.getElementById('edit-video-file');
+                let videoUrl = document.getElementById('edit-video-url').value || "";
+                if(videoInput.files && videoInput.files[0]) {
                     videoUrl = await readVideoAsDataURL(videoInput.files[0]);
-                } catch(err) {
+                }
+
+                const payload = {
+                    id: parseInt(id),
+                    title,
+                    description,
+                    price,
+                    location,
+                    vendor_phone,
+                    image_url: imgUrl1,
+                    image_url2: imgUrl2,
+                    image_url3: imgUrl3,
+                    image_url4: imgUrl4,
+                    video_url: videoUrl,
+                    category
+                };
+
+                const res = await fetch('/api/update-design', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                let data;
+                try {
+                    data = await res.json();
+                } catch(parseErr) {
+                    alert('Seva imeshindwa kupokea data (labda faili ni kubwa mno). Jaribu tena na video/picha ndogo zaidi.');
                     return;
                 }
-            }
 
-            const payload = {
-                id: parseInt(id),
-                title,
-                description,
-                price,
-                location,
-                vendor_phone,
-                image_url: imgUrl,
-                video_url: videoUrl,
-                category
-            };
+                if(!res.ok || data.success === false) {
+                    alert(data.message || 'Imeshindikana kuhifadhi mabadiliko. Jaribu tena.');
+                    return;
+                }
 
-            fetch('/api/update-design', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
                 alert(data.message || 'Mabadiliko yamehifadhiwa!');
                 switchTab('my-products');
-            });
+            } catch(err) {
+                console.error(err);
+                alert('Imeshindikana kuunganisha na seva. Angalia mtandao wako kisha jaribu tena.');
+            } finally {
+                if(submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'Hifadhi Mabadiliko'; }
+            }
         }
 
         function deleteMyProduct(id) {
@@ -1350,8 +1445,9 @@
             if(!d) return;
 
             let container = document.getElementById('modal-image-container');
-            if(d.image_url) {
-                container.innerHTML = `<img src="${d.image_url}" alt="Picha" style="width: 100px; height: 100px; object-fit: contain; border-radius: 6px; background: #111; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/100?text=Hitilafu';">`;
+            let allAdminImages = [d.image_url, d.image_url2, d.image_url3, d.image_url4].filter(u => u && u.trim() !== '');
+            if(allAdminImages.length > 0) {
+                container.innerHTML = allAdminImages.map(u => `<img src="${u}" alt="Picha" style="width: 100px; height: 100px; object-fit: contain; border-radius: 6px; background: #111; border: 1px solid #ddd; cursor:pointer;" onclick="openMarketImageModal('${u}')" onerror="this.src='https://via.placeholder.com/100?text=Hitilafu';">`).join('');
             } else {
                 container.innerHTML = `<img src="https://via.placeholder.com/300?text=Hakuna+Picha" alt="" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #eee;">`;
             }
