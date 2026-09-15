@@ -1256,13 +1256,24 @@
                 });
         }
 
-        function approveUser(id) {
-            fetch('/api/admin/approve-user?id=' + id, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    alert(data.message || 'Muuzaji amepitishwa (Approved)!');
-                    loadAdminData();
+        async function approveUser(id) {
+            try {
+                let response = await fetch('/api/admin/approve-user?id=' + id, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
                 });
+                let result = await response.json();
+                
+                if (response.ok && result.success !== false) {
+                    alert(result.message || 'Muuzaji amepitishwa (Approved)!');
+                    location.reload();
+                } else {
+                    alert("Imeshindikana: " + (result.message || "Hitilafu imetokea"));
+                }
+            } catch (error) {
+                console.error("Network Error:", error);
+                alert("Imeshindikana kuunganisha na seva;");
+            }
         }
 
         function rejectUser(id) {

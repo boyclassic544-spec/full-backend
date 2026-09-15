@@ -50,6 +50,7 @@ type User struct {
 	IDType             string `json:"id_type"`
 	IDNumber           string `json:"id_number"`
 	IDImageURL         string `json:"id_image_url"`
+	RejectionReason    string `json:"rejection_reason"`
 	CreatedAt          string `json:"created_at"`
 }
 
@@ -77,6 +78,7 @@ func main() {
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/api/signup", signupHandler)
 	http.HandleFunc("/api/signin", signinHandler)
+	http.HandleFunc("/api/profile", profileHandler) // Imeongezwa kupata profile na ujumbe wa kukataa
 	http.HandleFunc("/api/designs", getDesignsHandler)
 	http.HandleFunc("/api/my-designs", getMyDesignsHandler)
 	http.HandleFunc("/api/upload", uploadDesignJSONHandler)
@@ -122,6 +124,7 @@ func initDB() {
 		id_type TEXT DEFAULT '',
 		id_number TEXT DEFAULT '',
 		id_image_url TEXT DEFAULT '',
+		rejection_reason TEXT DEFAULT '',
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);`
 	_, err := db.Exec(queryUsers)
@@ -134,6 +137,7 @@ func initDB() {
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS id_type TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS id_number TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS id_image_url TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS rejection_reason TEXT DEFAULT '';")
 
 	queryDesigns := `
 	CREATE TABLE IF NOT EXISTS designs (
@@ -331,8 +335,8 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 		password = r.FormValue("password")
 	}
 
-	var storedPass, role, verificationStatus string
-	err := db.QueryRow("SELECT password, role, verification_status FROM app_accounts WHERE username = $1", username).Scan(&storedPass, &role, &verificationStatus)
+	var storedPass, role, verificationStatus, rejectionReason string
+	err := db.QueryRow("SELECT password, role, verification_status, COALESCE(rejection_reason, '') FROM app_accounts WHERE username = $1", username).Scan(&storedPass, &role, &verificationStatus, &rejectionReason)
 	if err != nil || storedPass != password {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina la mtumiaji au nenosiri si sahihi!"})
 		return
@@ -344,6 +348,38 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 		"username": username,
 		"role": role,
 		"verification_status": verificationStatus,
+		"rejection_reason": rejectionReason,
+	})
+}
+
+// Endpoint mpya ya kupata taarifa za mtumiaji zikiwemo sababu ya kukataliwa endapo status ni rejected
+func profileHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	username := r.URL.Query().Get("username")
+	if username == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Username inahitajika"})
+		return
+	}
+
+	var u User
+	var rejReason sql.NullString
+	err := db.QueryRow("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, '') FROM app_accounts WHERE username = $1", username).
+		Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Mtumiaji hajapatikana"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"username": u.Username,
+		"role": u.Role,
+		"verification_status": u.VerificationStatus,
+		"id_type": u.IDType,
+		"id_number": u.IDNumber,
+		"id_image_url": u.IDImageURL,
+		"rejection_reason": u.RejectionReason,
 	})
 }
 
@@ -695,7 +731,7 @@ func adminGetOrdersHandler(w http.ResponseWriter, r *http.Request) {
 func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), created_at FROM app_accounts ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), created_at FROM app_accounts ORDER BY id DESC")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"error": "Imeshindikana kusoma watumiaji"}`))
@@ -706,7 +742,7 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.CreatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.CreatedAt); err != nil {
 			continue
 		}
 		users = append(users, u)
@@ -748,7 +784,7 @@ func adminGetBuyersHandler(w http.ResponseWriter, r *http.Request) {
 
 func adminGetSellersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), created_at FROM app_accounts WHERE role = 'seller' ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), created_at FROM app_accounts WHERE role = 'seller' ORDER BY id DESC")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`[]`))
@@ -759,7 +795,7 @@ func adminGetSellersHandler(w http.ResponseWriter, r *http.Request) {
 	var sellers []User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.CreatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.CreatedAt); err != nil {
 			continue
 		}
 		sellers = append(sellers, u)
@@ -779,7 +815,8 @@ func adminApproveUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID := r.URL.Query().Get("id")
-	_, err := db.Exec("UPDATE app_accounts SET verification_status = 'approved' WHERE id = $1", userID)
+	// Tunapitisha mtumiaji na kusafisha ujumbe wowote wa kukataliwa uliokuwepo
+	_, err := db.Exec("UPDATE app_accounts SET verification_status = 'approved', rejection_reason = '' WHERE id = $1", userID)
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuidhinisha"})
@@ -789,7 +826,7 @@ func adminApproveUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Muuzaji amepitishwa kikamilifu!"})
 }
 
-// Marejeo yaliyofanyiwa marekebisho: Inapokea sababu (reason) kutoka kwa admin wakati wa kukataa
+// Marejeo yaliyofanyiwa marekebisho: Inapokea sababu (reason) na kuihifadhi kwenye database
 func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
@@ -803,17 +840,16 @@ func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
 		reason = "Akaunti imekataliwa na Msimamizi."
 	}
 
-	_, err := db.Exec("UPDATE app_accounts SET verification_status = 'rejected' WHERE id = $1", userID)
+	_, err := db.Exec("UPDATE app_accounts SET verification_status = 'rejected', rejection_reason = $1 WHERE id = $2", reason, userID)
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kukataa akaunti"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti ya muuzaji imekataliwa kikamilifu!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti ya muuzaji imekataliwa na ujumbe umehifadhiwa!"})
 }
 
-// Marejeo yaliyofanyiwa marekebisho: Inafuta kabisa akaunti ya mtumiaji
 func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
