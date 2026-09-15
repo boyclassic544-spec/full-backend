@@ -265,7 +265,7 @@
             </div>
         </div>
 
-        <!-- 4. VENDOR UPLOAD SECTION -->
+        <!-- 4. VENDOR UPLOAD SECTION (SELLER ONLY) -->
         <div id="designer" class="section">
             <div class="form-card" style="max-width: 600px;">
                 <h2 style="margin-top:0; color: var(--primary);">Weka Bidhaa Yako Bure</h2>
@@ -307,7 +307,7 @@
                     </select>
 
                     <label>Jina la Muuzaji / Biashara</label>
-                    <input type="text" id="designer-name-input" placeholder="Jina lako au la duka" required>
+                    <input type="text" id="designer-name-input" placeholder="Jina lako au la duka" required readonly>
 
                     <button type="submit" class="btn" style="margin-top: 15px;">Wasilisha kwa Ukaguzi</button>
                 </form>
@@ -323,13 +323,20 @@
                     <p style="margin: 0; font-size: 0.9em; color: #dcdde1;" id="profile-role-display">Mwanachama rasmi wa SokoSmart TZ</p>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-bottom: 2px solid #ddd; padding-bottom: 8px;">
-                    <h3 style="margin:0; color: var(--primary);">Bidhaa Zangu Zilizowekwa</h3>
-                    <button onclick="switchTab('designer')" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85em; font-weight:bold;">+ Weka Mpya</button>
+                <div id="seller-product-management-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-bottom: 2px solid #ddd; padding-bottom: 8px;">
+                        <h3 style="margin:0; color: var(--primary);">Bidhaa Zangu Zilizowekwa</h3>
+                        <button onclick="switchTab('designer')" style="background:var(--success); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:0.85em; font-weight:bold;">+ Weka Mpya</button>
+                    </div>
+                    
+                    <div id="my-products-list" style="margin-top: 15px;">
+                        <p>Inapakia bidhaa zako...</p>
+                    </div>
                 </div>
-                
-                <div id="my-products-list" style="margin-top: 15px;">
-                    <p>Inapakia bidhaa zako...</p>
+
+                <div id="buyer-profile-info-section" style="display:none; text-align:center; padding: 20px;">
+                    <p style="font-size: 1.1em; color: var(--primary);">Akaunti yako imesajiliwa kama <strong>Mnunuzi (Buyer)</strong>.</p>
+                    <p style="color: #666; font-size: 0.9em;">Unaweza kuvinjari bidhaa, kupiga soga na wauzaji, na kununua bidhaa zote kwa usalama kabisa kupitia SokoSmart TZ.</p>
                 </div>
             </div>
         </div>
@@ -417,7 +424,8 @@
             <span class="icon">❤️</span>
             <span>Saved</span>
         </button>
-        <button class="bottom-nav-item" id="nav-btn-designer" onclick="switchTab('designer')">
+        <!-- Kitufe cha kuweka bidhaa kitaonekana kwa wauzaji (Sellers) pekee -->
+        <button class="bottom-nav-item" id="nav-btn-designer" onclick="checkSellerAccessAndSwitch()" style="display:none;">
             <span class="icon">➕</span>
             <span>Weka Ad</span>
         </button>
@@ -473,23 +481,32 @@
 
     <script>
         let currentUser = localStorage.getItem('sokosmart_user') || null;
+        let currentUserRole = localStorage.getItem('sokosmart_role') || 'buyer';
         let allApprovedDesigns = [];
         let currentSelectedCategory = 'All';
 
         function updateAuthUI() {
             const navContainer = document.getElementById('nav-menu-container');
             const bottomNavBar = document.getElementById('bottom-nav-bar');
+            const designerBottomBtn = document.getElementById('nav-btn-designer');
 
             if(currentUser) {
+                let sellerNavLinks = currentUserRole === 'seller' ? `<button onclick="switchTab('designer')">Weka Bidhaa</button>` : '';
+                
                 navContainer.innerHTML = `
                     <button onclick="switchTab('market')">Soko Kuu</button>
-                    <button onclick="switchTab('designer')">Weka Bidhaa</button>
+                    ${sellerNavLinks}
                     <button onclick="switchTab('my-products')">Profile</button>
-                    <span style="color:#2ecc71; font-weight:bold; font-size:0.85em; margin-left:2px;">👤 ${currentUser}</span>
+                    <span style="color:#2ecc71; font-weight:bold; font-size:0.85em; margin-left:2px;">👤 ${currentUser} (${currentUserRole})</span>
                     <button onclick="handleLogout()" style="background:#c0392b; border:none;">Toka</button>
                     <button onclick="openAdminLogin()" style="border-color: var(--accent); color: var(--accent);">Admin</button>
                 `;
                 if(bottomNavBar) bottomNavBar.style.display = 'flex';
+                
+                // Onyesha kitufe cha "Weka Ad" kwenye bottom nav kwa wauzaji pekee
+                if(designerBottomBtn) {
+                    designerBottomBtn.style.display = (currentUserRole === 'seller') ? 'flex' : 'none';
+                }
             } else {
                 navContainer.innerHTML = `
                     <button onclick="switchTab('signin')">Sign In</button>
@@ -506,6 +523,14 @@
             } else {
                 switchTab('market');
             }
+        }
+
+        function checkSellerAccessAndSwitch() {
+            if(currentUserRole !== 'seller') {
+                alert('Akaunti yako imesajiliwa kama Mnunuzi (Buyer). Wanunuzi hawaruhusiwi kuweka bidhaa sokoni!');
+                return;
+            }
+            switchTab('designer');
         }
 
         function setAccountRole(role) {
@@ -528,6 +553,12 @@
         }
 
         function switchTab(tabId) {
+            // Zuia Mnunuzi asiingie kwenye ukurasa wa kuweka bidhaa (designer) kupitia njia yoyote
+            if(tabId === 'designer' && currentUserRole !== 'seller') {
+                alert('Samahani, akaunti ya mnunuzi haina ruhusa ya kuweka bidhaa.');
+                tabId = 'market';
+            }
+
             if(!currentUser && (tabId === 'market' || tabId === 'designer' || tabId === 'my-products' || tabId === 'product-details')) {
                 tabId = 'signin';
             }
@@ -575,7 +606,21 @@
             if(tabId === 'my-products' && currentUser) {
                 document.getElementById('profile-username-display').innerText = currentUser;
                 document.getElementById('profile-avatar-initial').innerText = currentUser.charAt(0).toUpperCase();
-                loadMyProducts();
+                
+                const sellerSection = document.getElementById('seller-product-management-section');
+                const buyerSection = document.getElementById('buyer-profile-info-section');
+                const roleDisplay = document.getElementById('profile-role-display');
+
+                if(currentUserRole === 'seller') {
+                    roleDisplay.innerText = "Muuzaji Rasmi (Verified Seller)";
+                    sellerSection.style.display = 'block';
+                    buyerSection.style.display = 'none';
+                    loadMyProducts();
+                } else {
+                    roleDisplay.innerText = "Mnunuzi Rasmi (Verified Buyer)";
+                    sellerSection.style.display = 'none';
+                    buyerSection.style.display = 'block';
+                }
             }
         }
 
@@ -590,12 +635,6 @@
             if(p !== cp) {
                 alert('Nenosiri uliloingiza halilingani na uthibitisho!');
                 return;
-            }
-
-            let idCardImage = '';
-            const idFileInput = document.getElementById('su-id-file');
-            if(role === 'seller' && idFileInput.files && idFileInput.files[0]) {
-                idCardImage = await compressImage(idFileInput.files[0]);
             }
 
             fetch('/api/signup', {
@@ -629,7 +668,12 @@
                 alert(data.message);
                 if(data.success) {
                     currentUser = u;
+                    // Hapa tunatambua role ya mtumiaji kutoka kwenye database au jibu la server
+                    currentUserRole = data.role || 'buyer'; 
+                    
                     localStorage.setItem('sokosmart_user', u);
+                    localStorage.setItem('sokosmart_role', currentUserRole);
+
                     updateAuthUI();
                     switchTab('market');
                 }
@@ -638,7 +682,9 @@
 
         function handleLogout() {
             currentUser = null;
+            currentUserRole = 'buyer';
             localStorage.removeItem('sokosmart_user');
+            localStorage.removeItem('sokosmart_role');
             updateAuthUI();
             switchTab('signin');
         }
@@ -735,6 +781,10 @@
 
         async function handleUploadOptimized(e) {
             e.preventDefault();
+            if(currentUserRole !== 'seller') {
+                alert('Uzuiaji wa kiusalama: Wanunuzi hawaruhusiwi kuweka bidhaa!');
+                return;
+            }
 
             const fileInput = document.getElementById('up-image-file');
             const file = fileInput.files[0];
@@ -769,7 +819,7 @@
                 image_url: imageUrl,
                 video_url: videoBase64,
                 category: document.getElementById('up-cat').value,
-                designer_name: document.getElementById('designer-name-input').value
+                designer_name: currentUser
             };
 
             fetch('/api/upload', {
@@ -916,7 +966,7 @@
         }
 
         function loadMyProducts() {
-            if(!currentUser) return;
+            if(!currentUser || currentUserRole !== 'seller') return;
 
             fetch('/api/my-designs?designer=' + encodeURIComponent(currentUser))
                 .then(res => res.json())
@@ -1221,4 +1271,4 @@
         }
     </script>
 </body>
-</html> 
+</html>
