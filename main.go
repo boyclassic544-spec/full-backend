@@ -91,7 +91,6 @@ func main() {
 	http.HandleFunc("/api/admin/delete-design", adminDeleteDesignHandler)
 	http.HandleFunc("/api/admin/orders", adminGetOrdersHandler)
 	
-	// Njia za Watumiaji (Zilizoboreshwa kulingana na mahitaji yako)
 	http.HandleFunc("/api/admin/users", adminUsersHandler)
 	http.HandleFunc("/api/admin/buyers", adminGetBuyersHandler)
 	http.HandleFunc("/api/admin/sellers", adminGetSellersHandler)
@@ -269,7 +268,6 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// MANTIKI: Buyer anapata 'approved' moja kwa moja, Seller anaanza na 'pending'
 	var verificationStatus = "approved"
 	var idImageURL = ""
 
@@ -717,7 +715,6 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(users)
 }
 
-// 1. Orodha maalum ya Wateja (Buyers) pekee
 func adminGetBuyersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	rows, err := db.Query("SELECT id, username, role, verification_status, created_at FROM app_accounts WHERE role = 'buyer' ORDER BY id DESC")
@@ -744,7 +741,6 @@ func adminGetBuyersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(buyers)
 }
 
-// 2. Orodha maalum ya Wauzaji (Sellers) pekee wenye details zao
 func adminGetSellersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), created_at FROM app_accounts WHERE role = 'seller' ORDER BY id DESC")
@@ -802,7 +798,7 @@ func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti ya muuzaji imekataliwa!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Akaunti ya muuzaji imekataliwa!"})
 }
 
 func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {

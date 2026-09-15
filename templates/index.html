@@ -849,7 +849,7 @@
                 .then(res => res.json())
                 .then(data => {
                     allApprovedDesigns = data || [];
-                    renderDesignsGrid(allApprovedDesigns);
+                    filterDesigns(); // Imebadilishwa ili iite filterDesigns badala ya renderDesignsGrid moja kwa moja ili kuzingatia uchujaji wa sasa
                 });
         }
 
