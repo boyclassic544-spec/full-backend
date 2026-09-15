@@ -22,11 +22,9 @@
         .nav-links button, .nav-links a { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 0.85em; transition: 0.3s; }
         .nav-links button:hover, .nav-links a:hover { background: var(--accent); border-color: var(--accent); }
 
-        /* SEARCH & LOCATION HEADER BAR */
         .search-location-bar { background: #fff; padding: 12px 20px; border-bottom: 1px solid #ddd; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .search-location-bar input, .search-location-bar select { flex: 1; min-width: 200px; margin: 0; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
 
-        /* QUICK CATEGORIES */
         .categories-strip { display: flex; gap: 10px; overflow-x: auto; padding: 15px 20px; background: #fff; margin-bottom: 15px; border-bottom: 1px solid #eee; white-space: nowrap; }
         .category-chip { background: #eef2f7; color: var(--primary); padding: 6px 14px; border-radius: 20px; font-size: 0.85em; font-weight: 600; cursor: pointer; border: 1px solid #dcdde1; transition: 0.2s; display: inline-block; }
         .category-chip:hover, .category-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
@@ -41,7 +39,6 @@
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 15px 30px 15px; flex: 1; width: 100%; box-sizing: border-box; }
 
-        /* MAREKEBISHO YA KUWEKA COLUMN MBILI (TWO COLUMNS) */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         @media (max-width: 500px) {
             .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -55,8 +52,6 @@
         
         .zoom-btn { position: absolute; bottom: 8px; right: 8px; background: rgba(0, 0, 0, 0.75); color: #fff; border: 1px solid rgba(255,255,255,0.5); padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 0.7em; display: flex; align-items: center; gap: 3px; z-index: 10; }
 
-        .card video { width: 100%; height: auto; max-height: 180px; object-fit: contain; background-color: #000; display: block; }
-        
         .card-content { padding: 10px; }
         .card h3 { margin: 0 0 6px 0; font-size: 0.95em; color: var(--primary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .card p { font-size: 0.8em; color: #666; margin-bottom: 6px; }
@@ -76,23 +71,24 @@
 
         .auth-banner { background: #fff3cd; color: #856404; padding: 12px; text-align: center; font-size: 0.9em; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ffeeba; font-weight: bold; }
 
-        /* BOTTOM NAVIGATION BAR (UTEPE WA CHINI) */
+        /* ROLE SELECTOR STYLES */
+        .role-selector-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .role-btn { flex: 1; padding: 10px; border: 2px solid #ccc; background: #fff; border-radius: 4px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.9em; transition: 0.2s; }
+        .role-btn.active { border-color: var(--primary); background: #eef2f7; color: var(--primary); }
+
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #ddd; display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); }
         .bottom-nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #666; font-size: 0.75em; font-weight: 600; cursor: pointer; transition: color 0.2s; background: none; border: none; }
-        .bottom-nav-item span.icon { font-size: 1.3em; margin-bottom: 2px; }
+        .bottom-nav-item span.icon { font-size: 1.3em; margin-bottom: 2em; }
         .bottom-nav-item.active, .bottom-nav-item:hover { color: var(--primary); }
 
-        /* USER PROFILE CARD STYLES */
         .profile-header-card { background: linear-gradient(135deg, var(--primary), #0c2461); color: #fff; padding: 25px; border-radius: 8px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .profile-avatar { width: 80px; height: 80px; background: var(--accent); color: #fff; font-size: 2.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin: 0 auto 12px auto; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
-        /* MODAL */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
         .modal-content { background-color: #fff; margin: auto; padding: 25px; border-radius: 8px; width: 90%; max-width: 600px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; max-height: 90vh; overflow-y: auto; }
         .close-modal { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
         .close-modal:hover { color: #000; }
 
-        /* LIGHTBOX YA KUKUZA PICHA KUBWA */
         #market-image-modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.95); align-items: center; justify-content: center; padding: 15px; box-sizing: border-box; }
         #market-image-modal img { max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: 4px; box-shadow: 0 5px 30px rgba(0,0,0,0.7); }
         .close-market-modal { position: absolute; top: 15px; right: 25px; color: #fff; font-size: 45px; font-weight: bold; cursor: pointer; z-index: 10000; }
@@ -119,7 +115,6 @@
         </div>
     </div>
 
-    <!-- SEARCH & LOCATION BAR KWA AJILI YA SOKO KUU -->
     <div id="search-bar-container" style="display:none;">
         <div class="search-location-bar">
             <input type="text" id="search-input" placeholder="🔍 Tafuta bidhaa, simu, magari..." oninput="filterDesigns()">
@@ -150,7 +145,7 @@
             ⚠️ ONYO LA KIUSALAMA: SokoSmart TZ inalindwa chini ya mifumo ya kisasa ya Cyber Security. Vitendo vyote vya udanganyifu au utapeli vinafuatiliwa na akaunti yako itafutwa mara moja!
         </div>
 
-        <!-- 1. MARKETPLACE SECTION (GRID YA COLUMN MBILI) -->
+        <!-- 1. MARKETPLACE SECTION -->
         <div id="market" class="section">
             <div id="market-auth-warning" class="auth-banner" style="display:none;">
                 Tafadhali fanya <a href="#" onclick="switchTab('signin')" style="color:var(--accent);">Sign In</a> au <a href="#" onclick="switchTab('signup')" style="color:var(--accent);">Sign Up</a> kwanza ili uweze kuona na kununua bidhaa zote zilizopo kwenye SokoSmart!
@@ -186,13 +181,11 @@
                 <p style="font-size: 0.85em; color: #666; margin: 5px 0;">📍 <span id="detail-location"></span></p>
                 <p style="font-size: 0.8em; color: #888; margin: 0 0 15px 0;">Muuzaji: <strong id="detail-designer"></strong></p>
 
-                <!-- MAWASILIANO NA MUUZAJI -->
                 <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                     <button class="btn" style="background: #fff; color: var(--primary); border: 1px solid var(--primary); font-size: 0.9em;" onclick="alert('Ombi la kupigiwa simu limetumwa kwa muuzaji!')">Request call back</button>
                     <a id="detail-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 07XXXXXXXX</a>
                 </div>
 
-                <!-- CHAT WITH THE SELLER -->
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
                     <h4 style="margin: 0 0 10px 0; color: var(--primary);">Chat with the seller</h4>
                     <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
@@ -217,16 +210,33 @@
             </div>
         </div>
 
-        <!-- 2. SIGN UP SECTION (PAMOJA NA SEHEMU YA NIDA / KITAMBULISHO) -->
+        <!-- 2. SIGN UP SECTION (MTENGANISHO WA BUYER NA SELLER + NIDA YA LAZIMA + UPLOAD PICHA YA KITAMBULISHO KUTOKA KWENYE SIMU/KAMERA) -->
         <div id="signup" class="section">
             <div class="form-card">
                 <h2 style="margin-top:0; color: var(--primary); text-align: center;">Fungua Akaunti (Sign Up)</h2>
+                
+                <!-- KITEUA CHA WAUZAJI NA WANUNUZI -->
+                <label style="font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px;">Chagua Aina ya Akaunti:</label>
+                <div class="role-selector-container">
+                    <button type="button" class="role-btn active" id="role-buyer-btn" onclick="setAccountRole('buyer')">Mnunuzi (Buyer)</button>
+                    <button type="button" class="role-btn" id="role-seller-btn" onclick="setAccountRole('seller')">Muuzaji (Seller)</button>
+                </div>
+
                 <form id="signup-form" onsubmit="handleSignup(event)">
+                    <input type="hidden" id="su-role" value="buyer">
+
                     <label>Jina la Mtumiaji (Username)</label>
                     <input type="text" id="su-username" placeholder="Weka jina lako" required>
 
-                    <label>Namba ya Kitambulisho / NIDA (Hiari / Muhimu kwa Wauzaji)</label>
-                    <input type="text" id="su-nida" placeholder="Namba ya NIDA au Kura">
+                    <!-- SEHEMU YA NIDA KWA WAUZAJI -->
+                    <div id="seller-fields" style="display: none;">
+                        <label>Namba ya NIDA (Lazima kwa Wauzaji)</label>
+                        <input type="text" id="su-nida" placeholder="Weka namba yako ya NIDA">
+
+                        <label>Ambatisha Picha ya Kitambulisho (Chagua kutoka kwenye Simu au Kamera)</label>
+                        <input type="file" id="su-id-file" accept="image/*" capture="environment" style="background: #fff; padding: 8px;">
+                        <small style="color: #666; display: block; margin-bottom: 8px;">Unaweza kuchagua faili au kupiga picha ya Kitambulisho cha NIDA, Kitambulisho cha Mpiga Kura, au Leseni ya Dereva.</small>
+                    </div>
 
                     <label>Nenosiri (Password)</label>
                     <input type="password" id="su-password" placeholder="Weka nenosiri salama" required>
@@ -281,9 +291,9 @@
                     <label>Namba ya Simu ya Muuzaji (Vendor Phone)</label>
                     <input type="text" id="up-vendor-phone" placeholder="Mf. 0712345678" required>
 
-                    <label>Pakia Picha Halisi (Chagua Picha 1)</label>
-                    <input type="file" id="up-image-file" accept="image/*" required style="background: #fff; padding: 8px;">
-                    <small style="color: #666; display: block; margin-bottom: 8px;">Tafadhali chagua picha **1** tu.</small>
+                    <label>Pakia Picha Halisi (Chagua Picha 1 au Piga kwa Kamera)</label>
+                    <input type="file" id="up-image-file" accept="image/*" capture="environment" required style="background: #fff; padding: 8px;">
+                    <small style="color: #666; display: block; margin-bottom: 8px;">Chagua picha 1 ya bidhaa yako.</small>
 
                     <label>Pakia Video Fupi (Hiari - Isiyozidi sekunde 30)</label>
                     <input type="file" id="up-video-file" accept="video/*" style="background: #fff; padding: 8px;">
@@ -347,8 +357,8 @@
                     <label>Namba ya Simu ya Muuzaji</label>
                     <input type="text" id="edit-vendor-phone" required>
 
-                    <label>Badilisha Picha (Hiari - Picha 1)</label>
-                    <input type="file" id="edit-image-file" accept="image/*" style="background: #fff; padding: 8px;">
+                    <label>Badilisha Picha (Hiari)</label>
+                    <input type="file" id="edit-image-file" accept="image/*" capture="environment" style="background: #fff; padding: 8px;">
 
                     <label>Badilisha Video (Hiari - Sekunde 30 upeo)</label>
                     <input type="file" id="edit-video-file" accept="video/*" style="background: #fff; padding: 8px;">
@@ -399,7 +409,7 @@
         </div>
     </div>
 
-    <!-- BOTTOM NAVIGATION BAR (UTEPE WA CHINI) -->
+    <!-- BOTTOM NAVIGATION BAR -->
     <nav class="bottom-nav" id="bottom-nav-bar" style="display:none;">
         <button class="bottom-nav-item active" id="nav-btn-market" onclick="switchTab('market')">
             <span class="icon">🏠</span>
@@ -451,7 +461,7 @@
         </div>
     </div>
 
-    <!-- LIGHTBOX MODAL YA KUKUZA PICHA KWENYE SOKO KUU (FULLSCREEN) -->
+    <!-- LIGHTBOX MODAL -->
     <div id="market-image-modal" onclick="closeMarketImageModal()">
         <span class="close-market-modal">&times;</span>
         <img id="market-modal-img" alt="Picha kubwa">
@@ -497,6 +507,25 @@
                 switchTab('signin');
             } else {
                 switchTab('market');
+            }
+        }
+
+        function setAccountRole(role) {
+            document.getElementById('su-role').value = role;
+            const buyerBtn = document.getElementById('role-buyer-btn');
+            const sellerBtn = document.getElementById('role-seller-btn');
+            const sellerFields = document.getElementById('seller-fields');
+
+            if(role === 'buyer') {
+                buyerBtn.classList.add('active');
+                sellerBtn.classList.remove('active');
+                sellerFields.style.display = 'none';
+                document.getElementById('su-nida').removeAttribute('required');
+            } else {
+                sellerBtn.classList.add('active');
+                buyerBtn.classList.remove('active');
+                sellerFields.style.display = 'block';
+                document.getElementById('su-nida').setAttribute('required', 'true');
             }
         }
 
@@ -552,10 +581,11 @@
             }
         }
 
-        function handleSignup(e) {
+        async function handleSignup(e) {
             e.preventDefault();
+            let role = document.getElementById('su-role').value;
             let u = document.getElementById('su-username').value.trim();
-            let nida = document.getElementById('su-nida').value.trim();
+            let nida = role === 'seller' ? document.getElementById('su-nida').value.trim() : '';
             let p = document.getElementById('su-password').value;
             let cp = document.getElementById('su-confirm-password').value;
 
@@ -564,16 +594,23 @@
                 return;
             }
 
+            let idCardImage = '';
+            const idFileInput = document.getElementById('su-id-file');
+            if(role === 'seller' && idFileInput.files && idFileInput.files[0]) {
+                idCardImage = await compressImage(idFileInput.files[0]);
+            }
+
             fetch('/api/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `username=${encodeURIComponent(u)}&nida=${encodeURIComponent(nida)}&password=${encodeURIComponent(p)}`
+                body: `username=${encodeURIComponent(u)}&role=${encodeURIComponent(role)}&nida=${encodeURIComponent(nida)}&password=${encodeURIComponent(p)}`
             })
             .then(res => res.json())
             .then(data => {
                 alert(data.message);
                 if(data.success) {
                     document.getElementById('signup-form').reset();
+                    setAccountRole('buyer');
                     switchTab('signin');
                 }
             });
