@@ -35,14 +35,14 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #dcdde1; }
         
-        /* Eneo la Picha na Kitufe Maalumu cha Kukuza (Zoom Overlay Button) */
-        .card-img-wrapper { position: relative; width: 100%; background-color: #000; }
-        .card img { width: 100%; height: 260px; object-fit: cover; display: block; cursor: pointer; transition: opacity 0.2s; }
-        .card img:hover { opacity: 0.95; }
+        /* MAREKEBISHO YA PICHA ILI ISIKATIKE (FULL DISPLAY) */
+        .card-img-wrapper { position: relative; width: 100%; background-color: #111; display: flex; align-items: center; justify-content: center; height: 260px; overflow: hidden; }
+        .card img { width: 100%; height: 100%; object-fit: contain; display: block; cursor: pointer; transition: transform 0.2s; }
+        .card img:hover { transform: scale(1.02); }
         
-        /* Kitufe cha kukuza picha kilichofanana na kile cha video ulichokiweka kwenye picha yako */
-        .zoom-btn { position: absolute; bottom: 10px; right: 10px; background: rgba(0, 0, 0, 0.7); color: #fff; border: 1px solid rgba(255,255,255,0.5); padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; display: flex; align-items: center; gap: 5px; z-index: 10; transition: background 0.2s; }
-        .zoom-btn:hover { background: rgba(0, 0, 0, 0.9); border-color: var(--accent); color: var(--accent); }
+        /* Kitufe cha kukuza picha */
+        .zoom-btn { position: absolute; bottom: 10px; right: 10px; background: rgba(0, 0, 0, 0.75); color: #fff; border: 1px solid rgba(255,255,255,0.5); padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; display: flex; align-items: center; gap: 5px; z-index: 10; transition: background 0.2s; }
+        .zoom-btn:hover { background: rgba(0, 0, 0, 0.95); border-color: var(--accent); color: var(--accent); }
 
         .card video { width: 100%; height: auto; max-height: 260px; object-fit: contain; background-color: #000; display: block; }
         
@@ -72,7 +72,7 @@
         .close-modal:hover { color: #000; }
 
         /* LIGHTBOX YA KUKUZA PICHA YA SOKO KUU KWA UKUBWA KAMILI (FULLSCREEN) */
-        #market-image-modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.9); align-items: center; justify-content: center; padding: 15px; box-sizing: border-box; }
+        #market-image-modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.95); align-items: center; justify-content: center; padding: 15px; box-sizing: border-box; }
         #market-image-modal img { max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: 4px; box-shadow: 0 5px 30px rgba(0,0,0,0.7); }
         .close-market-modal { position: absolute; top: 15px; right: 25px; color: #fff; font-size: 45px; font-weight: bold; cursor: pointer; z-index: 10000; }
         .close-market-modal:hover { color: var(--accent); }
@@ -593,7 +593,7 @@
                         let imageHTML = d.image_url ? `
                             <div class="card-img-wrapper">
                                 <img src="${safeImg}" alt="${d.title}" onclick="openMarketImageModal('${safeImg}')" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x260?text=SokoSmart+TZ';">
-                                <button class="zoom-btn" onclick="openMarketImageModal('${safeImg}')" title="Panua Picha">
+                                <button type="button" class="zoom-btn" onclick="openMarketImageModal('${safeImg}')" title="Panua Picha">
                                     🔍 <span>Panua</span>
                                 </button>
                             </div>
@@ -630,12 +630,17 @@
         function openMarketImageModal(imgSrc) {
             const modal = document.getElementById('market-image-modal');
             const modalImg = document.getElementById('market-modal-img');
-            modalImg.src = imgSrc;
-            modal.style.display = 'flex';
+            if(modal && modalImg) {
+                modalImg.src = imgSrc;
+                modal.style.display = 'flex';
+            }
         }
 
         function closeMarketImageModal() {
-            document.getElementById('market-image-modal').style.display = 'none';
+            const modal = document.getElementById('market-image-modal');
+            if(modal) {
+                modal.style.display = 'none';
+            }
         }
 
         function loadMyProducts() {
@@ -653,7 +658,7 @@
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
+                                <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #111;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
                                     <small style="color:#666;">Eneo: ${d.location} | Simu: ${d.vendor_phone} | Hali: <span class="badge">${d.status}</span></small>
@@ -810,7 +815,7 @@
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
+                                <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #111;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
                                     <small style="color:#666;">Muuzaji: ${d.designer_name} | Eneo: ${d.location} | Hali: <span class="badge">${d.status}</span></small>
@@ -854,7 +859,7 @@
 
             let container = document.getElementById('modal-image-container');
             if(d.image_url) {
-                container.innerHTML = `<img src="${d.image_url}" alt="Picha" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/100?text=Hitilafu';">`;
+                container.innerHTML = `<img src="${d.image_url}" alt="Picha" style="width: 100px; height: 100px; object-fit: contain; border-radius: 6px; background: #111; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/100?text=Hitilafu';">`;
             } else {
                 container.innerHTML = `<img src="https://via.placeholder.com/300?text=Hakuna+Picha" alt="" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #eee;">`;
             }
