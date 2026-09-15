@@ -395,9 +395,14 @@
                     <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">Toka (Logout)</button>
                 </div>
 
-                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 25px;">Watumiaji Waliojisajili (Pending & Approved Sellers / Buyers)</h3>
-                <div id="admin-users-list" style="margin-bottom:30px; overflow-x: auto;">
-                    <p>Inapakia orodha ya watumiaji...</p>
+                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 25px;">Wauzaji Wanaosubiri Ithibati (Pending Sellers)</h3>
+                <div id="admin-sellers-list" style="margin-bottom:20px; overflow-x: auto;">
+                    <p>Inapakia wauzaji...</p>
+                </div>
+
+                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 15px;">Wateja Waliojisajili (Approved Buyers)</h3>
+                <div id="admin-buyers-list" style="margin-bottom:30px; overflow-x: auto;">
+                    <p>Inapakia wateja...</p>
                 </div>
 
                 <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Oda za Malipo na Miamala</h3>
@@ -1042,7 +1047,7 @@
                 id: parseInt(id),
                 title,
                 description,
-            price,
+                price,
                 location,
                 vendor_phone,
                 image_url: imgUrl,
@@ -1104,24 +1109,47 @@
         }
 
         function loadAdminData() {
-            fetch('/api/admin/users')
+            // Kupitia wauzaji (sellers) pekee wanaosubiri ithibati (pending)
+            fetch('/api/admin/sellers')
                 .then(res => res.json())
                 .then(data => {
-                    const usersList = document.getElementById('admin-users-list');
+                    const sellersList = document.getElementById('admin-sellers-list');
                     if(!data || data.length === 0) {
-                        usersList.innerHTML = '<p>Hakuna watumiaji waliojisajili bado.</p>';
+                        sellersList.innerHTML = '<p>Hakuna wauzaji wapya wanaosubiri ithibati.</p>';
                         return;
                     }
-                    usersList.innerHTML = data.map(u => `
+                    sellersList.innerHTML = data.map(u => `
                         <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; flex-wrap:wrap; gap:10px;">
                             <div>
-                                👤 <strong>${u.username}</strong> (NIDA: ${u.nida || 'N/A'}) - Wajibu: <span class="badge">${u.role}</span> - Hali: <span class="badge" style="background:${u.status === 'approved' ? 'var(--success)' : 'var(--accent)'};">${u.status || 'pending'}</span>
+                                👤 <strong>${u.username}</strong> (NIDA: ${u.nida || 'N/A'}) - Hali: <span class="badge" style="background:var(--accent);">${u.status || 'pending'}</span>
                                 <br><small style="color:#666;">Tarehe: ${u.created_at}</small>
                                 ${u.id_card ? `<br><button onclick="openMarketImageModal('${u.id_card}')" style="background:none; border:none; color:var(--primary); text-decoration:underline; cursor:pointer; padding:0; font-size:0.85em;">🔍 Tazama Kitambulisho</button>` : ''}
                             </div>
                             <div style="display:flex; gap:5px;">
-                                ${u.role === 'seller' && u.status !== 'approved' ? `<button onclick="approveUser(${u.id})" style="background:var(--success); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Idhinisha</button>` : ''}
+                                <button onclick="approveUser(${u.id})" style="background:var(--success); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Idhinisha</button>
                                 <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.85em;">Futa</button>
+                            </div>
+                        </div>
+                    `).join('');
+                });
+
+            // Kupitia wateja (buyers) ambao tayari wameidhinishwa moja kwa moja
+            fetch('/api/admin/buyers')
+                .then(res => res.json())
+                .then(data => {
+                    const buyersList = document.getElementById('admin-buyers-list');
+                    if(!data || data.length === 0) {
+                        buyersList.innerHTML = '<p>Hakuna wateja waliojisajili bado.</p>';
+                        return;
+                    }
+                    buyersList.innerHTML = data.map(u => `
+                        <div style="border-bottom:1px solid #eee; padding:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; flex-wrap:wrap; gap:10px;">
+                            <div>
+                                🛒 <strong>${u.username}</strong> - Hali: <span class="badge" style="background:var(--success);">${u.status || 'approved'}</span>
+                                <br><small style="color:#666;">Tarehe: ${u.created_at}</small>
+                            </div>
+                            <div>
+                                <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.8em;">Futa</button>
                             </div>
                         </div>
                     `).join('');
