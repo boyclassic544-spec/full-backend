@@ -35,9 +35,9 @@
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
         .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #dcdde1; }
         
-        /* Mitindo ya Picha na Video kwenye Kadi ili zionekane zote */
-        .card img { width: 100%; height: 200px; object-fit: cover; background-color: #f9f9f9; display: block; border-bottom: 1px solid #eee; }
-        .card video { width: 100%; height: 180px; object-fit: cover; background-color: #000; display: block; margin-top: 5px; }
+        /* Mitindo ya Picha na Video kwenye Kadi ili zionekane zote bila kukatwa */
+        .card img { width: 100%; height: auto; max-height: 350px; object-fit: contain; background-color: #f9f9f9; display: block; border-bottom: 1px solid #eee; }
+        .card video { width: 100%; height: auto; max-height: 300px; object-fit: contain; background-color: #000; display: block; margin-top: 5px; }
         
         .card-content { padding: 15px; }
         .card h3 { margin: 0 0 10px 0; font-size: 1.2em; color: var(--primary); }
@@ -569,7 +569,6 @@
                     }
                     
                     grid.innerHTML = data.map(d => {
-                        // Kuhakikisha picha na video zinaonekana zote mbili kwenye kadi
                         let imageHTML = d.image_url ? `<img src="${d.image_url}" alt="${d.title}" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x180?text=SokoSmart+TZ';">` : '';
                         let videoHTML = d.video_url ? `<video src="${d.video_url}" controls muted></video>` : '';
 
@@ -613,7 +612,7 @@
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
+                                <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
                                     <small style="color:#666;">Eneo: ${d.location} | Simu: ${d.vendor_phone} | Hali: <span class="badge">${d.status}</span></small>
@@ -770,7 +769,7 @@
                         return `
                         <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
+                                <img src="${d.image_url}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; background: #eee;" onerror="this.src='https://via.placeholder.com/50';">
                                 <div>
                                     <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br>
                                     <small style="color:#666;">Muuzaji: ${d.designer_name} | Eneo: ${d.location} | Hali: <span class="badge">${d.status}</span></small>
@@ -814,9 +813,9 @@
 
             let container = document.getElementById('modal-image-container');
             if(d.image_url) {
-                container.innerHTML = `<img src="${d.image_url}" alt="Picha" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/100?text=Hitilafu';">`;
+                container.innerHTML = `<img src="${d.image_url}" alt="Picha" style="width: 100px; height: 100px; object-fit: contain; border-radius: 6px; background: #eee; border: 1px solid #ddd;" onerror="this.src='https://via.placeholder.com/100?text=Hitilafu';">`;
             } else {
-                container.innerHTML = `<img src="https://via.placeholder.com/300?text=Hakuna+Picha" alt="" style="max-width: 100%; max-height: 250px; object-fit: cover; border-radius: 6px; background: #eee;">`;
+                container.innerHTML = `<img src="https://via.placeholder.com/300?text=Hakuna+Picha" alt="" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; background: #eee;">`;
             }
 
             let videoContainer = document.getElementById('modal-video-container');
