@@ -47,12 +47,6 @@ type User struct {
 	Username           string `json:"username"`
 	Role               string `json:"role"`
 	VerificationStatus string `json:"verification_status"`
-	FullName           string `json:"full_name"`
-	NidaNumber         string `json:"nida_number"`
-	IDType             string `json:"id_type"`
-	IDImageURL         string `json:"id_image_url"`
-	Location           string `json:"location"`
-	Phone              string `json:"phone"`
 	CreatedAt          string `json:"created_at"`
 }
 
@@ -78,14 +72,8 @@ func main() {
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 
 	http.HandleFunc("/", homeHandler)
-	
-	// Njia zilizotengwa kwa ajili ya Buyer na Seller
-	http.HandleFunc("/api/signup/buyer", signupBuyerHandler)
-	http.HandleFunc("/api/signin/buyer", signinBuyerHandler)
-	
-	http.HandleFunc("/api/signup/seller", signupSellerHandler)
-	http.HandleFunc("/api/signin/seller", signinSellerHandler)
-
+	http.HandleFunc("/api/signup", signupHandler)
+	http.HandleFunc("/api/signin", signinHandler)
 	http.HandleFunc("/api/designs", getDesignsHandler)
 	http.HandleFunc("/api/my-designs", getMyDesignsHandler)
 	http.HandleFunc("/api/upload", uploadDesignJSONHandler)
@@ -99,11 +87,7 @@ func main() {
 	http.HandleFunc("/api/admin/reject", adminRejectDesignHandler)
 	http.HandleFunc("/api/admin/delete-design", adminDeleteDesignHandler)
 	http.HandleFunc("/api/admin/orders", adminGetOrdersHandler)
-	
-	// Admin Endpoints kwa ajili ya kusimamia Wauzaji (Users)
 	http.HandleFunc("/api/admin/users", adminUsersHandler)
-	http.HandleFunc("/api/admin/approve-user", adminApproveUserHandler)
-	http.HandleFunc("/api/admin/reject-user", adminRejectUserHandler)
 	http.HandleFunc("/api/admin/delete-user", adminDeleteUserHandler)
 
 	port := os.Getenv("PORT")
@@ -127,12 +111,9 @@ func initDB() {
 		password TEXT NOT NULL,
 		role TEXT DEFAULT 'buyer',
 		verification_status TEXT DEFAULT 'approved',
-		full_name TEXT DEFAULT '',
-		nida_number TEXT DEFAULT '',
 		id_type TEXT DEFAULT '',
+		id_number TEXT DEFAULT '',
 		id_image_url TEXT DEFAULT '',
-		location TEXT DEFAULT '',
-		phone TEXT DEFAULT '',
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);`
 	_, err := db.Exec(queryUsers)
@@ -140,15 +121,11 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la app_accounts: %v", err)
 	}
 
-	// Kuhakikisha nguzo mpya za KYC zinakuwepo kama jedwali lilikuwepo tayari
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS role TEXT DEFAULT 'buyer';")
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS verification_status TEXT DEFAULT 'approved';")
-	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS full_name TEXT DEFAULT '';")
-	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS nida_number TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS id_type TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS id_number TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS id_image_url TEXT DEFAULT '';")
-	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS location TEXT DEFAULT '';")
-	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS phone TEXT DEFAULT '';")
 
 	queryDesigns := `
 	CREATE TABLE IF NOT EXISTS designs (
@@ -232,156 +209,117 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "templates/index.html")
 }
 
-// ----------------------------------------------------
-// NDEGE ZA WANUNUZI (BUYERS) - RAHISI
-// ----------------------------------------------------
-
-func signupBuyerHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
-		return
-	}
-
-	err := r.ParseForm()
-	w.Header().Set("Content-Type", "application/json")
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa"})
-		return
-	}
-
-	username := r.FormValue("username")
-	password := r.FormValue("password")
-
-	if username == "" || password == "" {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina la mtumiaji na nenosiri!"})
-		return
-	}
-
-	_, err = db.Exec("INSERT INTO app_accounts (username, password, role, verification_status) VALUES ($1, $2, 'buyer', 'approved')", username, password)
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari!"})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti ya mnunuzi imefunguliwa kikamilifu! Sasa unaweza kuingia."})
-}
-
-func signinBuyerHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
-		return
-	}
-
-	r.ParseForm()
-	username := r.FormValue("username")
-	password := r.FormValue("password")
-
-	w.Header().Set("Content-Type", "application/json")
-
-	var storedPass string
-	err := db.QueryRow("SELECT password FROM app_accounts WHERE username = $1 AND role = 'buyer'", username).Scan(&storedPass)
-	if err != nil || storedPass != password {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina la mtumiaji au nenosiri la mnunuzi si sahihi!"})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Umeingia kama Mnunuzi kwa mafanikio!", "role": "buyer"})
-}
-
-// ----------------------------------------------------
-// NDEGE ZA WAUZAJI (SELLERS) - ZINA NIDA YA LAZIMA NA KYC
-// ----------------------------------------------------
-
-func signupSellerHandler(w http.ResponseWriter, r *http.Request) {
+func signupHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
 		return
 	}
 
 	r.Body = http.MaxBytesReader(w, r.Body, 25<<20)
-	err := r.ParseForm()
 	w.Header().Set("Content-Type", "application/json")
+
+	var payload struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+		Role     string `json:"role"`
+		IDType   string `json:"id_type"`
+		IDNumber string `json:"id_number"`
+		IDImage  string `json:"id_image"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Faili ni kubwa sana au kuna tatizo kwenye data!"})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa au faili ni kubwa sana"})
 		return
 	}
 
-	username := r.FormValue("username")
-	password := r.FormValue("password")
-	fullName := r.FormValue("full_name")
-	nidaNumber := r.FormValue("nida_number") // LAZIMA
-	idType := r.FormValue("id_type")
-	location := r.FormValue("location")
-	phone := r.FormValue("phone")
-	rawIDImage := r.FormValue("id_image")
+	username := payload.Username
+	password := payload.Password
+	role := payload.Role
+	if role == "" {
+		role = "buyer"
+	}
 
-	if username == "" || password == "" || fullName == "" || nidaNumber == "" {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false, 
-			"message": "Tafadhali jaza Jina, Nenosiri, Jina Kamili, na Namba ya NIDA (Ni lazima)!",
-		})
+	if username == "" || password == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina la mtumiaji na nenosiri!"})
 		return
 	}
 
-	idImageURL := ""
-	if rawIDImage != "" && strings.HasPrefix(rawIDImage, "data:") {
-		if url, saveErr := saveBase64Media(rawIDImage); saveErr == nil {
-			idImageURL = url
+	var verificationStatus = "approved"
+	var idType = ""
+	var idNumber = ""
+	var idImageURL = ""
+
+	if role == "seller" {
+		verificationStatus = "pending"
+		idType = payload.IDType
+		idNumber = payload.IDNumber
+		rawIDImage := payload.IDImage
+
+		if rawIDImage != "" && strings.HasPrefix(rawIDImage, "data:") {
+			if savedURL, saveErr := saveBase64Media(rawIDImage); saveErr == nil {
+				idImageURL = savedURL
+			}
 		}
 	}
 
 	_, err = db.Exec(`
-		INSERT INTO app_accounts (username, password, role, verification_status, full_name, nida_number, id_type, id_image_url, location, phone) 
-		VALUES ($1, $2, 'seller', 'pending', $3, $4, $5, $6, $7, $8)`,
-		username, password, fullName, nidaNumber, idType, idImageURL, location, phone)
+		INSERT INTO app_accounts (username, password, role, verification_status, id_type, id_number, id_image_url) 
+		VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+		username, password, role, verificationStatus, idType, idNumber, idImageURL)
 
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false, 
-			"message": "Jina hili la mtumiaji au Namba hii ya NIDA imesajiliwa tayari!",
-		})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari!"})
 		return
+	}
+
+	msg := "Akaunti imefunguliwa kikamilifu! Sasa unaweza kuingia."
+	if role == "seller" {
+		msg = "Akaunti ya muuzaji imefunguliwa! Tafadhali subiri uthibitisho kutoka kwa uongozi kabla ya kuweka bidhaa."
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true, 
-		"message": "Akaunti ya Muuzaji imesajiliwa! Ipo kwenye hali ya 'Pending Verification'. Tafadhali subiri idhini ya Admin.",
-		"role": "seller",
-		"verification_status": "pending",
+		"message": msg,
+		"role": role,
+		"verification_status": verificationStatus,
 	})
 }
 
-func signinSellerHandler(w http.ResponseWriter, r *http.Request) {
+func signinHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
 		return
 	}
 
-	r.ParseForm()
-	username := r.FormValue("username")
-	password := r.FormValue("password")
-
 	w.Header().Set("Content-Type", "application/json")
 
-	var storedPass, verificationStatus string
-	err := db.QueryRow("SELECT password, verification_status FROM app_accounts WHERE username = $1 AND role = 'seller'", username).Scan(&storedPass, &verificationStatus)
-	if err != nil || storedPass != password {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina la mtumiaji au nenosiri la muuzaji si sahihi!"})
+	var payload struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusoma taarifa za kuingia"})
+		return
+	}
+
+	var storedPass, role, verificationStatus string
+	err = db.QueryRow("SELECT password, role, verification_status FROM app_accounts WHERE username = $1", payload.Username).Scan(&storedPass, &role, &verificationStatus)
+	if err != nil || storedPass != payload.Password {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina la mtumiaji au nenosiri si sahihi!"})
 		return
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true, 
-		"message": "Umeingia kama Muuzaji!",
-		"username": username,
-		"role": "seller",
+		"message": "Umeingia kwa mafanikio!",
+		"username": payload.Username,
+		"role": role,
 		"verification_status": verificationStatus,
 	})
 }
-
-// ----------------------------------------------------
-// SEHEMU NYINGINE ZA BIDHAA NA ODA
-// ----------------------------------------------------
 
 func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, title, description, price, image_url, video_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE status = 'approved' ORDER BY id DESC")
@@ -461,14 +399,13 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ULINZI: Hakikisha muuzaji ameidhinishwa na Admin ('approved') ndipo aweze kuweka bidhaa
 	if payload.DesignerName != "" {
 		var vStatus string
-		err = db.QueryRow("SELECT verification_status FROM app_accounts WHERE username = $1 AND role = 'seller'", payload.DesignerName).Scan(&vStatus)
+		err = db.QueryRow("SELECT verification_status FROM app_accounts WHERE username = $1", payload.DesignerName).Scan(&vStatus)
 		if err == nil && vStatus != "approved" {
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"success": false, 
-				"message": "Akaunti yako ya muuzaji inasubiri ukaguzi wa Admin (Pending). Huwezi kuweka bidhaa kwa sasa.",
+				"message": "Akaunti yako haijathibitishwa na Admin bado. Huwezi kupost bidhaa kwa sasa.",
 			})
 			return
 		}
@@ -504,7 +441,7 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa yako imewasilishwa kwa ukaguzi wa Admin!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Bidhaa yako (pamoja na picha na video) imewasilishwa kwa ukaguzi!"})
 }
 
 func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
@@ -733,17 +670,13 @@ func adminGetOrdersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(orders)
 }
 
-// ----------------------------------------------------
-// ADMIN USERS (KUSIMAMIA WAUZAJI NA NIDA ZAO)
-// ----------------------------------------------------
-
 func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	rows, err := db.Query("SELECT id, username, role, verification_status, full_name, nida_number, id_type, id_image_url, location, phone, created_at FROM app_accounts WHERE role = 'seller' ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, username, role, verification_status, created_at FROM app_accounts ORDER BY id DESC")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`[]`))
+		w.Write([]byte(`{"error": "Imeshindikana kusoma watumiaji"}`))
 		return
 	}
 	defer rows.Close()
@@ -751,7 +684,7 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.FullName, &u.NidaNumber, &u.IDType, &u.IDImageURL, &u.Location, &u.Phone, &u.CreatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.CreatedAt); err != nil {
 			continue
 		}
 		users = append(users, u)
@@ -763,46 +696,6 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(users)
-}
-
-func adminApproveUserHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
-		return
-	}
-
-	userID := r.URL.Query().Get("id")
-	_, err := db.Exec("UPDATE app_accounts SET verification_status = 'approved' WHERE id = $1", userID)
-	if err != nil {
-		http.Error(w, "Imeshindikana kuidhinisha muuzaji", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true, 
-		"message": "Muuzaji amethibitishwa kikamilifu (Approved) na sasa anaweza kuweka bidhaa!",
-	})
-}
-
-func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
-		return
-	}
-
-	userID := r.URL.Query().Get("id")
-	_, err := db.Exec("UPDATE app_accounts SET verification_status = 'rejected' WHERE id = $1", userID)
-  if err != nil {
-		http.Error(w, "Imeshindikana kukataa muuzaji", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true, 
-		"message": "Akaunti ya muuzaji imekataliwa.",
-	})
 }
 
 func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -819,10 +712,10 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, err := db.Exec("DELETE FROM app_accounts WHERE id = $1", userID)
 	if err != nil {
-		http.Error(w, "Imeshindikana kufuta muuzaji", http.StatusInternalServerError)
+		http.Error(w, "Imeshindikana kufuta mtumiaji", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Muuzaji amefutwa kabisa!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kabisa!"})
 }
