@@ -265,6 +265,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// MABADILIKO HAPA: Buyers wanakuwa approved moja kwa moja bila kusubiri
 	var verificationStatus = "approved"
 	var idImageURL = ""
 
@@ -713,6 +714,7 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+    // Inarudisha orodha kamili ya watumiaji wote (Buyers na Sellers) ili frontend iwachuje vizuri kwenye tabs tofauti
 	json.NewEncoder(w).Encode(users)
 }
 
