@@ -41,24 +41,28 @@
 
         .container { max-width: 1200px; margin: 0 auto; padding: 0 15px 30px 15px; flex: 1; width: 100%; box-sizing: border-box; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
-        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #dcdde1; }
-        
-        .card-img-wrapper { position: relative; width: 100%; background-color: #111; display: flex; align-items: center; justify-content: center; height: 240px; overflow: hidden; }
-        .card img { width: 100%; height: 100%; object-fit: contain; display: block; cursor: pointer; transition: transform 0.2s; }
-        .card img:hover { transform: scale(1.02); }
-        
-        .zoom-btn { position: absolute; bottom: 10px; right: 10px; background: rgba(0, 0, 0, 0.75); color: #fff; border: 1px solid rgba(255,255,255,0.5); padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 0.75em; display: flex; align-items: center; gap: 4px; z-index: 10; transition: background 0.2s; }
-        .zoom-btn:hover { background: rgba(0, 0, 0, 0.95); border-color: var(--accent); color: var(--accent); }
+        /* MAREKEBISHO YA KUWEKA COLUMN MBILI (TWO COLUMNS) */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        @media (max-width: 500px) {
+            .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        }
 
-        .card video { width: 100%; height: auto; max-height: 240px; object-fit: contain; background-color: #000; display: block; }
+        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #dcdde1; cursor: pointer; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); }
         
-        .card-content { padding: 12px; }
-        .card h3 { margin: 0 0 8px 0; font-size: 1.1em; color: var(--primary); }
-        .card p { font-size: 0.85em; color: #666; margin-bottom: 8px; }
-        .price { color: var(--accent); font-weight: bold; font-size: 1.1em; margin-bottom: 8px; display: block; }
+        .card-img-wrapper { position: relative; width: 100%; background-color: #111; display: flex; align-items: center; justify-content: center; height: 180px; overflow: hidden; }
+        .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        
+        .zoom-btn { position: absolute; bottom: 8px; right: 8px; background: rgba(0, 0, 0, 0.75); color: #fff; border: 1px solid rgba(255,255,255,0.5); padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 0.7em; display: flex; align-items: center; gap: 3px; z-index: 10; }
 
-        .payment-box { background: #e8f8f5; border-top: 1px solid #a3e4d7; padding: 10px 12px; }
+        .card video { width: 100%; height: auto; max-height: 180px; object-fit: contain; background-color: #000; display: block; }
+        
+        .card-content { padding: 10px; }
+        .card h3 { margin: 0 0 6px 0; font-size: 0.95em; color: var(--primary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .card p { font-size: 0.8em; color: #666; margin-bottom: 6px; }
+        .price { color: var(--success); font-weight: bold; font-size: 0.95em; margin-bottom: 6px; display: block; }
+
+        .payment-box { background: #e8f8f5; border-top: 1px solid #a3e4d7; padding: 8px 10px; }
         input, select, textarea { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; }
         .btn { background: var(--success); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 1em; width: 100%; font-weight: bold; transition: background 0.2s; }
         .btn:hover { background: #219653; }
@@ -146,7 +150,7 @@
             ⚠️ ONYO LA KIUSALAMA: SokoSmart TZ inalindwa chini ya mifumo ya kisasa ya Cyber Security. Vitendo vyote vya udanganyifu au utapeli vinafuatiliwa na akaunti yako itafutwa mara moja!
         </div>
 
-        <!-- 1. MARKETPLACE SECTION -->
+        <!-- 1. MARKETPLACE SECTION (GRID YA COLUMN MBILI) -->
         <div id="market" class="section">
             <div id="market-auth-warning" class="auth-banner" style="display:none;">
                 Tafadhali fanya <a href="#" onclick="switchTab('signin')" style="color:var(--accent);">Sign In</a> au <a href="#" onclick="switchTab('signup')" style="color:var(--accent);">Sign Up</a> kwanza ili uweze kuona na kununua bidhaa zote zilizopo kwenye SokoSmart!
@@ -154,6 +158,61 @@
             <div id="market-content-area">
                 <div class="grid" id="designs-grid">
                     <p style="text-align:center; grid-column: 1/-1;">Inapakia bidhaa...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 1.1 PRODUCT DETAILS SECTION (UKURASA WA MAELEZO YA BIDHAA NA MAWASILIANO YA SELLER) -->
+        <div id="product-details" class="section">
+            <div class="form-card" style="max-width: 650px; padding: 20px;">
+                <button onclick="switchTab('market')" style="background: none; border: none; color: var(--primary); font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 1em;">← Rudi kwenye Orodha</button>
+                
+                <div id="detail-image-box" style="position: relative; width: 1000%; max-width: 100%; height: 280px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 15px; display: flex; align-items: center; justify-content: center;">
+                    <img id="detail-img" src="" alt="" style="width: 100%; height: 100%; object-fit: contain; cursor: pointer;" onclick="openMarketImageModal(this.src)">
+                </div>
+                <div id="detail-video-box" style="margin-bottom: 15px;"></div>
+
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                    <div>
+                        <span id="detail-category" style="font-size: 0.75em; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #4a5568;"></span>
+                        <h2 id="detail-title" style="margin: 5px 0 0 0; color: var(--primary); font-size: 1.3em;"></h2>
+                    </div>
+                    <div style="text-align: right;">
+                        <span id="detail-price" style="color: var(--success); font-weight: bold; font-size: 1.2em; display: block;"></span>
+                        <span style="font-size: 0.75em; color: #888;">Negotiable</span>
+                    </div>
+                </div>
+
+                <p style="font-size: 0.85em; color: #666; margin: 5px 0;">📍 <span id="detail-location"></span></p>
+                <p style="font-size: 0.8em; color: #888; margin: 0 0 15px 0;">Muuzaji: <strong id="detail-designer"></strong></p>
+
+                <!-- MAWASILIANO NA MUUZAJI (SELLER CONTACTS AS IN JIJICOTZ) -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn" style="background: #fff; color: var(--primary); border: 1px solid var(--primary); font-size: 0.9em;" onclick="alert('Ombi la kupigiwa simu limetumwa kwa muuzaji!')">Request call back</button>
+                    <a id="detail-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 07XXXXXXXX</a>
+                </div>
+
+                <!-- CHAT WITH THE SELLER SECTION -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: var(--primary);">Chat with the seller</h4>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
+                        <button type="button" onclick="setQuickMsg('Make an offer')" style="background: #fff; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; font-size: 0.8em; cursor: pointer;">Make an offer</button>
+                        <button type="button" onclick="setQuickMsg('Is this available')" style="background: #fff; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; font-size: 0.8em; cursor: pointer;">Is this available</button>
+                        <button type="button" onclick="setQuickMsg('Last price')" style="background: #fff; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; font-size: 0.8em; cursor: pointer;">Last price</button>
+                    </div>
+                    <textarea id="chat-msg-input" placeholder="Type a message..." rows="2" style="margin-bottom: 8px;"></textarea>
+                    <button class="btn" style="background: var(--accent);" onclick="sendSellerMessage()">Start chat</button>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 20px;">
+                    <strong style="display: block; margin-bottom: 5px; color: var(--primary);">Maelezo Kamili (Description):</strong>
+                    <p id="detail-desc" style="margin: 0; white-space: pre-wrap; font-size: 0.9em; color: #444;"></p>
+                </div>
+
+                <div class="payment-box" style="border-radius: 6px;">
+                    <p style="margin:0 0 5px 0; font-size:0.85em;"><strong>Lipa kupitia Tigo Lipa Namba:</strong> 45416553 (SALMIN TAMIMU HUSEIN)</p>
+                    <input type="text" id="detail-pay-phone" placeholder="Namba yako ya simu uliyolipia" style="margin-bottom:8px;">
+                    <button class="btn" id="detail-pay-btn">Nimemaliza Kulipa</button>
                 </div>
             </div>
         </div>
@@ -439,7 +498,7 @@
         }
 
         function switchTab(tabId) {
-            if(!currentUser && (tabId === 'market' || tabId === 'designer' || tabId === 'my-products')) {
+            if(!currentUser && (tabId === 'market' || tabId === 'designer' || tabId === 'my-products' || tabId === 'product-details')) {
                 tabId = 'signin';
             }
 
@@ -732,37 +791,76 @@
                 
                 let imageHTML = d.image_url ? `
                     <div class="card-img-wrapper">
-                        <img src="${safeImg}" alt="${d.title}" onclick="openMarketImageModal('${safeImg}')" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x260?text=SokoSmart+TZ';">
-                        <button type="button" class="zoom-btn" onclick="openMarketImageModal('${safeImg}')" title="Panua Picha">
+                        <img src="${safeImg}" alt="${d.title}" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x260?text=SokoSmart+TZ';">
+                        <button type="button" class="zoom-btn" onclick="event.stopPropagation(); openMarketImageModal('${safeImg}')" title="Panua Picha">
                             🔍 <span>Panua</span>
                         </button>
                     </div>
                 ` : '';
-                
-                let videoHTML = d.video_url ? `<video src="${d.video_url}" controls muted></video>` : '';
 
                 return `
-                <div class="card">
+                <div class="card" onclick="openProductDetails(${d.id})">
                     <div>
                         ${imageHTML}
-                        ${videoHTML}
                         <div class="card-content">
-                            <span style="font-size: 0.75em; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #4a5568;">${d.category || 'General'}</span>
+                            <span style="font-size: 0.7em; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #4a5568;">${d.category || 'General'}</span>
                             <h3>${d.title}</h3>
-                            <p>${d.description}</p>
                             <span class="price">Tsh ${d.price.toLocaleString()}</span>
-                            <p style="font-size:0.8em; color:#666; margin:2px 0;">📍 Eneo: <strong>${d.location || 'Tanzania'}</strong></p>
-                            <p style="font-size:0.8em; color:#666; margin:2px 0;">📞 Simu: <strong>${d.vendor_phone || 'N/A'}</strong></p>
-                            <p style="font-size:0.75em; color:#888; margin:4px 0 0 0;">Muuzaji: <strong>${d.designer_name}</strong></p>
+                            <p style="font-size:0.75em; color:#666; margin:2px 0;">📍 ${d.location || 'Tanzania'}</p>
                         </div>
-                    </div>
-                    <div class="payment-box">
-                        <p style="margin:0 0 5px 0; font-size:0.8em;"><strong>Lipa Tsh ${d.price.toLocaleString()}</strong> kwenda Tigo Lipa Namba: <strong>45416553</strong> (SALMIN TAMIMU HUSEIN)</p>
-                        <input type="text" id="phone-${d.id}" placeholder="Namba yako ya simu uliyolipia" style="margin-bottom:5px; padding: 8px;">
-                        <button class="btn" onclick="buyDesign(${d.id}, '${d.title.replace(/'/g, "\\'")}', ${d.price})">Nimemaliza Kulipa</button>
                     </div>
                 </div>
             `}).join('');
+        }
+
+        // KAZI YA KUFUNGUA UKURASA WA MAELEZO YA BIDHAA (DETAILS VIEW)
+        function openProductDetails(id) {
+            const d = allApprovedDesigns.find(item => item.id === id);
+            if(!d) return;
+
+            document.getElementById('detail-title').innerText = d.title;
+            document.getElementById('detail-price').innerText = "Tsh " + d.price.toLocaleString();
+            document.getElementById('detail-location').innerText = d.location || 'Tanzania';
+            document.getElementById('detail-designer').innerText = d.designer_name;
+            document.getElementById('detail-category').innerText = d.category;
+            document.getElementById('detail-desc').innerText = d.description;
+
+            let imgEl = document.getElementById('detail-img');
+            imgEl.src = d.image_url || 'https://via.placeholder.com/300?text=SokoSmart';
+
+            let videoBox = document.getElementById('detail-video-box');
+            if(d.video_url) {
+                videoBox.innerHTML = `<video src="${d.video_url}" controls style="width: 100%; max-height: 250px; background: #000; border-radius: 6px;"></video>`;
+            } else {
+                videoBox.innerHTML = '';
+            }
+
+            let phoneBtn = document.getElementById('detail-phone-btn');
+            let phoneNum = d.vendor_phone || '0712345678';
+            phoneBtn.innerText = phoneNum;
+            phoneBtn.href = `tel:${phoneNum}`;
+
+            // Kifungo cha malipo kwenye ukurasa wa maelezo
+            let payBtn = document.getElementById('detail-pay-btn');
+            payBtn.onclick = function() {
+                buyDesign(d.id, d.title, d.price, 'detail-pay-phone');
+            };
+
+            switchTab('product-details');
+        }
+
+        function setQuickMsg(text) {
+            document.getElementById('chat-msg-input').value = text;
+        }
+
+        function sendSellerMessage() {
+            let msg = document.getElementById('chat-msg-input').value.trim();
+            if(!msg) {
+                alert('Tafadhali andika ujumbe kwanza!');
+                return;
+            }
+            alert('Ujumbe wako umeanza kuwasilishwa kwa muuzaji kupitia mfumo wa SokoSmart!');
+            document.getElementById('chat-msg-input').value = '';
         }
 
         function openMarketImageModal(imgSrc) {
@@ -886,14 +984,14 @@
                 });
         }
 
-        function buyDesign(id, title, price) {
+        function buyDesign(id, title, price, inputId = '') {
             if(!currentUser) {
                 alert('Tafadhali fanya Sign In kwanza ndipo uweze kununua bidhaa!');
                 switchTab('signin');
                 return;
             }
 
-            let phoneInput = document.getElementById('phone-' + id);
+            let phoneInput = document.getElementById(inputId ? inputId : ('phone-' + id));
             let phone = phoneInput ? phoneInput.value.trim() : '';
             if(!phone) {
                 alert('Tafadhali weka namba yako ya simu uliyotumia kufanya malipo!');
