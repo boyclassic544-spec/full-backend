@@ -85,6 +85,7 @@ func main() {
 	http.HandleFunc("/api/designs", getDesignsHandler)
 	http.HandleFunc("/api/my-designs", getMyDesignsHandler)
 	http.HandleFunc("/api/upload", uploadDesignJSONHandler)
+	http.HandleFunc("/api/storyteller/upload", uploadDesignJSONHandler)
 	http.HandleFunc("/api/update-design", updateDesignJSONHandler)
 	http.HandleFunc("/api/delete-design", deleteMyDesignHandler)
 	http.HandleFunc("/api/buy", buyDesignHandler)
