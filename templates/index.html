@@ -55,7 +55,6 @@
         .card p { font-size: 0.8em; color: #666; margin-bottom: 6px; }
         .price { color: var(--success); font-weight: bold; font-size: 0.95em; margin-bottom: 6px; display: block; }
 
-        /* Gridi ya Hadithi (Gridi Mbili) */
         .stories-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         @media (max-width: 600px) {
             .stories-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
@@ -67,7 +66,6 @@
         .story-grid-title { font-size: 0.95em; font-weight: bold; color: var(--primary); margin: 0 0 6px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .story-grid-meta { font-size: 0.75em; color: #718096; margin-bottom: 10px; }
 
-        /* Background Maalum ya Sehemu ya Kusoma Hadithi (Reader View Modal) */
         .story-reader-content {
             background-color: #fdfbf7 !important;
             border: 2px solid #e2d9c2;
@@ -188,7 +186,7 @@
             </div>
         </div>
 
-        <!-- 1.3 READER VIEW MODAL FOR FULL STORY (Imeongezwa sehemu ya mawasiliano na malipo ya mwandishi) -->
+        <!-- 1.3 READER VIEW MODAL FOR FULL STORY -->
         <div id="story-reader-modal" class="modal">
             <div class="modal-content story-reader-content" style="max-width: 700px;">
                 <span class="close-modal" onclick="closeStoryModal()">&times;</span>
@@ -201,17 +199,17 @@
                 </div>
                 <div id="modal-story-content" style="font-size: 1em; color: #2c2c2c; line-height: 1.85; white-space: pre-wrap; max-height: 50vh; overflow-y: auto; padding-right: 5px; margin-bottom: 20px;"></div>
                 
-                <!-- Sehemu ya Mawasiliano na Malipo ya Hadithi -->
+                <!-- Sehemu ya Mawasiliano na Malipo ya Hadithi (Imewekwa namba halisi ya mwandishi) -->
                 <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2d9c2;">
                     <h4 style="margin: 0 0 8px 0; color: var(--primary);">Wasiliana na Mwandishi / Nunua Hati hii</h4>
                     <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">Simu ya Mwandishi:</p>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <a id="modal-story-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 Wasiliana na Mwandishi</a>
+                        <a id="modal-story-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 07XXXXXXXX</a>
                     </div>
                     <div class="payment-box" style="border-radius: 6px;">
                         <p style="margin:0 0 5px 0; font-size:0.85em;"><strong>Weka namba yako ya malipo ili kununua huduma hii:</strong></p>
                         <input type="text" id="story-pay-phone" placeholder="Namba yako ya simu ya malipo" style="margin-bottom:8px;">
-                        <button class="btn" onclick="alert('Ombi lako la malipo ya hadithi limewasilishwa!')">Nimemaliza Kulipa Hadithi</button>
+                        <button class="btn" onclick="alert('Ombi lako la malipo ya hadithi limewasilishwa kwa mwandishi!')">Nimemaliza Kulipa Hadithi</button>
                     </div>
                 </div>
             </div>
@@ -222,15 +220,12 @@
             <div class="form-card" style="max-width: 650px; padding: 20px;">
                 <button onclick="switchTab('market')" style="background: none; border: none; color: var(--primary); font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 1em;">← Rudi kwenye Orodha</button>
 
-                <!-- Picha Kuu ya Bidhaa -->
                 <div id="detail-image-box" style="position: relative; width: 100%; max-width: 100%; height: 280px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 8px; display: flex; align-items: center; justify-content: center;">
                     <img id="detail-img" src="" alt="" style="width: 100%; height: 100%; object-fit: contain; cursor: pointer;" onclick="openMarketImageModal(this.src)">
                 </div>
 
-                <!-- Picha Ndogo za Kuchagua (Thumbnails za Picha 2, 3, 4) -->
                 <div id="detail-thumbs-row" style="display: flex; gap: 6px; margin-bottom: 15px; overflow-x: auto;"></div>
 
-                <!-- Sehemu ya Video ya Bidhaa -->
                 <div id="detail-video-box" style="margin-bottom: 15px; display: none;">
                     <video id="detail-video" controls style="width: 100%; max-height: 250px; background: #000; border-radius: 6px;"></video>
                 </div>
@@ -251,8 +246,7 @@
 
                 <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                     <button class="btn" style="background: #fff; color: var(--primary); border: 1px solid var(--primary); font-size: 0.9em;" onclick="alert('Ombi la kupigiwa simu limetumwa kwa muuzaji!')">Request call back</button>
-                    <!-- Hapa sasa inatokea namba halisi ya muuzaji aliyoweka kwenye fomu -->
-                    <a id="detail-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 Piga Simu</a>
+                    <a id="detail-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 07XXXXXXXX</a>
                 </div>
 
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
@@ -387,16 +381,20 @@
             </div>
         </div>
 
-        <!-- 4.1 STORYTELLER UPLOAD SECTION -->
+        <!-- 4.1 STORYTELLER UPLOAD SECTION (Imeongezwa Sehemu ya Namba ya Simu ya Mwandishi) -->
         <div id="storyteller-upload-section" class="section">
             <div class="form-card" style="max-width: 600px;">
                 <h2 style="margin-top:0; color: var(--primary);">Andika na Chapisha Hadithi Yako</h2>
                 <div style="background: #e8f8f5; border-left: 4px solid var(--success); padding: 10px; margin-bottom: 15px; font-size: 0.85em; color: #0e6655;">
-                    ✍️ Weka picha ya cover, andika kichwa cha habari, kisha panga hadithi yako vizuri.
+                    ✍️ Weka picha ya cover, kichwa cha habari, namba yako ya simu ya kupokea malipo, na maudhui ya hadithi.
                 </div>
                 <form id="story-upload-form" onsubmit="handleStoryUpload(event)">
                     <label>Kichwa cha Habari / Kichwa cha Hadithi</label>
                     <input type="text" id="story-title" placeholder="Mf. Siri ya Mafanikio ya Biashara..." required>
+
+                    <!-- HAPA NDIPO TUMEONGEZA SEHEMU YA NAMBA YA SIMU YA MWANDISHI -->
+                    <label>Namba ya Simu ya Mwandishi (Ya Kupokea Malipo/Mawasiliano)</label>
+                    <input type="text" id="story-phone" placeholder="Mf. 0712345678" required>
 
                     <label>Picha ya Cover ya Hadithi (Lazima / Hiari)</label>
                     <input type="file" id="story-image-file" accept="image/*" style="background: #fff; padding: 8px;" required>
@@ -777,6 +775,7 @@
                 });
         }
 
+        // Hapa ndipo tunatumia namba halisi ya simu ya mwandishi iliyojazwa kwenye fomu
         function openStoryModal(id) {
             const s = allApprovedStories.find(item => item.id === id);
             if(!s) return;
@@ -785,11 +784,10 @@
             document.getElementById('modal-story-date').innerText = s.created_at ? s.created_at.substring(0,10) : '';
             document.getElementById('modal-story-content').innerText = s.content;
 
-            // Weka namba ya mwandishi au mfumo wa kupigia kwenye hadithi
             const phoneBtn = document.getElementById('modal-story-phone-btn');
-            phoneBtn.innerText = `📞 Wasiliana na ${s.storyteller_name}`;
-            phoneBtn.href = `#`;
-            phoneBtn.onclick = () => alert(`Unafanya mawasiliano na mwandishi ${s.storyteller_name}`);
+            let phoneNum = s.story_phone || '0623630553';
+            phoneBtn.innerText = `📞 Wasiliana na ${s.storyteller_name} (${phoneNum})`;
+            phoneBtn.href = `tel:${phoneNum}`;
 
             const coverBox = document.getElementById('modal-story-cover-box');
             const coverImg = document.getElementById('modal-story-img');
@@ -824,7 +822,7 @@
                                 ${s.cover_image ? `<img src="${s.cover_image}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 6px;">` : ''}
                                 <div>
                                     <strong style="font-size:1em; color:var(--primary);">${s.title}</strong><br>
-                                    <small style="color:#666;">Hali: <span class="badge">${s.status}</span> | Tarehe: ${s.created_at ? s.created_at.substring(0,10) : ''}</small>
+                                    <small style="color:#666;">Simu: ${s.story_phone || 'N/A'} | Hali: <span class="badge">${s.status}</span></small>
                                 </div>
                             </div>
                             <div>
@@ -852,6 +850,7 @@
 
             const payload = {
                 title: document.getElementById('story-title').value,
+                story_phone: document.getElementById('story-phone').value,
                 content: document.getElementById('story-content').value,
                 cover_image: imgBase64,
                 storyteller_name: currentUser
@@ -1052,7 +1051,6 @@
             `).join('');
         }
 
-        // Hapa ndipo tulibadilisha namba ya simu ya muuzaji iwe ile halisi iliyojazwa kwenye fomu
         function openProductDetails(id) {
             const d = allApprovedDesigns.find(item => item.id === id);
             if(!d) return;
@@ -1062,7 +1060,6 @@
             document.getElementById('detail-designer').innerText = d.designer_name;
             document.getElementById('detail-desc').innerText = d.description;
 
-            // Kuweka namba ya simu halisi ya muuzaji kwenye kitufe
             const phoneBtn = document.getElementById('detail-phone-btn');
             let phoneNum = d.vendor_phone || '0623630553';
             phoneBtn.innerText = `📞 ${phoneNum}`;
@@ -1159,7 +1156,7 @@
                             ${s.cover_image ? `<img src="${s.cover_image}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px;">` : ''}
                             <div>
                                 📖 <strong>${s.title}</strong> <br>
-                                <small style="color:#666;">Mwandishi: <strong>${s.storyteller_name}</strong> | Tarehe: ${s.created_at ? s.created_at.substring(0,10) : ''}</small>
+                                <small style="color:#666;">Mwandishi: <strong>${s.storyteller_name}</strong> (Simu: ${s.story_phone || 'N/A'})</small>
                             </div>
                         </div>
                         <div style="display:flex; gap:5px;">
@@ -1184,12 +1181,10 @@
                     <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; flex-wrap:wrap; gap:10px;">
                         <div>
                             👤 <strong>${u.username}</strong> (NIDA: ${u.id_number || 'N/A'}) - Hali: ${statusBadge}
-                            <br><small style="color:#666;">Tarehe: ${u.created_at}</small>
                         </div>
                         <div style="display:flex; gap:5px; flex-wrap:wrap;">
                             <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">🔍 Angalia Kitambulisho</button>
                             <button onclick="approveUser(${u.id})" style="background:var(--success); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">✅ Idhinisha</button>
-                            <button onclick="rejectUser(${u.id})" style="background:var(--accent); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">❌ Kataa na Sababu</button>
                             <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">🗑️ Futa Kabisa</button>
                         </div>
                     </div>
@@ -1270,16 +1265,6 @@
 
         function approveUser(id) {
             fetch('/api/admin/approve-user?id=' + id, { method: 'POST' }).then(() => loadAdminData());
-        }
-
-        function rejectUser(id) {
-            let reason = prompt("Weka sababu ya kukataa ombi hili:");
-            if(reason === null) return;
-            fetch('/api/admin/reject-user', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `id=${id}&reason=` + encodeURIComponent(reason)
-            }).then(() => loadAdminData());
         }
 
         function deleteUser(id, username) {
