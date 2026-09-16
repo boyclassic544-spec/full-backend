@@ -194,7 +194,7 @@
                     <img id="modal-story-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
                 
-                <!-- Hapa tumeongeza kitufe cha online/offline status (kidoti cha kijani/nyekundu) pembeni ya jina la mwandishi -->
+                <!-- Hapa kuna kitufe cha online/offline status (kidoti cha kijani/nyekundu) pembeni ya jina la mwandishi -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h2 id="modal-story-title" style="color: var(--primary); margin: 0; font-size: 1.3em;"></h2>
                     <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85em; background: #fff; padding: 4px 10px; border-radius: 20px; border: 1px solid #ddd;">
@@ -207,7 +207,7 @@
                     ✍️ Mwandishi: <strong id="modal-story-author"></strong> | 📅 <span id="modal-story-date"></span>
                 </div>
 
-                <!-- Sehemu ya Maudhui ya Hadithi (Inafunguka au kusubiri uthibitisho wa mwandishi kulingana na malipo) -->
+                <!-- Sehemu ya Maudhui ya Hadithi -->
                 <div id="modal-story-content-container">
                     <div id="modal-story-content" style="font-size: 1em; color: #2c2c2c; line-height: 1.85; white-space: pre-wrap; max-height: 50vh; overflow-y: auto; padding-right: 5px; margin-bottom: 20px;"></div>
                 </div>
@@ -440,7 +440,7 @@
                             <button id="profile-action-btn" class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85em; font-weight:bold;">+ Weka Bidhaa</button>
                         </div>
 
-                        <!-- SEHEMU YA ODA NA MALIPO YA HADITHI KWA MWANDISHI (Imeongezwa Hapa) -->
+                        <!-- SEHEMU YA ODA NA MALIPO YA HADITHI KWA MWANDISHI -->
                         <div id="storyteller-orders-box" style="display:none; margin-top: 20px; background: #fffdf9; border: 1px solid #e2d9c2; padding: 15px; border-radius: 8px;">
                             <h4 style="margin: 0 0 10px 0; color: var(--primary);">Oda na Malipo ya Wasomaji (Subiri Uthibitishe)</h4>
                             <div id="storyteller-orders-list">
@@ -609,7 +609,6 @@
         let allApprovedStories = [];
         let currentSelectedCategory = 'All';
 
-        // Local storage kwa ajili ya kuhifadhi maombi ya malipo ya wasomaji (Mock Database ya Mwandishi)
         let storyPaymentOrders = JSON.parse(localStorage.getItem('sokosmart_story_orders') || '[]');
 
         function updateAuthUI() {
@@ -803,7 +802,6 @@
                 });
         }
 
-        // Kufungua modal ya hadithi na kuangalia hali ya Online/Offline na kama malipo yamedhibitishwa
         function openStoryModal(id) {
             const s = allApprovedStories.find(item => item.id === id);
             if(!s) return;
@@ -811,7 +809,6 @@
             document.getElementById('modal-story-author').innerText = s.storyteller_name;
             document.getElementById('modal-story-date').innerText = s.created_at ? s.created_at.substring(0,10) : '';
 
-            // Hali ya Online/Offline ya mwandishi (Mock simulation: tunaweka online)
             let isOnline = true; 
             let dot = document.getElementById('author-status-dot');
             let txt = document.getElementById('author-status-text');
@@ -823,12 +820,11 @@
                 txt.innerText = 'Offline';
             }
 
-            // Angalia kama mtumiaji amefanya malipo na yamethibitishwa na mwandishi
             let contentDiv = document.getElementById('modal-story-content');
             let existingOrder = storyPaymentOrders.find(o => o.storyId === id && o.username === currentUser);
 
             if(existingOrder && existingOrder.status === 'confirmed') {
-                contentDiv.innerText = s.content; // Imethibitishwa, soma kabisa
+                contentDiv.innerText = s.content;
                 document.getElementById('payment-status-notice').innerText = "✅ Malipo yako yamethibitishwa na mwandishi. Furahia kusoma!";
             } else if(existingOrder && existingOrder.status === 'rejected') {
                 contentDiv.innerText = "[Hadithi imefungwa: Mwandishi amekataa au hakujiridhisha na malipo yako. Tafadhali rudia kulipa kwa usahihi au wasiliana naye.]";
@@ -862,13 +858,11 @@
             document.getElementById('story-reader-modal').style.display = 'none';
         }
 
-        // Mteja anawasilisha namba yake ya malipo kusubiri idhini ya mwandishi
         function submitStoryPayment() {
             if(!currentUser) { alert('Tafadhali ingia kwanza!'); switchTab('signin'); return; }
             let payPhone = document.getElementById('story-pay-phone').value.trim();
             if(!payPhone) { alert('Weka namba yako ya simu ya malipo!'); return; }
             
-            // Pata hadithi iliyo wazi sasa kwenye modal
             let titleText = document.getElementById('modal-story-title').innerText;
             let s = allApprovedStories.find(item => item.title === titleText);
             if(!s) return;
@@ -881,7 +875,7 @@
                 storyteller: s.storyteller_name,
                 username: currentUser,
                 phone: payPhone,
-                status: 'pending' // pending, confirmed, rejected
+                status: 'pending'
             };
 
             if(existingIndex >= 0) {
@@ -896,7 +890,6 @@
             document.getElementById('modal-story-content').innerText = "[Ombi lako la malipo limeshawasilishwa kwa mwandishi. Subiri akague na ku-confirm...]";
         }
 
-        // Kupakia oda za malipo kwa upande wa mwandishi kwenye Dashboard yake
         function loadStorytellerOrders() {
             if(!currentUser || currentUserRole !== 'storyteller') return;
             const container = document.getElementById('storyteller-orders-list');
@@ -921,7 +914,6 @@
             `).join('');
         }
 
-        // Mwandishi anathibitisha malipo (Confirm)
         function confirmStoryPayment(orderId) {
             let order = storyPaymentOrders.find(o => o.id === orderId);
             if(order) {
@@ -932,7 +924,6 @@
             }
         }
 
-        // Mwandishi anakataa malipo (Reject) ikiwa hajaridhishwa au hajapata pesa
         function rejectStoryPayment(orderId) {
             let order = storyPaymentOrders.find(o => o.id === orderId);
             if(order) {
