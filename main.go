@@ -464,7 +464,7 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Faili ni kubwa sana au kuna tatizo kwenye data! Jaribu kupunguza ukubwa wa video au picha."})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Faili ni kubwa sana au kuna tatizo kwenye data!"})
 		return
 	}
 
@@ -474,16 +474,10 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil || vStatus != "approved" {
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"success": false,
-				"message": "Akaunti yako bado haijapitishwa na Admin au imefutwa. Huwezi kupost bidhaa kwa sasa.",
+				"message": "Akaunti yako bado haijapitishwa na Admin au imefutwa.",
 			})
 			return
 		}
-	} else {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"message": "Jina la mtengenezaji (designer_name) linahitajika.",
-		})
-		return
 	}
 
 	finalImg := payload.ImageURL
@@ -525,14 +519,13 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		finalImg = "https://via.placeholder.com/300"
 	}
 	if payload.Location == "" {
-		payload.Location = "Morogoro, Tanzania"
+		payload.Location = "Tanzania"
 	}
 
 	_, err = db.Exec("INSERT INTO designs (title, description, price, image_url, image_url2, image_url3, image_url4, video_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'approved', '')",
 		payload.Title, payload.Description, payload.Price, finalImg, finalImg2, finalImg3, finalImg4, finalVideo, payload.Category, payload.DesignerName, payload.Location, payload.VendorPhone)
 
 	if err != nil {
-		log.Printf("DB error: %v", err)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuweka bidhaa kwenye database"})
 		return
 	}
@@ -566,7 +559,7 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Faili ni kubwa sana au kuna tatizo kwenye data! Jaribu kupunguza ukubwa wa video au picha."})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Tatizo kwenye kusoma data ya bidhaa."})
 		return
 	}
 
@@ -840,11 +833,7 @@ func adminGetBuyersHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(buyers)
 }
 
-func adminGetSellersHandler(w http.ResponseWriter, r *http.SourceContextRequest) { // kept standard standard signature below
-// standard signature:
-}
-
-func adminGetSellersHandlerReal(w http.ResponseWriter, r *http.Request) {
+func adminGetSellersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), created_at FROM app_accounts WHERE role = 'seller' ORDER BY id DESC")
 	if err != nil {
@@ -868,11 +857,6 @@ func adminGetSellersHandlerReal(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(sellers)
-}
-
-// Re-assign to match exact original function name used in main() routing
-func adminGetSellersHandler(w http.ResponseWriter, r *http.Request) {
-	adminGetSellersHandlerReal(w, r)
 }
 
 func adminApproveUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -917,7 +901,7 @@ func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti ya muuzaji imekataliwa na ujumbe umehifadhiwa!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti ya muuzaji imekataliwa!"})
 }
 
 func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
