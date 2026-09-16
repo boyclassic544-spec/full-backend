@@ -192,7 +192,6 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la designs: %v", err)
 	}
 
-	// Jedwali Jipya Maalum la Hadithi (Stories Feed & Dashboard)
 	queryStories := `
 	CREATE TABLE IF NOT EXISTS stories (
 		id SERIAL PRIMARY KEY,
@@ -418,8 +417,6 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 		"rejection_reason":    u.RejectionReason,
 	})
 }
-
-// ----------------- API ZA SOKO KUU (SELLERS / PRODUCTS) -----------------
 
 func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, title, description, price, image_url, COALESCE(image_url2,''), COALESCE(image_url3,''), COALESCE(image_url4,''), video_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE status = 'approved' ORDER BY id DESC")
@@ -647,9 +644,6 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Oda imepokelewa!"})
 }
 
-
-// ----------------- API ZA HADITHI (STORIES FEED & DASHBOARD - NAMBA 2 & 3) -----------------
-
 func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, title, content, cover_image, storyteller_name, status, rejection_reason, created_at FROM stories WHERE status = 'approved' ORDER BY id DESC")
 	if err != nil {
@@ -678,7 +672,7 @@ func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
 func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	storyteller := r.URL.Query().Get("storyteller")
 	if storyteller == "" {
-		storyteller = r.URL.Query().Get("designer") // fallback endapo frontend itatumia designer
+		storyteller = r.URL.Query().Get("designer")
 	}
 
 	rows, err := db.Query("SELECT id, title, content, cover_image, storyteller_name, status, rejection_reason, created_at FROM stories WHERE storyteller_name = $1 ORDER BY id DESC", storyteller)
@@ -797,9 +791,6 @@ func deleteMyStoryHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi imefutwa!"})
 }
-
-
-// ----------------- ADMIN API -----------------
 
 func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -962,7 +953,7 @@ func adminRejectStoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-> 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi imekataliwa!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi imekataliwa!"})
 }
 
 func adminDeleteStoryHandler(w http.ResponseWriter, r *http.Request) {
