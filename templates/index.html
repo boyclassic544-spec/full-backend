@@ -188,7 +188,7 @@
             </div>
         </div>
 
-        <!-- 1.3 READER VIEW MODAL FOR FULL STORY -->
+        <!-- 1.3 READER VIEW MODAL FOR FULL STORY (Imeongezwa sehemu ya mawasiliano na malipo ya mwandishi) -->
         <div id="story-reader-modal" class="modal">
             <div class="modal-content story-reader-content" style="max-width: 700px;">
                 <span class="close-modal" onclick="closeStoryModal()">&times;</span>
@@ -199,11 +199,25 @@
                 <div style="font-size: 0.8em; color: #718096; margin-bottom: 15px; border-bottom: 1px solid #dcd6c1; padding-bottom: 8px;">
                     ✍️ Mwandishi: <strong id="modal-story-author"></strong> | 📅 <span id="modal-story-date"></span>
                 </div>
-                <div id="modal-story-content" style="font-size: 1em; color: #2c2c2c; line-height: 1.85; white-space: pre-wrap; max-height: 60vh; overflow-y: auto; padding-right: 5px;"></div>
+                <div id="modal-story-content" style="font-size: 1em; color: #2c2c2c; line-height: 1.85; white-space: pre-wrap; max-height: 50vh; overflow-y: auto; padding-right: 5px; margin-bottom: 20px;"></div>
+                
+                <!-- Sehemu ya Mawasiliano na Malipo ya Hadithi -->
+                <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2d9c2;">
+                    <h4 style="margin: 0 0 8px 0; color: var(--primary);">Wasiliana na Mwandishi / Nunua Hati hii</h4>
+                    <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">Simu ya Mwandishi:</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <a id="modal-story-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 Wasiliana na Mwandishi</a>
+                    </div>
+                    <div class="payment-box" style="border-radius: 6px;">
+                        <p style="margin:0 0 5px 0; font-size:0.85em;"><strong>Weka namba yako ya malipo ili kununua huduma hii:</strong></p>
+                        <input type="text" id="story-pay-phone" placeholder="Namba yako ya simu ya malipo" style="margin-bottom:8px;">
+                        <button class="btn" onclick="alert('Ombi lako la malipo ya hadithi limewasilishwa!')">Nimemaliza Kulipa Hadithi</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- 1.1 PRODUCT DETAILS SECTION (Yenye Picha 4 na Video) -->
+        <!-- 1.1 PRODUCT DETAILS SECTION -->
         <div id="product-details" class="section">
             <div class="form-card" style="max-width: 650px; padding: 20px;">
                 <button onclick="switchTab('market')" style="background: none; border: none; color: var(--primary); font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 1em;">← Rudi kwenye Orodha</button>
@@ -237,7 +251,8 @@
 
                 <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                     <button class="btn" style="background: #fff; color: var(--primary); border: 1px solid var(--primary); font-size: 0.9em;" onclick="alert('Ombi la kupigiwa simu limetumwa kwa muuzaji!')">Request call back</button>
-                    <a id="detail-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 07XXXXXXXX</a>
+                    <!-- Hapa sasa inatokea namba halisi ya muuzaji aliyoweka kwenye fomu -->
+                    <a id="detail-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 Piga Simu</a>
                 </div>
 
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
@@ -320,7 +335,7 @@
             </div>
         </div>
 
-        <!-- 4. VENDOR UPLOAD SECTION (Yenye Uwezo wa Kuchukua Picha Zote 4 na Video) -->
+        <!-- 4. VENDOR UPLOAD SECTION -->
         <div id="designer" class="section">
             <div class="form-card" style="max-width: 600px;">
                 <h2 style="margin-top:0; color: var(--primary);">Weka Bidhaa Yako Bure</h2>
@@ -463,7 +478,6 @@
                     <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; font-weight:bold;">Toka (Logout)</button>
                 </div>
 
-                <!-- HADITHI ZOTE -->
                 <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 15px;">Hadithi Zote za Watumiaji (All Stories Management)</h3>
                 <div id="admin-stories-list" style="margin-bottom:30px; overflow-x: auto;">
                     <p>Inapakia hadithi...</p>
@@ -771,6 +785,12 @@
             document.getElementById('modal-story-date').innerText = s.created_at ? s.created_at.substring(0,10) : '';
             document.getElementById('modal-story-content').innerText = s.content;
 
+            // Weka namba ya mwandishi au mfumo wa kupigia kwenye hadithi
+            const phoneBtn = document.getElementById('modal-story-phone-btn');
+            phoneBtn.innerText = `📞 Wasiliana na ${s.storyteller_name}`;
+            phoneBtn.href = `#`;
+            phoneBtn.onclick = () => alert(`Unafanya mawasiliano na mwandishi ${s.storyteller_name}`);
+
             const coverBox = document.getElementById('modal-story-cover-box');
             const coverImg = document.getElementById('modal-story-img');
             if(s.cover_image) {
@@ -963,7 +983,6 @@
             });
         }
 
-        // Kazi iliyoboreshwa kusoma picha zote 4 na video kwenye fomu ya muuzaji
         async function handleUploadOptimized(e) {
             e.preventDefault();
             const file1 = document.getElementById('up-image-file-1').files[0];
@@ -1033,7 +1052,7 @@
             `).join('');
         }
 
-        // Kuonyesha picha zote nne (kupitia picha ndogo) na video kwenye ukurasa wa undani
+        // Hapa ndipo tulibadilisha namba ya simu ya muuzaji iwe ile halisi iliyojazwa kwenye fomu
         function openProductDetails(id) {
             const d = allApprovedDesigns.find(item => item.id === id);
             if(!d) return;
@@ -1043,11 +1062,15 @@
             document.getElementById('detail-designer').innerText = d.designer_name;
             document.getElementById('detail-desc').innerText = d.description;
 
-            // Weka picha kuu ya kwanza
+            // Kuweka namba ya simu halisi ya muuzaji kwenye kitufe
+            const phoneBtn = document.getElementById('detail-phone-btn');
+            let phoneNum = d.vendor_phone || '0623630553';
+            phoneBtn.innerText = `📞 ${phoneNum}`;
+            phoneBtn.href = `tel:${phoneNum}`;
+
             const mainImg = document.getElementById('detail-img');
             mainImg.src = d.image_url || 'https://via.placeholder.com/300';
 
-            // Kusanya picha zote zilizopo (1 hadi 4)
             let imgs = [d.image_url, d.image_url2, d.image_url3, d.image_url4].filter(img => img && img.trim() !== "");
             
             const thumbsRow = document.getElementById('detail-thumbs-row');
@@ -1061,12 +1084,10 @@
                 thumbsRow.innerHTML = '';
             }
 
-            // Kuonyesha Video kama ipo
             const videoBox = document.getElementById('detail-video-box');
             const videoElem = document.getElementById('detail-video');
             if(d.video_url && d.video_url.trim() !== "") {
                 if(!videoElem) {
-                    // Kama element ya video haipo kwenye DOM, tengeneza
                     videoBox.innerHTML = `<video id="detail-video" controls style="width: 100%; max-height: 250px; background: #000; border-radius: 6px;" src="${d.video_url}"></video>`;
                 } else {
                     videoElem.src = d.video_url;
