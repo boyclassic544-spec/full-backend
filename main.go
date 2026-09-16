@@ -102,7 +102,7 @@ func main() {
 	http.HandleFunc("/api/delete-design", deleteMyDesignHandler)
 	http.HandleFunc("/api/buy", buyDesignHandler)
 
-	// Routes Maalum za Hadithi (Stories Feed & Storyteller Dashboard)
+	// Routes Maalum za Hadithi
 	http.HandleFunc("/api/stories", getStoriesHandler)
 	http.HandleFunc("/api/my-stories", getMyStoriesHandler)
 	http.HandleFunc("/api/storyteller/upload", uploadStoryJSONHandler)
@@ -164,10 +164,7 @@ func initDB() {
 		rejection_reason TEXT DEFAULT '',
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);`
-	_, err := db.Exec(queryUsers)
-	if err != nil {
-		log.Fatalf("Imeshindikana kutengeneza jedwali la app_accounts: %v", err)
-	}
+	db.Exec(queryUsers)
 
 	queryDesigns := `
 	CREATE TABLE IF NOT EXISTS designs (
@@ -187,10 +184,13 @@ func initDB() {
 		status TEXT DEFAULT 'approved',
 		rejection_reason TEXT DEFAULT ''
 	);`
-	_, err = db.Exec(queryDesigns)
-	if err != nil {
-		log.Fatalf("Imeshindikana kutengeneza jedwali la designs: %v", err)
-	}
+	db.Exec(queryDesigns)
+
+	// Hakikisha safu za picha na video zipo kwenye jedwali la designs
+	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS image_url2 TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS image_url3 TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS image_url4 TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE designs ADD COLUMN IF NOT EXISTS video_url TEXT DEFAULT '';")
 
 	queryStories := `
 	CREATE TABLE IF NOT EXISTS stories (
@@ -203,15 +203,14 @@ func initDB() {
 		rejection_reason TEXT DEFAULT '',
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);`
-	_, err = db.Exec(queryStories)
-	if err != nil {
-		log.Fatalf("Imeshindikana kutengeneza jedwali la stories: %v", err)
-	}
-
+	db.Exec(queryStories)
 	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS cover_image TEXT DEFAULT '';")
 }
 
 func saveBase64Media(dataURL string) (string, error) {
+	if dataURL == "" || !strings.Contains(dataURL, ";base64,") {
+		return dataURL, nil
+	}
 	parts := strings.SplitN(dataURL, ";base64,", 2)
 	if len(parts) != 2 {
 		return "", fmt.Errorf("muundo wa media si sahihi")
@@ -256,7 +255,6 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-
 	var username, password, role, idType, idNumber, rawIDImage string
 
 	contentType := r.Header.Get("Content-Type")
@@ -295,9 +293,6 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 			idNumber = r.FormValue("id_number")
 		}
 		rawIDImage = r.FormValue("id_card")
-		if rawIDImage == "" {
-			rawIDImage = r.FormValue("id_image")
-		}
 	}
 
 	if role == "" {
@@ -312,12 +307,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var idImageURL = ""
-	if rawIDImage != "" && strings.HasPrefix(rawIDImage, "data:") {
-		if savedURL, saveErr := saveBase64Media(rawIDImage); saveErr == nil {
-			idImageURL = savedURL
-		}
-	}
+	idImageURL, _ := saveBase64Media(rawIDImage)
 
 	if username == "" || password == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina la mtumiaji na nenosiri!"})
@@ -421,7 +411,7 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, description, price, image_url, COALESCE(image_url2,''), COALESCE(image_url3,''), COALESCE(image_url4,''), video_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE status = 'approved' ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, title, description, price, image_url, COALESCE(image_url2,''), COALESCE(image_url3,''), COALESCE(image_url4,''), COALESCE(video_url,''), category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE status = 'approved' ORDER BY id DESC")
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma", http.StatusInternalServerError)
 		return
@@ -447,7 +437,7 @@ func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
 
 func getMyDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	designerName := r.URL.Query().Get("designer")
-	rows, err := db.Query("SELECT id, title, description, price, image_url, COALESCE(image_url2,''), COALESCE(image_url3,''), COALESCE(image_url4,''), video_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE designer_name = $1 ORDER BY id DESC", designerName)
+	rows, err := db.Query("SELECT id, title, description, price, image_url, COALESCE(image_url2,''), COALESCE(image_url3,''), COALESCE(image_url4,''), COALESCE(video_url,''), category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE designer_name = $1 ORDER BY id DESC", designerName)
 	if err != nil {
 		http.Error(w, "Imeshindikana", http.StatusInternalServerError)
 		return
@@ -471,6 +461,7 @@ func getMyDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(designs)
 }
 
+// Hapa ndipo marekebisho yalipofanyika ili kupokea na kuhifadhi picha zote 4 na video
 func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
@@ -479,9 +470,9 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	var title, description, category, designerName, location, vendorPhone, videoURL string
+	var title, description, category, designerName, location, vendorPhone string
+	var img1, img2, img3, img4, videoURL string
 	var price float64
-	var finalImg string
 
 	contentType := r.Header.Get("Content-Type")
 	if strings.Contains(contentType, "application/json") {
@@ -490,6 +481,9 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 			Description  string  `json:"description"`
 			Price        float64 `json:"price"`
 			ImageURL     string  `json:"image_url"`
+			ImageURL2    string  `json:"image_url2"`
+			ImageURL3    string  `json:"image_url3"`
+			ImageURL4    string  `json:"image_url4"`
 			VideoURL     string  `json:"video_url"`
 			Category     string  `json:"category"`
 			DesignerName string  `json:"designer_name"`
@@ -501,7 +495,10 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 			title = payload.Title
 			description = payload.Description
 			price = payload.Price
-			finalImg = payload.ImageURL
+			img1 = payload.ImageURL
+			img2 = payload.ImageURL2
+			img3 = payload.ImageURL3
+			img4 = payload.ImageURL4
 			videoURL = payload.VideoURL
 			category = payload.Category
 			designerName = payload.DesignerName
@@ -517,12 +514,10 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		title = r.FormValue("title")
 		description = r.FormValue("description")
 		category = r.FormValue("category")
-		
 		designerName = r.FormValue("designer_name")
 		if designerName == "" {
 			designerName = r.FormValue("designer")
 		}
-		
 		location = r.FormValue("location")
 		vendorPhone = r.FormValue("vendor_phone")
 		videoURL = r.FormValue("video_url")
@@ -530,10 +525,10 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		priceStr := r.FormValue("price")
 		fmt.Sscanf(priceStr, "%f", &price)
 
-		finalImg = r.FormValue("image_url")
-		if finalImg == "" {
-			finalImg = r.FormValue("image")
-		}
+		img1 = r.FormValue("image_url")
+		img2 = r.FormValue("image_url2")
+		img3 = r.FormValue("image_url3")
+		img4 = r.FormValue("image_url4")
 	}
 
 	if designerName != "" {
@@ -548,14 +543,15 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if strings.HasPrefix(finalImg, "data:") {
-		if url, saveErr := saveBase64Media(finalImg); saveErr == nil {
-			finalImg = url
-		}
-	}
+	// Hifadhi picha zote na video iwapo zimetumwa kama Base64
+	finalImg1, _ := saveBase64Media(img1)
+	finalImg2, _ := saveBase64Media(img2)
+	finalImg3, _ := saveBase64Media(img3)
+	finalImg4, _ := saveBase64Media(img4)
+	finalVideo, _ := saveBase64Media(videoURL)
 
-	if finalImg == "" {
-		finalImg = "https://via.placeholder.com/300"
+	if finalImg1 == "" {
+		finalImg1 = "https://via.placeholder.com/300"
 	}
 	if category == "" {
 		category = "Bidhaa"
@@ -564,11 +560,13 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		location = "Tanzania"
 	}
 
-	_, err := db.Exec("INSERT INTO designs (title, description, price, image_url, video_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'approved', '')",
-		title, description, price, finalImg, videoURL, category, designerName, location, vendorPhone)
+	_, err := db.Exec(`INSERT INTO designs 
+		(title, description, price, image_url, image_url2, image_url3, image_url4, video_url, category, designer_name, location, vendor_phone, status, rejection_reason) 
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'approved', '')`,
+		title, description, price, finalImg1, finalImg2, finalImg3, finalImg4, finalVideo, category, designerName, location, vendorPhone)
 
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi bidhaa"})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi bidhaa: " + err.Error()})
 		return
 	}
 
@@ -646,7 +644,7 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Oda imepokelewa!"})
 }
 
-// ----------------- API ZA HADITHI (REKODI NA KUHUSISHA STORYTELLER) -----------------
+// ----------------- API ZA HADITHI -----------------
 
 func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, rejection_reason, created_at FROM stories WHERE status = 'approved' ORDER BY id DESC")
@@ -737,23 +735,13 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		title = r.FormValue("title")
 		content = r.FormValue("content")
 		coverImage = r.FormValue("cover_image")
-		if coverImage == "" {
-			coverImage = r.FormValue("image_url")
-		}
 		storytellerName = r.FormValue("storyteller_name")
-		if storytellerName == "" {
-			storytellerName = r.FormValue("designer_name")
-		}
 	}
 
-	if strings.HasPrefix(coverImage, "data:") {
-		if url, saveErr := saveBase64Media(coverImage); saveErr == nil {
-			coverImage = url
-		}
-	}
+	finalCover, _ := saveBase64Media(coverImage)
 
 	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, status, rejection_reason) VALUES ($1, $2, $3, $4, 'approved', '')",
-		title, content, coverImage, storytellerName)
+		title, content, finalCover, storytellerName)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi hadithi: " + err.Error()})
@@ -800,7 +788,7 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, description, price, image_url, COALESCE(image_url2,''), COALESCE(image_url3,''), COALESCE(image_url4,''), video_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, title, description, price, image_url, COALESCE(image_url2,''), COALESCE(image_url3,''), COALESCE(image_url4,''), COALESCE(video_url,''), category, designer_name, location, vendor_phone, status, rejection_reason FROM designs ORDER BY id DESC")
 	if err != nil {
 		http.Error(w, "Imeshindikana", http.StatusInternalServerError)
 		return
@@ -1107,7 +1095,8 @@ func adminApproveUserHandler(w http.ResponseWriter, r *http.Request) {
 
 func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed,
+		)
 		return
 	}
 
