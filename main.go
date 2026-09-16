@@ -109,8 +109,16 @@ func main() {
 		port = "8080"
 	}
 
+	srv := &http.Server{
+		Addr:              ":" + port,
+		ReadHeaderTimeout: 15 * time.Second,
+		ReadTimeout:       60 * time.Second,
+		WriteTimeout:      60 * time.Second,
+		IdleTimeout:       90 * time.Second,
+	}
+
 	fmt.Printf("Seva inaanza kusikiliza kwenye bandari (port) %s...\n", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Fatal(srv.ListenAndServe())
 }
 
 func initDB() {
@@ -227,8 +235,8 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if username == "" {
-		_ = r.ParseMultipartForm(50 << 20)
-		_ = r.ParseForm()
+		r.ParseMultipartForm(50 << 20)
+		r.ParseForm()
 		username = r.FormValue("username")
 		password = r.FormValue("password")
 		role = r.FormValue("role")
@@ -315,7 +323,7 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if username == "" {
-		_ = r.ParseForm()
+		r.ParseForm()
 		username = r.FormValue("username")
 		password = r.FormValue("password")
 	}
@@ -417,9 +425,6 @@ func getMyDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(designs)
 }
 
-// ==========================================
-// SEHEMU ILIYOSAHIHISHWA KABISA (Haina Hitilafu ya priceStr)
-// ==========================================
 func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
@@ -428,13 +433,11 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	var title, description, category, designerName, location, vendorPhone, videoURL, priceStr string
+	var title, description, category, designerName, location, vendorPhone, videoURL string
 	var price float64
 	var finalImg string
 
 	contentType := r.Header.Get("Content-Type")
-
-	// 1. Jaribu kusoma kama JSON
 	if strings.Contains(contentType, "application/json") {
 		var payload struct {
 			Title        string  `json:"title"`
@@ -444,8 +447,6 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 			VideoURL     string  `json:"video_url"`
 			Category     string  `json:"category"`
 			DesignerName string  `json:"designer_name"`
-			Designer     string  `json:"designer"`
-			Username     string  `json:"username"`
 			Location     string  `json:"location"`
 			VendorPhone  string  `json:"vendor_phone"`
 		}
@@ -457,25 +458,16 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 			finalImg = payload.ImageURL
 			videoURL = payload.VideoURL
 			category = payload.Category
-			
 			designerName = payload.DesignerName
-			if designerName == "" {
-				designerName = payload.Designer
-			}
-			if designerName == "" {
-				designerName = payload.Username
-			}
-			
 			location = payload.Location
 			vendorPhone = payload.VendorPhone
 		}
 	}
 
-	// 2. Kama haijapatikana kupitia JSON, soma kupitia URL-Encoded / Multipart Form
 	if title == "" {
-		_ = r.ParseMultipartForm(80 << 20)
-		_ = r.ParseForm()
-
+		r.Body = http.MaxBytesReader(w, r.Body, 80<<20)
+		r.ParseMultipartForm(80 << 20)
+		r.ParseForm()
 		title = r.FormValue("title")
 		description = r.FormValue("description")
 		category = r.FormValue("category")
@@ -484,18 +476,13 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		if designerName == "" {
 			designerName = r.FormValue("designer")
 		}
-		if designerName == "" {
-			designerName = r.FormValue("username")
-		}
 		
 		location = r.FormValue("location")
 		vendorPhone = r.FormValue("vendor_phone")
 		videoURL = r.FormValue("video_url")
 		
-		priceStr = r.FormValue("price")
-		if priceStr != "" {
-			fmt.Sscanf(priceStr, "%f", &price)
-		}
+		priceStr := r.FormValue("price")
+		fmt.Sscanf(priceStr, "%f", &price)
 
 		finalImg = r.FormValue("image_url")
 		if finalImg == "" {
@@ -503,11 +490,10 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 3. Hakiki akaunti kama ipo na ina idhini
 	if designerName != "" {
 		var vStatus string
 		err := db.QueryRow("SELECT verification_status FROM app_accounts WHERE username = $1", designerName).Scan(&vStatus)
-		if err == nil && vStatus != "" && vStatus != "approved" {
+		if err != nil || vStatus != "approved" {
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"success": false,
 				"message": "Akaunti yako bado haijapitishwa na Admin au haijasajiliwa.",
@@ -516,20 +502,10 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 4. Badilisha Base64 kuwa faili halisi kama imetumwa
 	if strings.HasPrefix(finalImg, "data:") {
 		if url, saveErr := saveBase64Media(finalImg); saveErr == nil {
 			finalImg = url
 		}
-	}
-
-	// 5. Thamani za lazima kama zimeachwa wazi
-	if title == "" {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false,
-			"message": "Tafadhali jaza kichwa cha habari (title) cha hadithi au bidhaa!",
-		})
-		return
 	}
 
 	if finalImg == "" {
@@ -542,24 +518,15 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		location = "Tanzania"
 	}
 
-	// 6. Hifadhi kwenye Database
-	_, err := db.Exec(`
-		INSERT INTO designs (title, description, price, image_url, video_url, category, designer_name, location, vendor_phone, status, rejection_reason) 
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'approved', '')`,
+	_, err := db.Exec("INSERT INTO designs (title, description, price, image_url, video_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'approved', '')",
 		title, description, price, finalImg, videoURL, category, designerName, location, vendorPhone)
 
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success": false, 
-			"message": "Imeshindikana kuhifadhi kwenye database: " + err.Error(),
-		})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi kwenye database"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true, 
-		"message": "Hadithi au bidhaa imechapishwa kwa mafanikio!",
-	})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi au bidhaa imechapishwa kwa mafanikio!"})
 }
 
 func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
@@ -578,7 +545,7 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r.Body = http.MaxBytesReader(w, r.Body, 80<<20)
-	_ = json.NewDecoder(r.Body).Decode(&payload)
+	json.NewDecoder(r.Body).Decode(&payload)
 
 	w.Header().Set("Content-Type", "application/json")
 	_, err := db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, category = $5 WHERE id = $6",
@@ -615,7 +582,7 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = r.ParseForm()
+	r.ParseForm()
 	designID := r.FormValue("design_id")
 	phone := r.FormValue("phone")
 	amountStr := r.FormValue("amount")
@@ -639,7 +606,7 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = r.ParseForm()
+	r.ParseForm()
 	password := r.FormValue("password")
 
 	w.Header().Set("Content-Type", "application/json")
@@ -698,7 +665,7 @@ func adminRejectDesignHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = r.ParseForm()
+	r.ParseForm()
 	w.Header().Set("Content-Type", "application/json")
 	id := r.URL.Query().Get("id")
 	reason := r.FormValue("reason")
@@ -880,7 +847,7 @@ func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = r.ParseForm()
+	r.ParseForm()
 	w.Header().Set("Content-Type", "application/json")
 	userID := r.URL.Query().Get("id")
 	reason := r.FormValue("reason")
@@ -913,3 +880,4 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Amefutwa!"})
 }
+
