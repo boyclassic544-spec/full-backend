@@ -264,30 +264,43 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		username = r.FormValue("username")
 		password = r.FormValue("password")
 		role = r.FormValue("role")
-		idType = "NIDA"
+		idType = r.FormValue("id_type")
+		if idType == "" {
+			idType = "NIDA"
+		}
 		idNumber = r.FormValue("nida")
+		if idNumber == "" {
+			idNumber = r.FormValue("id_number")
+		}
 		rawIDImage = r.FormValue("id_card")
+		if rawIDImage == "" {
+			rawIDImage = r.FormValue("id_image")
+		}
 	}
 
 	if role == "" {
 		role = "buyer"
 	}
 
+	// Kuhakikisha majina yote ya 'storyteller' au 'seller' yanatambuliwa na kuwekwa pending kwa ajili ya Admin
+	var verificationStatus = "approved"
+	if role == "seller" || role == "storyteller" || role == "stela" {
+		verificationStatus = "pending"
+		if role == "stela" {
+			role = "storyteller"
+		}
+	}
+
+	var idImageURL = ""
+	if rawIDImage != "" && strings.HasPrefix(rawIDImage, "data:") {
+		if savedURL, saveErr := saveBase64Media(rawIDImage); saveErr == nil {
+			idImageURL = savedURL
+		}
+	}
+
 	if username == "" || password == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina la mtumiaji na nenosiri!"})
 		return
-	}
-
-	var verificationStatus = "approved"
-	var idImageURL = ""
-
-	if role == "seller" {
-		verificationStatus = "pending"
-		if rawIDImage != "" && strings.HasPrefix(rawIDImage, "data:") {
-			if savedURL, saveErr := saveBase64Media(rawIDImage); saveErr == nil {
-				idImageURL = savedURL
-			}
-		}
 	}
 
 	_, err := db.Exec(`
@@ -301,8 +314,8 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	msg := "Akaunti imefunguliwa kikamilifu! Sasa unaweza kuingia."
-	if role == "seller" {
-		msg = "Akaunti ya muuzaji imefunguliwa! Tafadhali subiri uthibitisho kutoka kwa uongozi."
+	if role == "seller" || role == "storyteller" {
+		msg = "Akaunti ya mtunzi/mwandishi imewasilishwa kwa uongozi! Tafadhali subiri uthibitisho wa admin."
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -835,7 +848,8 @@ func adminGetBuyersHandler(w http.ResponseWriter, r *http.Request) {
 
 func adminGetSellersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), created_at FROM app_accounts WHERE role = 'seller' ORDER BY id DESC")
+	// Tunachukua wote wenye role ya seller, storyteller au stela ili waonekane kwenye paneli ya admin
+	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), created_at FROM app_accounts WHERE role IN ('seller', 'storyteller', 'stela') ORDER BY id DESC")
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`[]`))
@@ -878,7 +892,7 @@ func adminApproveUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Muuzaji amepitishwa kikamilifu!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti imepitishwa kikamilifu!"})
 }
 
 func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -901,7 +915,7 @@ func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti ya muuzaji imekataliwa!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Akaunti imekataliwa!"})
 }
 
 func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
