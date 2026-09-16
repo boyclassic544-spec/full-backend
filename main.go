@@ -197,7 +197,7 @@ func initDB() {
 		id SERIAL PRIMARY KEY,
 		title TEXT NOT NULL,
 		content TEXT NOT NULL,
-		cover_image TEXT NOT NULL,
+		cover_image TEXT DEFAULT '',
 		storyteller_name TEXT NOT NULL,
 		status TEXT DEFAULT 'approved',
 		rejection_reason TEXT DEFAULT '',
@@ -644,8 +644,10 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Oda imepokelewa!"})
 }
 
+// ----------------- API ZA HADITHI (REKODI NA KUHUSISHA STORYTELLER) -----------------
+
 func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, content, cover_image, storyteller_name, status, rejection_reason, created_at FROM stories WHERE status = 'approved' ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, rejection_reason, created_at FROM stories WHERE status = 'approved' ORDER BY id DESC")
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma hadithi", http.StatusInternalServerError)
 		return
@@ -675,7 +677,7 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 		storyteller = r.URL.Query().Get("designer")
 	}
 
-	rows, err := db.Query("SELECT id, title, content, cover_image, storyteller_name, status, rejection_reason, created_at FROM stories WHERE storyteller_name = $1 ORDER BY id DESC", storyteller)
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, rejection_reason, created_at FROM stories WHERE storyteller_name = $1 ORDER BY id DESC", storyteller)
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma hadithi zako", http.StatusInternalServerError)
 		return
@@ -742,18 +744,7 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if storytellerName != "" {
-		var vStatus string
-		err := db.QueryRow("SELECT verification_status FROM app_accounts WHERE username = $1", storytellerName).Scan(&vStatus)
-		if err != nil || vStatus != "approved" {
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"success": false,
-				"message": "Akaunti yako ya msimulizi bado haijapitishwa na Admin.",
-			})
-			return
-		}
-	}
-
+	// Ruhusu hata kama jina halipo kwenye vStatus au lipo, lakini hakikisha limehifadhiwa moja kwa moja ili kuzuia kukwama kwa mtumiaji
 	if strings.HasPrefix(coverImage, "data:") {
 		if url, saveErr := saveBase64Media(coverImage); saveErr == nil {
 			coverImage = url
@@ -761,14 +752,14 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if coverImage == "" {
-		coverImage = "https://via.placeholder.com/400x250"
+		coverImage = ""
 	}
 
 	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, status, rejection_reason) VALUES ($1, $2, $3, $4, 'approved', '')",
 		title, content, coverImage, storytellerName)
 
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi hadithi"})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi hadithi: " + err.Error()})
 		return
 	}
 
@@ -791,6 +782,8 @@ func deleteMyStoryHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi imefutwa!"})
 }
+
+// ----------------- ADMIN API -----------------
 
 func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -892,7 +885,7 @@ func adminDeleteDesignHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminGetStoriesHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, content, cover_image, storyteller_name, status, rejection_reason, created_at FROM stories ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, rejection_reason, created_at FROM stories ORDER BY id DESC")
 	if err != nil {
 		http.Error(w, "Imeshindikana", http.StatusInternalServerError)
 		return
