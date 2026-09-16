@@ -425,30 +425,65 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	var payload struct {
-		Title        string  `json:"title"`
-		Description  string  `json:"description"`
-		Price        float64 `json:"price"`
-		ImageURL     string  `json:"image_url"`
-		ImageURL2    string  `json:"image_url2"`
-		ImageURL3    string  `json:"image_url3"`
-		ImageURL4    string  `json:"image_url4"`
-		VideoURL     string  `json:"video_url"`
-		Category     string  `json:"category"`
-		DesignerName string  `json:"designer_name"`
-		Location     string  `json:"location"`
-		VendorPhone  string  `json:"vendor_phone"`
+	var title, description, category, designerName, location, vendorPhone, videoURL string
+	var price float64
+	var finalImg string
+
+	contentType := r.Header.Get("Content-Type")
+	if strings.Contains(contentType, "application/json") {
+		var payload struct {
+			Title        string  `json:"title"`
+			Description  string  `json:"description"`
+			Price        float64 `json:"price"`
+			ImageURL     string  `json:"image_url"`
+			VideoURL     string  `json:"video_url"`
+			Category     string  `json:"category"`
+			DesignerName string  `json:"designer_name"`
+			Location     string  `json:"location"`
+			VendorPhone  string  `json:"vendor_phone"`
+		}
+		r.Body = http.MaxBytesReader(w, r.Body, 80<<20)
+		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
+			title = payload.Title
+			description = payload.Description
+			price = payload.Price
+			finalImg = payload.ImageURL
+			videoURL = payload.VideoURL
+			category = payload.Category
+			designerName = payload.DesignerName
+			location = payload.Location
+			vendorPhone = payload.VendorPhone
+		}
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, 80<<20)
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Faili ni kubwa sana au data haijasomeka vizuri!"})
-		return
+	if title == "" {
+		r.ParseMultipartForm(80 << 20)
+		r.ParseForm()
+		title = r.FormValue("title")
+		description = r.FormValue("description")
+		category = r.FormValue("category")
+		
+		designerName = r.FormValue("designer_name")
+		if designerName == "" {
+			designerName = r.FormValue("designer")
+		}
+		
+		location = r.FormValue("location")
+		vendorPhone = r.FormValue("vendor_phone")
+		videoURL = r.FormValue("video_url")
+		
+		priceStr := r.FormValue("price")
+		fmt.Sscanf(priceStr, "%f", &price)
+
+		finalImg = r.FormValue("image_url")
+		if finalImg == "" {
+			finalImg = r.FormValue("image")
+		}
 	}
 
-	if payload.DesignerName != "" {
+	if designerName != "" {
 		var vStatus string
-		err := db.QueryRow("SELECT verification_status FROM app_accounts WHERE username = $1", payload.DesignerName).Scan(&vStatus)
+		err := db.QueryRow("SELECT verification_status FROM app_accounts WHERE username = $1", designerName).Scan(&vStatus)
 		if err != nil || vStatus != "approved" {
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"success": false,
@@ -458,9 +493,8 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	finalImg := payload.ImageURL
-	if strings.HasPrefix(payload.ImageURL, "data:") {
-		if url, saveErr := saveBase64Media(payload.ImageURL); saveErr == nil {
+	if strings.HasPrefix(finalImg, "data:") {
+		if url, saveErr := saveBase64Media(finalImg); saveErr == nil {
 			finalImg = url
 		}
 	}
@@ -468,12 +502,15 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if finalImg == "" {
 		finalImg = "https://via.placeholder.com/300"
 	}
-	if payload.Category == "" {
-		payload.Category = "Hadithi"
+	if category == "" {
+		category = "Hadithi"
+	}
+	if location == "" {
+		location = "Tanzania"
 	}
 
 	_, err := db.Exec("INSERT INTO designs (title, description, price, image_url, video_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'approved', '')",
-		payload.Title, payload.Description, payload.Price, finalImg, payload.VideoURL, payload.Category, payload.DesignerName, payload.Location, payload.VendorPhone)
+		title, description, price, finalImg, videoURL, category, designerName, location, vendorPhone)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi kwenye database"})
