@@ -406,6 +406,19 @@
                     <label>Kichwa cha Habari / Kichwa cha Hadithi</label>
                     <input type="text" id="story-title" placeholder="Mf. Siri ya Mafanikio ya Biashara..." required>
 
+                    <!-- Eneo Lililoongezwa: Uchaguzi wa Aina ya Hadithi na Bei -->
+                    <label>Aina ya Hadithi</label>
+                    <select id="story-type" onchange="toggleStoryPriceField()" required>
+                        <option value="free">Hadithi ya Bure</option>
+                        <option value="paid">Hadithi ya Kulipia</option>
+                    </select>
+
+                    <div id="story-price-container" style="display: none;">
+                        <label>Bei ya Hadithi (TZS)</label>
+                        <input type="number" id="story-price" placeholder="Mf. 1000">
+                    </div>
+                    <!-- Mwisho wa Eneo Lililoongezwa -->
+
                     <label>Namba ya Simu ya Mwandishi (Ya Kupokea Malipo/Mawasiliano)</label>
                     <input type="text" id="story-phone" placeholder="Mf. 0712345678" required>
 
@@ -492,7 +505,7 @@
                 <div class="admin-panel-header">
                     <div>
                         <h2 style="margin:0; color: var(--primary);">SokoSmart Admin Portal</h2>
-                        <small style="color: #666;">Udhibiti wa Watumiaji, Ithibati, Bidhaa na Hadithi Zote</small>
+                        <small style="color: #666;">Udhibiti wa Watumiaji, Ithibati, Bidhaa na Hadithi Zote (Hadi Ma-admin 10)</small>
                     </div>
                     <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; font-weight:bold;">Toka (Logout)</button>
                 </div>
@@ -610,6 +623,19 @@
         let currentSelectedCategory = 'All';
 
         let storyPaymentOrders = JSON.parse(localStorage.getItem('sokosmart_story_orders') || '[]');
+
+        // JavaScript Iliyoongezwa ya Kuonyesha/Kuficha Bei ya Hadithi
+        function toggleStoryPriceField() {
+            let storyType = document.getElementById('story-type').value;
+            let priceContainer = document.getElementById('story-price-container');
+            if (storyType === 'paid') {
+                priceContainer.style.display = 'block';
+                document.getElementById('story-price').required = true;
+            } else {
+                priceContainer.style.display = 'none';
+                document.getElementById('story-price').required = false;
+            }
+        }
 
         function updateAuthUI() {
             const navContainer = document.getElementById('nav-menu-container');
@@ -979,6 +1005,8 @@
 
             const payload = {
                 title: document.getElementById('story-title').value,
+                story_type: document.getElementById('story-type').value,
+                story_price: document.getElementById('story-price').value || 0,
                 story_phone: document.getElementById('story-phone').value,
                 content: document.getElementById('story-content').value,
                 cover_image: imgBase64,
