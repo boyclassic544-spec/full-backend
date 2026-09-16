@@ -194,7 +194,7 @@
                     <img id="modal-story-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
                 
-                <!-- Hapa kuna kitufe cha online/offline status (kidoti cha kijani/nyekundu) pembeni ya jina la mwandishi -->
+                <!-- Hapa kuna Jina la Mwandishi na kidoti cha status (Online/Offline) pembeni yake -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h2 id="modal-story-title" style="color: var(--primary); margin: 0; font-size: 1.3em;"></h2>
                     <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85em; background: #fff; padding: 4px 10px; border-radius: 20px; border: 1px solid #ddd;">
@@ -406,7 +406,6 @@
                     <label>Kichwa cha Habari / Kichwa cha Hadithi</label>
                     <input type="text" id="story-title" placeholder="Mf. Siri ya Mafanikio ya Biashara..." required>
 
-                    <!-- Eneo Lililoongezwa: Uchaguzi wa Aina ya Hadithi na Bei -->
                     <label>Aina ya Hadithi</label>
                     <select id="story-type" onchange="toggleStoryPriceField()" required>
                         <option value="free">Hadithi ya Bure</option>
@@ -417,7 +416,6 @@
                         <label>Bei ya Hadithi (TZS)</label>
                         <input type="number" id="story-price" placeholder="Mf. 1000">
                     </div>
-                    <!-- Mwisho wa Eneo Lililoongezwa -->
 
                     <label>Namba ya Simu ya Mwandishi (Ya Kupokea Malipo/Mawasiliano)</label>
                     <input type="text" id="story-phone" placeholder="Mf. 0712345678" required>
@@ -453,9 +451,9 @@
                             <button id="profile-action-btn" class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85em; font-weight:bold;">+ Weka Bidhaa</button>
                         </div>
 
-                        <!-- SEHEMU YA ODA NA MALIPO YA HADITHI KWA MWANDISHI -->
+                        <!-- SEHEMU YA ODA NA MALIPO YA HADITHI (MWANDISHI) - IMEONGEZWA VITUFE VYA CONFIRM NA KAKATA -->
                         <div id="storyteller-orders-box" style="display:none; margin-top: 20px; background: #fffdf9; border: 1px solid #e2d9c2; padding: 15px; border-radius: 8px;">
-                            <h4 style="margin: 0 0 10px 0; color: var(--primary);">Oda na Malipo ya Wasomaji (Subiri Uthibitishe)</h4>
+                            <h4 style="margin: 0 0 10px 0; color: var(--primary);">Oda na Malipo ya Wasomaji (Thibitisha au Kataa)</h4>
                             <div id="storyteller-orders-list">
                                 <p style="font-size: 0.85em; color: #666;">Hakuna oda mpya za malipo kwa sasa.</p>
                             </div>
@@ -624,7 +622,6 @@
 
         let storyPaymentOrders = JSON.parse(localStorage.getItem('sokosmart_story_orders') || '[]');
 
-        // JavaScript Iliyoongezwa ya Kuonyesha/Kuficha Bei ya Hadithi
         function toggleStoryPriceField() {
             let storyType = document.getElementById('story-type').value;
             let priceContainer = document.getElementById('story-price-container');
@@ -835,6 +832,7 @@
             document.getElementById('modal-story-author').innerText = s.storyteller_name;
             document.getElementById('modal-story-date').innerText = s.created_at ? s.created_at.substring(0,10) : '';
 
+            // Hali ya Online/Offline (Kidoti cha Kijani/Nyekundu)
             let isOnline = true; 
             let dot = document.getElementById('author-status-dot');
             let txt = document.getElementById('author-status-text');
@@ -912,7 +910,7 @@
 
             localStorage.setItem('sokosmart_story_orders', JSON.stringify(storyPaymentOrders));
             alert('Ombi lako la malipo limetumwa kwa mwandishi ' + s.storyteller_name + '! Subiri akague na kudhibitisha.');
-            document.getElementById('payment-status-notice').innerText = "⏳ Ombi limetumwa. Subiri mwandishi adhibitishe.";
+            document.getElementById('payment-status-notice').innerText = "⏳ Ombi tumetumwa. Subiri mwandishi adhibitishe.";
             document.getElementById('modal-story-content').innerText = "[Ombi lako la malipo limeshawasilishwa kwa mwandishi. Subiri akague na ku-confirm...]";
         }
 
@@ -1283,7 +1281,7 @@
 
         function deleteMyProduct(id) {
             if(!confirm("Futa bidhaa hii?")) return;
-            fetch('/api/delete-design?id=' + id, { method: 'POST' }).then(() => loadMyProducts());
+            fetch('/api/admin/delete-design?id=' + id, { method: 'POST' }).then(() => loadMyProducts());
         }
 
         function openMarketImageModal(imgSrc) {
