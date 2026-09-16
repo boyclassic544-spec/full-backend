@@ -792,7 +792,7 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 			Content         string  `json:"content"`
 			CoverImage      string  `json:"cover_image"`
 			StorytellerName string  `json:"storyteller_name"`
-			IsPaid          bool    `json:"is_paid"`
+			IsPaid          interface{} `json:"is_paid"` // Inasaidia kusoma ikiwa bool au string
 			Price           float64 `json:"price"`
 		}
 		r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
@@ -801,8 +801,15 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 			content = payload.Content
 			coverImage = payload.CoverImage
 			storytellerName = payload.StorytellerName
-			isPaid = payload.IsPaid
 			price = payload.Price
+			
+			// Kutambua kwa usahihi is_paid kutoka JSON
+			switch v := payload.IsPaid.(type) {
+			case bool:
+				isPaid = v
+			case string:
+				isPaid = strings.ToLower(v) == "true" || v == "1" || strings.ToLower(v) == "yes"
+			}
 		}
 	}
 
@@ -820,11 +827,16 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		if storytellerName == "" {
 			storytellerName = r.FormValue("designer_name")
 		}
-		isPaidStr := r.FormValue("is_paid")
-		isPaid = isPaidStr == "true" || isPaidStr == "1"
+		isPaidStr := strings.ToLower(r.FormValue("is_paid"))
+		isPaid = isPaidStr == "true" || isPaidStr == "1" || isPaidStr == "yes" || isPaidStr == "on"
 		
 		priceStr := r.FormValue("price")
 		fmt.Sscanf(priceStr, "%f", &price)
+	}
+
+	// Jiongezee usalama: Kama bei ni kubwa kuliko 0, lazima isPaid iwe true kiotomatiki
+	if price > 0 {
+		isPaid = true
 	}
 
 	if strings.HasPrefix(coverImage, "data:") {
