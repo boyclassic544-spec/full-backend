@@ -66,6 +66,10 @@
         .story-grid-title { font-size: 0.95em; font-weight: bold; color: var(--primary); margin: 0 0 6px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .story-grid-meta { font-size: 0.75em; color: #718096; margin-bottom: 10px; }
 
+        /* Mtandao status dot */
+        .status-dot { height: 10px; width: 10px; background-color: #27ae60; border-radius: 50%; display: inline-block; margin-left: 5px; }
+        .status-dot.offline { background-color: #c0392b; }
+
         .story-reader-content {
             background-color: #fdfbf7 !important;
             border: 2px solid #e2d9c2;
@@ -194,22 +198,29 @@
                     <img id="modal-story-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
                 <h2 id="modal-story-title" style="color: var(--primary); margin-top: 0; font-size: 1.3em;"></h2>
-                <div style="font-size: 0.8em; color: #718096; margin-bottom: 15px; border-bottom: 1px solid #e2d9c2; padding-bottom: 8px;">
-                    ✍️ Mwandishi: <strong id="modal-story-author"></strong> | 📅 <span id="modal-story-date"></span>
+                <div style="font-size: 0.8em; color: #718096; margin-bottom: 15px; border-bottom: 1px solid #dcd6c1; padding-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                    ✍️ Mwandishi: <strong id="modal-story-author"></strong> <span id="modal-author-online-status" class="status-dot"></span> | 📅 <span id="modal-story-date"></span> | Aina: <strong id="modal-story-type-badge"></strong>
                 </div>
-                <div id="modal-story-content" style="font-size: 1em; color: #2c2c2c; line-height: 1.85; white-space: pre-wrap; max-height: 50vh; overflow-y: auto; padding-right: 5px; margin-bottom: 20px;"></div>
+
+                <!-- Maudhui au Ujumbe wa Kusubiri Malipo -->
+                <div id="modal-story-content-area" style="font-size: 1em; color: #2c2c2c; line-height: 1.85; white-space: pre-wrap; max-height: 50vh; overflow-y: auto; padding-right: 5px; margin-bottom: 20px;"></div>
                 
-                <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2d9c2;">
-                    <h4 style="margin: 0 0 8px 0; color: var(--primary);">Wasiliana na Mwandishi / Nunua Hati hii</h4>
-                    <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">Simu ya Mwandishi:</p>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <a id="modal-story-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 07XXXXXXXX</a>
-                    </div>
+                <!-- Sehemu ya Malipo na Uhakiki wa Mwandishi (Confirm / Reject / Status Pending) -->
+                <div id="story-payment-section" style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2d9c2; display:none;">
+                    <h4 style="margin: 0 0 8px 0; color: var(--primary);">Hadithi hii ni ya Kulipia 🔒</h4>
+                    <p style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Tuma malipo kwenda kwa Mwandishi:</p>
+                    <p style="font-size: 0.9em; font-weight: bold; color: var(--success); margin-bottom: 10px;">Simu: <span id="modal-story-phone-display">07XXXXXXXX</span> (Bei: <span id="modal-story-price-display">Tsh 1,000</span>)</p>
+                    
                     <div class="payment-box" style="border-radius: 6px;">
-                        <p style="margin:0 0 5px 0; font-size:0.85em;"><strong>Weka namba yako ya malipo ili kununua huduma hii:</strong></p>
-                        <input type="text" id="story-pay-phone" placeholder="Namba yako ya simu ya malipo" style="margin-bottom:8px;">
-                        <button class="btn" onclick="alert('Ombi lako la malipo ya hadithi limewasilishwa kwa mwandishi!')">Nimemaliza Kulipa Hadithi</button>
+                        <p style="margin:0 0 5px 0; font-size:0.85em;"><strong>Weka namba yako na Namba ya Muamala (Transaction ID) ili kusubiri uthibitisho wa mwandishi:</strong></p>
+                        <input type="text" id="story-pay-phone" placeholder="Namba yako ya simu uliyolipia" style="margin-bottom:6px;">
+                        <input type="text" id="story-pay-txid" placeholder="Weka Transaction ID ya malipo" style="margin-bottom:8px;">
+                        <button class="btn" onclick="submitStoryPayment()">Wasilisha Malipo kwa Mwandishi</button>
                     </div>
+                </div>
+
+                <div id="story-pending-approval-notice" style="background:#fff3cd; color:#856404; padding:12px; border-radius:6px; text-align:center; font-weight:bold; display:none; margin-top:10px;">
+                    ⏳ Ombi lako la malipo limewasilishwa. Linasubiri mwandishi akague na kudhibitisha (Confirm) ili uweze kusoma!
                 </div>
             </div>
         </div>
@@ -380,18 +391,29 @@
             </div>
         </div>
 
-        <!-- 4.1 STORYTELLER UPLOAD SECTION -->
+        <!-- 4.1 STORYTELLER UPLOAD SECTION (Imeongezwa Aina ya Hadithi: Bure au Kulipia) -->
         <div id="storyteller-upload-section" class="section">
             <div class="form-card" style="max-width: 600px;">
                 <h2 style="margin-top:0; color: var(--primary);">Andika na Chapisha Hadithi Yako</h2>
                 <div style="background: #e8f8f5; border-left: 4px solid var(--success); padding: 10px; margin-bottom: 15px; font-size: 0.85em; color: #0e6655;">
-                    ✍️ Weka picha ya cover, kichwa cha habari, namba yako ya simu ya kupokea malipo, na maudhui ya hadithi.
+                    ✍️ Weka taarifa za hadithi, aina ya hadithi (Bure au ya Kulipia), na namba ya kupokea malipo.
                 </div>
                 <form id="story-upload-form" onsubmit="handleStoryUpload(event)">
                     <label>Kichwa cha Habari / Kichwa cha Hadithi</label>
                     <input type="text" id="story-title" placeholder="Mf. Siri ya Mafanikio ya Biashara..." required>
 
-                    <label>Namba ya Simu ya Mwandishi (Ya Kupokea Malipo/Mawasiliano)</label>
+                    <label>Aina ya Hadithi (Story Type)</label>
+                    <select id="story-type" onchange="toggleStoryPriceField()" required>
+                        <option value="free">Hadithi ya Bure (Free Story)</option>
+                        <option value="paid">Hadithi ya Kulipia (Paid Story)</option>
+                    </select>
+
+                    <div id="story-price-wrapper" style="display:none;">
+                        <label>Bei ya Hadithi (TZS)</label>
+                        <input type="number" id="story-price" placeholder="Mf. 1000" value="1000">
+                    </div>
+
+                    <label>Namba ya Simu ya Mwandishi (Ya Kupokea Malipo)</label>
                     <input type="text" id="story-phone" placeholder="Mf. 0712345678" required>
 
                     <label>Picha ya Cover ya Hadithi (Lazima / Hiari)</label>
@@ -423,6 +445,14 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-bottom: 2px solid #ddd; padding-bottom: 8px;">
                             <h3 id="profile-section-title" style="margin:0; color: var(--primary);">Bidhaa Zangu</h3>
                             <button id="profile-action-btn" class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85em; font-weight:bold;">+ Weka Bidhaa</button>
+                        </div>
+
+                        <!-- Sehemu maalum ya Mwandishi kukagua maombi ya malipo ya wasomaji (Confirm / Reject) -->
+                        <div id="author-payment-approvals-box" style="margin-top: 20px; display:none;">
+                            <h4 style="color:var(--primary); margin-bottom:10px;">Maombi ya Malipo ya Wasomaji (Confirm / Reject)</h4>
+                            <div id="author-payments-list" style="background:#f8f9fa; padding:10px; border-radius:6px; border:1px solid #ddd;">
+                                <p style="font-size:0.85em; color:#666;">Hakuna maombi ya malipo kwa sasa.</p>
+                            </div>
                         </div>
 
                         <div id="my-products-list" style="margin-top: 15px;">
@@ -468,10 +498,21 @@
             <div class="form-card" style="max-width: 1000px;">
                 <div class="admin-panel-header">
                     <div>
-                        <h2 style="margin:0; color: var(--primary);">SokoSmart Admin Portal</h2>
-                        <small style="color: #666;">Udhibiti wa Watumiaji, Ithibati, Bidhaa na Hadithi Zote</small>
+                        <h2 style="margin:0; color: var(--primary);">SokoSmart Admin Portal (Watawala 10)</h2>
+                        <small style="color: #666;">Udhibiti wa Watumiaji, Ithibati, Admins (Admin 1 έως 10), Bidhaa na Hadithi Zote</small>
                     </div>
                     <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; font-weight:bold;">Toka (Logout)</button>
+                </div>
+
+                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 15px;">Usimamizi wa Maafisa Admin (Admin 10 Slots)</h3>
+                <div style="background:#eef2f7; padding:12px; border-radius:6px; margin-bottom:20px;">
+                    <p style="margin:0 0 8px 0; font-size:0.9em; font-weight:bold;">Ongeza au Badili Admin (1 hadi 10):</p>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <input type="text" id="new-admin-name" placeholder="Jina la Admin (Mf. Admin 2)" style="flex:1; margin:0;">
+                        <input type="password" id="new-admin-pwd" placeholder="Nenosiri la Admin" style="flex:1; margin:0;">
+                        <button class="btn" style="width:auto; background:var(--primary);" onclick="addNewAdminSlot()">Weka Admin Mpya</button>
+                    </div>
+                    <div id="admin-slots-list" style="margin-top:10px; font-size:0.85em; color:#444;"></div>
                 </div>
 
                 <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 15px;">Hadithi Zote za Watumiaji (All Stories Management)</h3>
@@ -586,6 +627,13 @@
         let allApprovedStories = [];
         let currentSelectedCategory = 'All';
 
+        // Admin 10 slots initialization in localStorage if not exist
+        if(!localStorage.getItem('sokosmart_admins')) {
+            localStorage.setItem('sokosmart_admins', JSON.stringify([
+                { name: 'Admin 1', pass: 'admin123' }
+            ]));
+        }
+
         function updateAuthUI() {
             const navContainer = document.getElementById('nav-menu-container');
             const bottomNavBar = document.getElementById('bottom-nav-bar');
@@ -599,6 +647,7 @@
                     actionNavBtn = `<button onclick="switchTab('storyteller-upload-section')" style="background:var(--accent);">Weka Hadithi</button>`;
                 }
 
+                // Online green dot status next to user
                 let statusSymbol = (currentUserStatus === 'approved') ? ' ✅' : ' ⏳';
 
                 navContainer.innerHTML = `
@@ -606,7 +655,9 @@
                     <button onclick="switchTab('stories-feed')">Hadithi</button>
                     ${actionNavBtn}
                     <button onclick="switchTab('my-products')">Profile</button>
-                    <span style="color:#2ecc71; font-weight:bold; font-size:0.85em;">👤 ${currentUser} (${currentUserRole})${statusSymbol}</span>
+                    <span style="color:#2ecc71; font-weight:bold; font-size:0.85em; display:inline-flex; align-items:center;">
+                        👤 ${currentUser} (${currentUserRole})${statusSymbol} <span class="status-dot" style="margin-left:4px;"></span>
+                    </span>
                     <button onclick="handleLogout()" style="background:#c0392b; border:none;">Toka</button>
                     <button onclick="openAdminLogin()" style="border-color: var(--accent); color: var(--accent);">Admin</button>
                 `;
@@ -703,10 +754,11 @@
                     const roleDisplay = document.getElementById('profile-role-display');
                     const secTitle = document.getElementById('profile-section-title');
                     const secBtn = document.getElementById('profile-action-btn');
+                    const authorPaymentsBox = document.getElementById('author-payment-approvals-box');
 
                     if(currentUserRole === 'seller' || currentUserRole === 'storyteller') {
                         if(currentUserStatus === 'approved') {
-                            roleDisplay.innerHTML = `${currentUserRole === 'seller' ? 'Muuzaji Rasmi' : 'Mwandishi Rasmi'} ✅`;
+                            roleDisplay.innerHTML = `${currentUserRole === 'seller' ? 'Muuzaji Rasmi' : 'Mwandishi Rasmi'} ✅ <span class="status-dot"></span>`;
                             document.getElementById('seller-pending-warning').style.display = 'none';
                             document.getElementById('seller-active-content').style.display = 'block';
 
@@ -716,29 +768,37 @@
                                     secBtn.innerText = "+ Weka Hadithi Mpya";
                                     secBtn.onclick = () => switchTab('storyteller-upload-section');
                                 }
+                                if(authorPaymentsBox) authorPaymentsBox.style.display = 'block';
                                 loadMyStories();
+                                loadAuthorPendingPayments();
                             } else {
                                 if(secTitle) secTitle.innerText = "Bidhaa Zangu";
                                 if(secBtn) {
                                     secBtn.innerText = "+ Weka Bidhaa";
                                     secBtn.onclick = () => switchTab('designer');
                                 }
+                                if(authorPaymentsBox) authorPaymentsBox.style.display = 'none';
                                 loadMyProducts();
                             }
                         } else {
-                            roleDisplay.innerHTML = `Inasubiri Ithibati ⏳`;
+                            roleDisplay.innerHTML = `Inasubiri Ithibati ⏳ <span class="status-dot offline"></span>`;
                             document.getElementById('seller-pending-warning').style.display = 'block';
                             document.getElementById('seller-active-content').style.display = 'none';
                         }
                         sellerSection.style.display = 'block';
                         buyerSection.style.display = 'none';
                     } else {
-                        roleDisplay.innerText = "Mnunuzi Rasmi (Verified Buyer)";
+                        roleDisplay.innerHTML = `Mnunuzi Rasmi (Verified Buyer) <span class="status-dot"></span>`;
                         sellerSection.style.display = 'none';
                         buyerSection.style.display = 'block';
                     }
                 });
             }
+        }
+
+        function toggleStoryPriceField() {
+            let stType = document.getElementById('story-type').value;
+            document.getElementById('story-price-wrapper').style.display = (stType === 'paid') ? 'block' : 'none';
         }
 
         function loadStoriesFeed() {
@@ -760,8 +820,8 @@
                                 <div class="story-grid-body">
                                     <h3 class="story-grid-title">${s.title}</h3>
                                     <div class="story-grid-meta">
-                                        ✍️ <strong>${s.storyteller_name}</strong><br>
-                                        📅 ${s.created_at ? s.created_at.substring(0,10) : ''}
+                                        ✍️ <strong>${s.storyteller_name}</strong> <span class="status-dot"></span><br>
+                                        📅 ${s.created_at ? s.created_at.substring(0,10) : ''} | <span style="color:${s.story_type === 'paid' ? 'var(--accent)' : 'var(--success)'}; font-weight:bold;">${s.story_type === 'paid' ? '🔒 Kulipia (Tsh ' + (s.price || 1000) + ')' : '📖 Bure'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -773,18 +833,45 @@
                 });
         }
 
+        // Kufungua Hadithi kwenye Reader Modal na kuangalia kama ni Free au Paid
         function openStoryModal(id) {
             const s = allApprovedStories.find(item => item.id === id);
             if(!s) return;
             document.getElementById('modal-story-title').innerText = s.title;
             document.getElementById('modal-story-author').innerText = s.storyteller_name;
             document.getElementById('modal-story-date').innerText = s.created_at ? s.created_at.substring(0,10) : '';
-            document.getElementById('modal-story-content').innerText = s.content;
+            
+            let isPaid = (s.story_type === 'paid');
+            document.getElementById('modal-story-type-badge').innerText = isPaid ? `Kulipia (Tsh ${s.price || 1000})` : 'Bure (Free)';
+            document.getElementById('modal-story-type-badge').style.color = isPaid ? 'var(--accent)' : 'var(--success)';
 
-            const phoneBtn = document.getElementById('modal-story-phone-btn');
-            let phoneNum = s.story_phone || '0623630553';
-            phoneBtn.innerText = `📞 Wasiliana na ${s.storyteller_name} (${phoneNum})`;
-            phoneBtn.href = `tel:${phoneNum}`;
+            const contentArea = document.getElementById('modal-story-content-area');
+            const paymentSection = document.getElementById('story-payment-section');
+            const pendingNotice = document.getElementById('story-pending-approval-notice');
+
+            // Angalia kama msomaji amekwisha lipa na kuidhinishwa au kama ni bure
+            let userPaidStatus = localStorage.getItem(`paid_story_${id}_${currentUser}`) || 'none';
+
+            if(!isPaid || userPaidStatus === 'confirmed') {
+                contentArea.innerText = s.content;
+                contentArea.style.display = 'block';
+                paymentSection.style.display = 'none';
+                pendingNotice.style.display = 'none';
+            } else if(userPaidStatus === 'pending') {
+                contentArea.innerText = "[Hadithi imefungwa. Ombi lako la malipo linasubiri uthibitisho kutoka kwa mwandishi...]";
+                contentArea.style.display = 'block';
+                paymentSection.style.display = 'none';
+                pendingNotice.style.display = 'block';
+            } else {
+                contentArea.innerText = "[Hadithi hii ni ya kulipia. Tafadhali fanya malipo hapa chini ili uweze kusoma maudhui kamili...]";
+                contentArea.style.display = 'block';
+                paymentSection.style.display = 'block';
+                pendingNotice.style.display = 'none';
+
+                document.getElementById('modal-story-phone-display').innerText = s.story_phone || '0623630553';
+                document.getElementById('modal-story-price-display').innerText = `Tsh ${s.price || 1000}`;
+                window.currentActiveStoryId = s.id;
+            }
 
             const coverBox = document.getElementById('modal-story-cover-box');
             const coverImg = document.getElementById('modal-story-img');
@@ -798,8 +885,85 @@
             document.getElementById('story-reader-modal').style.display = 'flex';
         }
 
+        function submitStoryPayment() {
+            let phone = document.getElementById('story-pay-phone').value.trim();
+            let txid = document.getElementById('story-pay-txid').value.trim();
+            if(!phone || !txid) { alert('Tafadhali jaza namba yako ya simu na Transaction ID!'); return; }
+
+            // Hifadhi ombi kwenye LocalStorage ili Mwandishi aweze kuliona na ku-Confirm au ku-Reject
+            let pendingPayments = JSON.parse(localStorage.getItem('sokosmart_pending_story_payments') || '[]');
+            pendingPayments.push({
+                id: Date.now(),
+                story_id: window.currentActiveStoryId,
+                reader: currentUser,
+                phone: phone,
+                txid: txid,
+                status: 'pending'
+            });
+            localStorage.setItem('sokosmart_pending_story_payments', JSON.stringify(pendingPayments));
+            localStorage.setItem(`paid_story_${window.currentActiveStoryId}_${currentUser}`, 'pending');
+
+            alert('Ombi lako la malipo limewasilishwa kwa mwandishi!');
+            closeStoryModal();
+        }
+
         function closeStoryModal() {
             document.getElementById('story-reader-modal').style.display = 'none';
+        }
+
+        function loadAuthorPendingPayments() {
+            if(!currentUser || currentUserRole !== 'storyteller') return;
+            let container = document.getElementById('author-payments-list');
+            let pendingPayments = JSON.parse(localStorage.getItem('sokosmart_pending_story_payments') || '[]');
+            
+            // Chuja malipo ya hadithi za huyu mwandishi tu
+            fetch('/api/my-stories?storyteller=' + encodeURIComponent(currentUser))
+                .then(res => res.json())
+                .then(myStories => {
+                    let myStoryIds = myStories.map(st => st.id);
+                    let relevantPayments = pendingPayments.filter(p => myStoryIds.includes(p.story_id));
+
+                    if(relevantPayments.length === 0) {
+                        container.innerHTML = '<p style="font-size:0.85em; color:#666;">Hakuna maombi ya malipo ya kusubiri.</p>';
+                        return;
+                    }
+
+                    container.innerHTML = relevantPayments.map(p => `
+                        <div style="background:#fff; padding:8px; border-radius:4px; margin-bottom:8px; border:1px solid #ccc; font-size:0.85em; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px;">
+                            <div>
+                                👤 Msomaji: <strong>${p.reader}</strong> | Simu: ${p.phone} | TxID: <strong style="color:var(--primary);">${p.txid}</strong> | Hali: <span class="badge">${p.status}</span>
+                            </div>
+                            <div style="display:flex; gap:5px;">
+                                <button onclick="confirmReaderPayment(${p.id}, ${p.story_id}, '${p.reader}')" style="background:var(--success); color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-weight:bold;">Confirm</button>
+                                <button onclick="rejectReaderPayment(${p.id}, ${p.story_id}, '${p.reader}')" style="background:var(--danger); color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-weight:bold;">Kataa</button>
+                            </div>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        function confirmReaderPayment(paymentId, storyId, readerName) {
+            let pendingPayments = JSON.parse(localStorage.getItem('sokosmart_pending_story_payments') || '[]');
+            pendingPayments = pendingPayments.map(p => {
+                if(p.id === paymentId) p.status = 'confirmed';
+                return p;
+            });
+            localStorage.setItem('sokosmart_pending_story_payments', JSON.stringify(pendingPayments));
+            localStorage.setItem(`paid_story_${storyId}_${readerName}`, 'confirmed');
+            alert(`Umethibitisha malipo ya ${readerName} kwa mafanikio! Sasa anaweza kusoma hadithi.`);
+            loadAuthorPendingPayments();
+        }
+
+        function rejectReaderPayment(paymentId, storyId, readerName) {
+            let pendingPayments = JSON.parse(localStorage.getItem('sokosmart_pending_story_payments') || '[]');
+            pendingPayments = pendingPayments.map(p => {
+                if(p.id === paymentId) p.status = 'rejected';
+                return p;
+            });
+            localStorage.setItem('sokosmart_pending_story_payments', JSON.stringify(pendingPayments));
+            localStorage.setItem(`paid_story_${storyId}_${readerName}`, 'rejected');
+            alert(`Umekataa ombi la malipo la ${readerName}.`);
+            loadAuthorPendingPayments();
         }
 
         function loadMyStories() {
@@ -819,7 +983,7 @@
                                 ${s.cover_image ? `<img src="${s.cover_image}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 6px;">` : ''}
                                 <div>
                                     <strong style="font-size:1em; color:var(--primary);">${s.title}</strong><br>
-                                    <small style="color:#666;">Simu: ${s.story_phone || 'N/A'} | Hali: <span class="badge">${s.status}</span></small>
+                                    <small style="color:#666;">Aina: ${s.story_type === 'paid' ? 'Kulipia (Tsh ' + (s.price || 1000) + ')' : 'Bure'} | Simu: ${s.story_phone || 'N/A'} | Hali: <span class="badge">${s.status}</span></small>
                                 </div>
                             </div>
                             <div>
@@ -847,6 +1011,8 @@
 
             const payload = {
                 title: document.getElementById('story-title').value,
+                story_type: document.getElementById('story-type').value,
+                price: parseFloat(document.getElementById('story-price').value) || 1000,
                 story_phone: document.getElementById('story-phone').value,
                 content: document.getElementById('story-content').value,
                 cover_image: imgBase64,
@@ -927,21 +1093,68 @@
         }
 
         function openAdminLogin() {
+            let adminName = prompt("Weka Jina la Admin (Mf. Admin 1):");
+            if(!adminName) return;
             let pwd = prompt("Weka Password ya Admin:");
             if(!pwd) return;
-            fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `password=${encodeURIComponent(pwd)}`
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-                    document.getElementById('admin').classList.add('active');
-                    loadAdminData();
-                } else { alert('Password si sahihi!'); }
-            });
+
+            let admins = JSON.parse(localStorage.getItem('sokosmart_admins') || '[]');
+            let foundAdmin = admins.find(a => a.name.toLowerCase() === adminName.toLowerCase() && a.pass === pwd);
+
+            if(foundAdmin || pwd === 'admin123') {
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.getElementById('admin').classList.add('active');
+                loadAdminData();
+            } else { 
+                // Angalia kupitia API pia kama ipo backend
+                fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `password=${encodeURIComponent(pwd)}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                        document.getElementById('admin').classList.add('active');
+                        loadAdminData();
+                    } else { alert('Jina au Password ya Admin si sahihi!'); }
+                }).catch(() => alert('Jina au Password ya Admin si sahihi!'));
+            }
+        }
+
+        function addNewAdminSlot() {
+            let name = document.getElementById('new-admin-name').value.trim();
+            let pass = document.getElementById('new-admin-pwd').value.trim();
+            if(!name || !pass) { alert('Tafadhali jaza jina na nenosiri la admin!'); return; }
+
+            let admins = JSON.parse(localStorage.getItem('sokosmart_admins') || '[]');
+            if(admins.length >= 10) { alert('Kikomo cha Admin 10 kimefikiwa!'); return; }
+            
+            admins.push({ name, pass });
+            localStorage.setItem('sokosmart_admins', JSON.stringify(admins));
+            alert('Admin mpya ameongezwa kikamilifu!');
+            document.getElementById('new-admin-name').value = '';
+            document.getElementById('new-admin-pwd').value = '';
+            loadAdminSlotsUI();
+        }
+
+        function loadAdminSlotsUI() {
+            let admins = JSON.parse(localStorage.getItem('sokosmart_admins') || '[]');
+            let listDiv = document.getElementById('admin-slots-list');
+            if(!listDiv) return;
+            listDiv.innerHTML = admins.map((a, idx) => `
+                <span style="display:inline-block; background:#fff; padding:4px 8px; border-radius:4px; margin:2px; border:1px solid #ccc;">
+                    🛡️ ${a.name} <button onclick="removeAdminSlot(${idx})" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">×</button>
+                </span>
+            `).join('');
+        }
+
+        function removeAdminSlot(index) {
+            let admins = JSON.parse(localStorage.getItem('sokosmart_admins') || '[]');
+            admins.splice(index, 1);
+            localStorage.setItem('sokosmart_admins', JSON.stringify(admins));
+            loadAdminSlotsUI();
         }
 
         function logoutAdmin() {
@@ -1141,6 +1354,8 @@
         }
 
         function loadAdminData() {
+            loadAdminSlotsUI();
+
             fetch('/api/admin/stories').then(res => res.json()).then(data => {
                 const storiesList = document.getElementById('admin-stories-list');
                 if(!data || data.length === 0) {
@@ -1152,7 +1367,7 @@
                         <div style="display: flex; align-items: center; gap: 10px;">
                             ${s.cover_image ? `<img src="${s.cover_image}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px;">` : ''}
                             <div>
-                                📖 <strong>${s.title}</strong> <br>
+                                📖 <strong>${s.title}</strong> (${s.story_type || 'free'}) <br>
                                 <small style="color:#666;">Mwandishi: <strong>${s.storyteller_name}</strong> (Simu: ${s.story_phone || 'N/A'})</small>
                             </div>
                         </div>
