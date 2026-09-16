@@ -227,8 +227,8 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if username == "" {
-		r.ParseMultipartForm(50 << 20)
-		r.ParseForm()
+		_ = r.ParseMultipartForm(50 << 20)
+		_ = r.ParseForm()
 		username = r.FormValue("username")
 		password = r.FormValue("password")
 		role = r.FormValue("role")
@@ -315,7 +315,7 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if username == "" {
-		r.ParseForm()
+		_ = r.ParseForm()
 		username = r.FormValue("username")
 		password = r.FormValue("password")
 	}
@@ -418,7 +418,7 @@ func getMyDesignsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ==========================================
-// SEHEMU ILIYOBORESHWA: UWEZO WA KUPOKEA NJIA ZOTE (JSON, FORM, MULTIPART)
+// SEHEMU ILIYOSAHIHISHWA KABISA (Haina Hitilafu ya priceStr)
 // ==========================================
 func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -428,7 +428,7 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	var title, description, category, designerName, location, vendorPhone, videoURL string
+	var title, description, category, designerName, location, vendorPhone, videoURL, priceStr string
 	var price float64
 	var finalImg string
 
@@ -458,7 +458,6 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 			videoURL = payload.VideoURL
 			category = payload.Category
 			
-			// Chagua jina la mtumiaji kulingana na lililopatikana
 			designerName = payload.DesignerName
 			if designerName == "" {
 				designerName = payload.Designer
@@ -472,7 +471,7 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 2. Kama bado title ipo wazi au ilitumwa kwa mfumo wa URL-Encoded / Multipart Form
+	// 2. Kama haijapatikana kupitia JSON, soma kupitia URL-Encoded / Multipart Form
 	if title == "" {
 		_ = r.ParseMultipartForm(80 << 20)
 		_ = r.ParseForm()
@@ -481,7 +480,6 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		description = r.FormValue("description")
 		category = r.FormValue("category")
 		
-		// Jaribu njia zote za majina ya mtumiaji
 		designerName = r.FormValue("designer_name")
 		if designerName == "" {
 			designerName = r.FormValue("designer")
@@ -505,18 +503,11 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Kama bado haipatikani bei kupitia FormValue ya juu, weka kuzuia makosa ya syntax
-	var priceStr string
-
-	// 3. Hakiki akaunti kama ipo na ina idhini (Kama designerName haipo tupu)
+	// 3. Hakiki akaunti kama ipo na ina idhini
 	if designerName != "" {
 		var vStatus string
 		err := db.QueryRow("SELECT verification_status FROM app_accounts WHERE username = $1", designerName).Scan(&vStatus)
-		// Kama akaunti haipatikani au haijapitishwa, badala ya kumkatalia moja kwa moja, 
-		// tunaweza kuruhusu au kuweka status ya kupita ili kuzuia kukwama kama yeye ni admin/muuzaji halali.
-		// Hapa tunaruhusu kama ipo au kama haina kizuizi kikali, lakini tukitaka iwe salama tunaangalia kama vStatus == 'approved'.
 		if err == nil && vStatus != "" && vStatus != "approved" {
-			// Tunatoa mwanya: kama ni pending tunaiacha au tunaonya, lakini hapa tunazuia kama ilivyo desturi ya mfumo wako
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"success": false,
 				"message": "Akaunti yako bado haijapitishwa na Admin au haijasajiliwa.",
