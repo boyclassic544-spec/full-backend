@@ -207,6 +207,9 @@ func initDB() {
 	if err != nil {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la stories: %v", err)
 	}
+
+	// Ongeza safu ya cover_image kwenye jedwali la stories kama haikuwepo awali
+	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS cover_image TEXT DEFAULT '';")
 }
 
 func saveBase64Media(dataURL string) (string, error) {
@@ -744,15 +747,10 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Ruhusu hata kama jina halipo kwenye vStatus au lipo, lakini hakikisha limehifadhiwa moja kwa moja ili kuzuia kukwama kwa mtumiaji
 	if strings.HasPrefix(coverImage, "data:") {
 		if url, saveErr := saveBase64Media(coverImage); saveErr == nil {
 			coverImage = url
 		}
-	}
-
-	if coverImage == "" {
-		coverImage = ""
 	}
 
 	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, status, rejection_reason) VALUES ($1, $2, $3, $4, 'approved', '')",
