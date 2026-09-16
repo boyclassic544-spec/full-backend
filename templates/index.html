@@ -50,21 +50,29 @@
         .card-img-wrapper { position: relative; width: 100%; background-color: #111; display: flex; align-items: center; justify-content: center; height: 180px; overflow: hidden; }
         .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
-        .zoom-btn { position: absolute; bottom: 8px; right: 8px; background: rgba(0, 0, 0, 0.75); color: #fff; border: 1px solid rgba(255,255,255,0.5); padding: 4px 6px; border-radius: 4px; cursor: pointer; font-size: 0.7em; display: flex; align-items: center; gap: 3px; z-index: 10; }
-
         .card-content { padding: 10px; }
         .card h3 { margin: 0 0 6px 0; font-size: 0.95em; color: var(--primary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .card p { font-size: 0.8em; color: #666; margin-bottom: 6px; }
         .price { color: var(--success); font-weight: bold; font-size: 0.95em; margin-bottom: 6px; display: block; }
 
-        .stories-container { display: flex; flex-direction: column; gap: 20px; max-width: 800px; margin: 0 auto; }
-        .story-card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
-        .story-cover-wrapper { width: 100%; height: 320px; background: #000; overflow: hidden; position: relative; }
-        .story-cover-wrapper img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .story-body { padding: 20px; }
-        .story-title { font-size: 1.4em; color: var(--primary); margin: 0 0 10px 0; font-weight: 700; }
-        .story-meta { font-size: 0.85em; color: #718096; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #edf2f7; padding-bottom: 10px; }
-        .story-text { font-size: 1em; color: #2d3748; line-height: 1.8; white-space: pre-wrap; }
+        /* Gridi ya Hadithi (Gridi Mbili) */
+        .stories-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        @media (max-width: 600px) {
+            .stories-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        }
+        .story-grid-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #dcdde1; display: flex; flex-direction: column; justify-content: space-between; }
+        .story-grid-img { width: 100%; height: 150px; background: #000; overflow: hidden; }
+        .story-grid-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .story-grid-body { padding: 12px; display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
+        .story-grid-title { font-size: 0.95em; font-weight: bold; color: var(--primary); margin: 0 0 6px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .story-grid-meta { font-size: 0.75em; color: #718096; margin-bottom: 10px; }
+
+        /* Background Maalum ya Sehemu ya Kusoma Hadithi (Reader View Modal) */
+        .story-reader-content {
+            background-color: #fdfbf7 !important; /* Rangi ya cream nyororo ya kusoma kitabu */
+            border: 2px solid #e2d9c2;
+            color: #2c2c2c;
+        }
 
         .payment-box { background: #e8f8f5; border-top: 1px solid #a3e4d7; padding: 8px 10px; }
         input, select, textarea { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; }
@@ -171,12 +179,27 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <div>
                     <h2 style="color: var(--primary); margin: 0;">Hadithi na Makala za SokoSmart</h2>
-                    <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9em;">Soma hadithi za kusisimua kutoka kwa waandishi wetu.</p>
+                    <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9em;">Chagua hadithi usome kwa urahisi.</p>
                 </div>
                 <button class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85em; background: var(--primary);" onclick="switchTab('market')">← Rudi Sokoni</button>
             </div>
-            <div id="stories-list-container" class="stories-container">
-                <p style="text-align:center;">Inapakia hadithi...</p>
+            <div id="stories-list-container" class="stories-grid">
+                <p style="text-align:center; grid-column: 1/-1;">Inapakia hadithi...</p>
+            </div>
+        </div>
+
+        <!-- 1.3 READER VIEW MODAL FOR FULL STORY (Yenye Background ya kipekee ya Kusoma Hadithi) -->
+        <div id="story-reader-modal" class="modal">
+            <div class="modal-content story-reader-content" style="max-width: 700px;">
+                <span class="close-modal" onclick="closeStoryModal()">&times;</span>
+                <div id="modal-story-cover-box" style="width: 100%; height: 260px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 15px; display: none;">
+                    <img id="modal-story-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <h2 id="modal-story-title" style="color: var(--primary); margin-top: 0; font-size: 1.3em;"></h2>
+                <div style="font-size: 0.8em; color: #718096; margin-bottom: 15px; border-bottom: 1px solid #dcd6c1; padding-bottom: 8px;">
+                    ✍️ Mwandishi: <strong id="modal-story-author"></strong> | 📅 <span id="modal-story-date"></span>
+                </div>
+                <div id="modal-story-content" style="font-size: 1em; color: #2c2c2c; line-height: 1.85; white-space: pre-wrap; max-height: 60vh; overflow-y: auto; padding-right: 5px;"></div>
             </div>
         </div>
 
@@ -537,6 +560,7 @@
         let currentUserRole = localStorage.getItem('sokosmart_role') || 'buyer';
         let currentUserStatus = localStorage.getItem('sokosmart_status') || 'pending';
         let allApprovedDesigns = [];
+        let allApprovedStories = [];
         let currentSelectedCategory = 'All';
 
         function updateAuthUI() {
@@ -698,29 +722,56 @@
             fetch('/api/stories')
                 .then(res => res.json())
                 .then(data => {
+                    allApprovedStories = data || [];
                     const container = document.getElementById('stories-list-container');
-                    if(!data || data.length === 0) {
-                        container.innerHTML = '<p style="text-align:center; padding:20px; background:#fff; border-radius:8px;">Hakuna hadithi zilizochapishwa kwa sasa.</p>';
+                    if(!allApprovedStories || allApprovedStories.length === 0) {
+                        container.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:20px; background:#fff; border-radius:8px;">Hakuna hadithi zilizochapishwa kwa sasa.</p>';
                         return;
                     }
-                    container.innerHTML = data.map(s => `
-                        <div class="story-card">
-                            ${s.cover_image ? `
-                                <div class="story-cover-wrapper">
-                                    <img src="${s.cover_image}" alt="${s.title}">
+                    container.innerHTML = allApprovedStories.map(s => `
+                        <div class="story-grid-card">
+                            <div>
+                                <div class="story-grid-img">
+                                    <img src="${s.cover_image || 'https://via.placeholder.com/300'}" alt="${s.title}">
                                 </div>
-                            ` : ''}
-                            <div class="story-body">
-                                <h3 class="story-title">${s.title}</h3>
-                                <div class="story-meta">
-                                    <span>✍️ Mwandishi: <strong>${s.storyteller_name}</strong></span>
-                                    <span>📅 ${s.created_at ? s.created_at.substring(0,10) : ''}</span>
+                                <div class="story-grid-body">
+                                    <h3 class="story-grid-title">${s.title}</h3>
+                                    <div class="story-grid-meta">
+                                        ✍️ <strong>${s.storyteller_name}</strong><br>
+                                        📅 ${s.created_at ? s.created_at.substring(0,10) : ''}
+                                    </div>
                                 </div>
-                                <div class="story-text">${s.content}</div>
+                            </div>
+                            <div style="padding: 10px; background: #f8f9fa; border-top: 1px solid #eee;">
+                                <button class="btn" style="background: var(--primary); font-size: 0.85em; padding: 8px;" onclick="openStoryModal(${s.id})">Soma Hadithi</button>
                             </div>
                         </div>
                     `).join('');
                 });
+        }
+
+        function openStoryModal(id) {
+            const s = allApprovedStories.find(item => item.id === id);
+            if(!s) return;
+            document.getElementById('modal-story-title').innerText = s.title;
+            document.getElementById('modal-story-author').innerText = s.storyteller_name;
+            document.getElementById('modal-story-date').innerText = s.created_at ? s.created_at.substring(0,10) : '';
+            document.getElementById('modal-story-content').innerText = s.content;
+
+            const coverBox = document.getElementById('modal-story-cover-box');
+            const coverImg = document.getElementById('modal-story-img');
+            if(s.cover_image) {
+                coverImg.src = s.cover_image;
+                coverBox.style.display = 'block';
+            } else {
+                coverBox.style.display = 'none';
+            }
+
+            document.getElementById('story-reader-modal').style.display = 'flex';
+        }
+
+        function closeStoryModal() {
+            document.getElementById('story-reader-modal').style.display = 'none';
         }
 
         function loadMyStories() {
