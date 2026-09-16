@@ -69,7 +69,7 @@
 
         /* Background Maalum ya Sehemu ya Kusoma Hadithi (Reader View Modal) */
         .story-reader-content {
-            background-color: #fdfbf7 !important; /* Rangi ya cream nyororo ya kusoma kitabu */
+            background-color: #fdfbf7 !important;
             border: 2px solid #e2d9c2;
             color: #2c2c2c;
         }
@@ -188,7 +188,7 @@
             </div>
         </div>
 
-        <!-- 1.3 READER VIEW MODAL FOR FULL STORY (Yenye Background ya kipekee ya Kusoma Hadithi) -->
+        <!-- 1.3 READER VIEW MODAL FOR FULL STORY -->
         <div id="story-reader-modal" class="modal">
             <div class="modal-content story-reader-content" style="max-width: 700px;">
                 <span class="close-modal" onclick="closeStoryModal()">&times;</span>
@@ -451,9 +451,15 @@
                 <div class="admin-panel-header">
                     <div>
                         <h2 style="margin:0; color: var(--primary);">SokoSmart Admin Portal</h2>
-                        <small style="color: #666;">Udhibiti wa Watumiaji, Ithibati ya Wauzaji na Waandishi, na Bidhaa</small>
+                        <small style="color: #666;">Udhibiti wa Watumiaji, Ithibati, Bidhaa na Hadithi Zote</small>
                     </div>
                     <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; font-weight:bold;">Toka (Logout)</button>
+                </div>
+
+                <!-- SEHEHEMU MPYA: HADITHI ZOTE ZA WATUMIAJI (ADMIN STORIES MANAGEMENT) -->
+                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 15px;">Hadithi Zote za Watumiaji (All Stories Management)</h3>
+                <div id="admin-stories-list" style="margin-bottom:30px; overflow-x: auto;">
+                    <p>Inapakia hadithi...</p>
                 </div>
 
                 <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 25px;">Wauzaji Wanaosubiri Ithibati (Pending Sellers)</h3>
@@ -1047,7 +1053,30 @@
         }
 
         function loadAdminData() {
-            // Wauzaji
+            // 1. Hadithi Zote za Watumiaji (Admin Stories Management)
+            fetch('/api/admin/stories').then(res => res.json()).then(data => {
+                const storiesList = document.getElementById('admin-stories-list');
+                if(!data || data.length === 0) {
+                    storiesList.innerHTML = '<p>Hakuna hadithi zozote zilizopostiwa kwenye mfumo.</p>';
+                    return;
+                }
+                storiesList.innerHTML = data.map(s => `
+                    <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; flex-wrap:wrap; gap:10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            ${s.cover_image ? `<img src="${s.cover_image}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px;">` : ''}
+                            <div>
+                                📖 <strong>${s.title}</strong> <br>
+                                <small style="color:#666;">Mwandishi: <strong>${s.storyteller_name}</strong> | Tarehe: ${s.created_at ? s.created_at.substring(0,10) : ''}</small>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:5px;">
+                            <button onclick="adminDeleteStory(${s.id})" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">🗑️ Futa Hadithi</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+
+            // 2. Wauzaji
             fetch('/api/admin/sellers').then(res => res.json()).then(data => {
                 window.adminAllSellers = data;
                 const sellersList = document.getElementById('admin-sellers-list');
@@ -1075,7 +1104,7 @@
                 `}).join('');
             });
 
-            // Waandishi
+            // 3. Waandishi
             fetch('/api/admin/storytellers').then(res => res.json()).then(data => {
                 window.adminAllStorytellers = data;
                 const storyList = document.getElementById('admin-storytellers-list');
@@ -1101,7 +1130,7 @@
                 `}).join('');
             });
 
-            // Wanunuzi
+            // 4. Wanunuzi
             fetch('/api/admin/buyers').then(res => res.json()).then(data => {
                 const buyersList = document.getElementById('admin-buyers-list');
                 if(!data || data.length === 0) {
@@ -1116,7 +1145,7 @@
                 `).join('');
             });
 
-            // Bidhaa
+            // 5. Bidhaa
             fetch('/api/admin/designs').then(res => res.json()).then(data => {
                 window.adminAllDesigns = data;
                 const list = document.getElementById('admin-designs-list');
@@ -1138,6 +1167,16 @@
                     </div>
                 `).join('');
             });
+        }
+
+        function adminDeleteStory(id) {
+            if(!confirm("Una uhakika unataka kufuta hadithi hii kama Admin?")) return;
+            fetch('/api/admin/delete-story?id=' + id, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || 'Hadithi imefutwa!');
+                    loadAdminData();
+                });
         }
 
         function approveUser(id) {

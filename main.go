@@ -102,7 +102,7 @@ func main() {
 	http.HandleFunc("/api/delete-design", deleteMyDesignHandler)
 	http.HandleFunc("/api/buy", buyDesignHandler)
 
-	// Routes Maalum za Hadithi (Stories Feed & Storyteller Dashboard - Namba 2 & 3)
+	// Routes Maalum za Hadithi (Stories Feed & Storyteller Dashboard)
 	http.HandleFunc("/api/stories", getStoriesHandler)
 	http.HandleFunc("/api/my-stories", getMyStoriesHandler)
 	http.HandleFunc("/api/storyteller/upload", uploadStoryJSONHandler)
@@ -208,7 +208,6 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la stories: %v", err)
 	}
 
-	// Ongeza safu ya cover_image kwenye jedwali la stories kama haikuwepo awali
 	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS cover_image TEXT DEFAULT '';")
 }
 
