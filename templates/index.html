@@ -18,8 +18,8 @@
         header { background: var(--primary); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 999; }
         .logo { font-size: 1.5em; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 5px; }
         .logo span { color: var(--accent); }
-        .nav-links { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .nav-links button, .nav-links a { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 0.85em; transition: 0.3s; }
+        .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .nav-links button, .nav-links a { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 6px 10px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 0.8em; transition: 0.3s; }
         .nav-links button:hover, .nav-links a:hover { background: var(--accent); border-color: var(--accent); }
 
         .search-location-bar { background: #fff; padding: 12px 20px; border-bottom: 1px solid #ddd; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
@@ -74,7 +74,7 @@
 
         /* ROLE SELECTOR STYLES */
         .role-selector-container { display: flex; gap: 5px; margin-bottom: 15px; }
-        .role-btn { flex: 1; padding: 8px 4px; border: 2px solid #ccc; background: #fff; border-radius: 4px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.8em; transition: 0.2s; }
+        .role-btn { flex: 1; padding: 8px 4px; border: 2px solid #ccc; background: #fff; border-radius: 4px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.75em; transition: 0.2s; }
         .role-btn.active { border-color: var(--primary); background: #eef2f7; color: var(--primary); }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #ddd; display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); }
@@ -454,7 +454,7 @@
                 <div class="admin-panel-header">
                     <div>
                         <h2 style="margin:0; color: var(--primary);">SokoSmart Admin Portal</h2>
-                        <small style="color: #666;">Udhibiti wa Watumiaji, Ithibati ya Wauzaji (NIDA/Vitambulisho), na Bidhaa</small>
+                        <small style="color: #666;">Udhibiti wa Watumiaji, Ithibati ya Wauzaji na Waandishi, na Bidhaa</small>
                     </div>
                     <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; font-weight:bold;">Toka (Logout)</button>
                 </div>
@@ -590,12 +590,14 @@
                     actionNavBtn = `<button onclick="switchTab('storyteller-upload-section')" style="background:var(--accent);">Weka Hadithi</button>`;
                 }
 
+                let statusSymbol = (currentUserStatus === 'approved') ? ' ✅' : ' ⏳';
+
                 navContainer.innerHTML = `
                     <button onclick="switchTab('market')">Soko Kuu</button>
                     <button onclick="switchTab('stories-feed')">Hadithi</button>
                     ${actionNavBtn}
                     <button onclick="switchTab('my-products')">Profile</button>
-                    <span style="color:#2ecc71; font-weight:bold; font-size:0.85em; margin-left:2px;">👤 ${currentUser} (${currentUserRole}) ${currentUserStatus === 'approved' ? ' ✅' : '⏳'}</span>
+                    <span style="color:#2ecc71; font-weight:bold; font-size:0.85em; margin-left:2px;">👤 ${currentUser} (${currentUserRole})${statusSymbol}</span>
                     <button onclick="handleLogout()" style="background:#c0392b; border:none;">Toka</button>
                     <button onclick="openAdminLogin()" style="border-color: var(--accent); color: var(--accent);">Admin</button>
                 `;
@@ -642,7 +644,10 @@
 
         function checkSellerAccessAndSwitch() {
             if(currentUserRole === 'storyteller') {
-                if(currentUserStatus !== 'approved') { alert('Akaunti yako ya mwandishi bado haijapitishwa na Admin.'); return; }
+                if(currentUserStatus !== 'approved') { 
+                    alert('Akaunti yako ya mwandishi bado haijapitishwa na Admin. Tafadhali subiri idhini.'); 
+                    return; 
+                }
                 switchTab('storyteller-upload-section');
             } else if(currentUserRole === 'seller') {
                 if(currentUserStatus !== 'approved') {
@@ -691,6 +696,16 @@
                     tabId = 'market';
                 } else if(currentUserStatus !== 'approved') {
                     alert('Samahani, fomu ya kuweka bidhaa imefichwa mpaka pale utakapoidhinishwa na kuwekewa tiki ya kijani na Admin.');
+                    tabId = 'my-products';
+                }
+            }
+
+            if(tabId === 'storyteller-upload-section') {
+                if(currentUserRole !== 'storyteller') {
+                    alert('Samahani, akaunti yako sio ya Mwandishi.');
+                    tabId = 'market';
+                } else if(currentUserStatus !== 'approved') {
+                    alert('Samahani, fomu ya kuandika hadithi imefichwa mpaka utakapoidhinishwa na Admin.');
                     tabId = 'my-products';
                 }
             }
@@ -776,7 +791,7 @@
                                 loadMyProducts();
                             }
                         } else {
-                            roleDisplay.innerHTML = `${currentUserRole} - Inasubiri Ithibati ⏳`;
+                            roleDisplay.innerHTML = `${currentUserRole === 'seller' ? 'Muuzaji' : 'Mwandishi'} - Inasubiri Ithibati ⏳`;
                             document.getElementById('seller-pending-warning').style.display = 'block';
                             document.getElementById('seller-active-content').style.display = 'none';
                         }
