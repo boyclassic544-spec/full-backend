@@ -57,7 +57,6 @@
         .card p { font-size: 0.8em; color: #666; margin-bottom: 6px; }
         .price { color: var(--success); font-weight: bold; font-size: 0.95em; margin-bottom: 6px; display: block; }
 
-        /* MUONEKANO MPYA MAALUM WA HADITHI (STORIES FEED - NAMBA 2) */
         .stories-container { display: flex; flex-direction: column; gap: 20px; max-width: 800px; margin: 0 auto; }
         .story-card { background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
         .story-cover-wrapper { width: 100%; height: 320px; background: #000; overflow: hidden; position: relative; }
@@ -82,7 +81,6 @@
 
         .auth-banner { background: #fff3cd; color: #856404; padding: 12px; text-align: center; font-size: 0.9em; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ffeeba; font-weight: bold; }
 
-        /* ROLE SELECTOR STYLES */
         .role-selector-container { display: flex; gap: 5px; margin-bottom: 15px; }
         .role-btn { flex: 1; padding: 8px 4px; border: 2px solid #ccc; background: #fff; border-radius: 4px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.75em; transition: 0.2s; }
         .role-btn.active { border-color: var(--primary); background: #eef2f7; color: var(--primary); }
@@ -168,7 +166,7 @@
             </div>
         </div>
 
-        <!-- 1.2 STORIES FEED SECTION (Ukurasa wa Kusoma Hadithi - Namba 2) -->
+        <!-- 1.2 STORIES FEED SECTION -->
         <div id="stories-feed" class="section">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <div>
@@ -292,7 +290,7 @@
             </div>
         </div>
 
-        <!-- 4. VENDOR UPLOAD SECTION (SELLER ONLY) -->
+        <!-- 4. VENDOR UPLOAD SECTION -->
         <div id="designer" class="section">
             <div class="form-card" style="max-width: 600px;">
                 <h2 style="margin-top:0; color: var(--primary);">Weka Bidhaa Yako Bure</h2>
@@ -344,7 +342,7 @@
             </div>
         </div>
 
-        <!-- 4.1 STORYTELLER UPLOAD SECTION (STORYTELLER ONLY) -->
+        <!-- 4.1 STORYTELLER UPLOAD SECTION -->
         <div id="storyteller-upload-section" class="section">
             <div class="form-card" style="max-width: 600px;">
                 <h2 style="margin-top:0; color: var(--primary);">Andika na Chapisha Hadithi Yako</h2>
@@ -366,7 +364,7 @@
             </div>
         </div>
 
-        <!-- 5. MY PRODUCTS & PROFILE SECTION (Dashibodi ya Msimulizi - Namba 3) -->
+        <!-- 5. MY PRODUCTS & PROFILE SECTION -->
         <div id="my-products" class="section">
             <div class="form-card" style="max-width: 900px;">
                 <div class="profile-header-card" id="profile-card-area">
@@ -430,21 +428,35 @@
                 <div class="admin-panel-header">
                     <div>
                         <h2 style="margin:0; color: var(--primary);">SokoSmart Admin Portal</h2>
+                        <small style="color: #666;">Udhibiti wa Watumiaji, Ithibati ya Wauzaji na Waandishi, na Bidhaa</small>
                     </div>
-                    <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; font-weight:bold;">Toka</button>
+                    <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; font-weight:bold;">Toka (Logout)</button>
                 </div>
 
-                <h3 style="color: var(--primary); margin-top: 15px;">Wauzaji Wanaosubiri Ithibati</h3>
-                <div id="admin-sellers-list" style="margin-bottom:20px; overflow-x: auto;"></div>
+                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 25px;">Wauzaji Wanaosubiri Ithibati (Pending Sellers)</h3>
+                <div id="admin-sellers-list" style="margin-bottom:20px; overflow-x: auto;">
+                    <p>Inapakia wauzaji...</p>
+                </div>
 
-                <h3 style="color: var(--primary); margin-top: 15px;">Waandishi wa Hadithi Wanaosubiri</h3>
-                <div id="admin-storytellers-list" style="margin-bottom:20px; overflow-x: auto;"></div>
+                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 25px;">Waandishi wa Hadithi Wanaosubiri (Pending Storytellers)</h3>
+                <div id="admin-storytellers-list" style="margin-bottom:20px; overflow-x: auto;">
+                    <p>Inapakia waandishi...</p>
+                </div>
 
-                <h3 style="color: var(--primary); margin-top: 15px;">Hadithi Zilizotumwa (Admin Stories)</h3>
-                <div id="admin-stories-list" style="margin-bottom:20px; overflow-x: auto;"></div>
+                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 15px;">Wateja Waliojisajili (Approved Buyers)</h3>
+                <div id="admin-buyers-list" style="margin-bottom:30px; overflow-x: auto;">
+                    <p>Inapakia wateja...</p>
+                </div>
 
-                <h3 style="color: var(--primary); margin-top: 15px;">Bidhaa Zilizowekwa</h3>
-                <div id="admin-designs-list" style="overflow-x: auto;"></div>
+                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Oda za Malipo na Miamala</h3>
+                <div id="admin-orders-list" style="margin-bottom:30px; overflow-x: auto;">
+                    <p>Inapakia oda...</p>
+                </div>
+
+                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Ukaguzi na Udhibiti wa Bidhaa (Admin Actions)</h3>
+                <div id="admin-designs-list" style="overflow-x: auto;">
+                    <p>Inapakia bidhaa...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -473,10 +485,22 @@
     <div id="admin-detail-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAdminModal()">&times;</span>
-            <h2 style="color: var(--primary); margin-top: 0;">Ukaguzi wa Kina</h2>
-            <div id="modal-image-container" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;"></div>
-            <p><strong>Jina:</strong> <span id="modal-prod-title"></span></p>
-            <p><strong>Bei/Maelezo:</strong> <span id="modal-prod-price"></span></p>
+            <h2 style="color: var(--primary); margin-top: 0;">Ukaguzi wa Kina wa Bidhaa</h2>
+            <div style="text-align: center; margin-bottom: 15px;">
+                <div id="modal-image-container" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;"></div>
+                <div id="modal-video-container" style="margin-top: 10px;"></div>
+            </div>
+            <p><strong>Jina la Bidhaa:</strong> <span id="modal-prod-title"></span></p>
+            <p><strong>Bei:</strong> <span id="modal-prod-price" style="color: var(--accent); font-weight: bold;"></span></p>
+            <p><strong>Eneo:</strong> <span id="modal-prod-location"></span></p>
+            <p><strong>Simu:</strong> <span id="modal-prod-vendor-phone"></span></p>
+            <p><strong>Kategoria:</strong> <span id="modal-prod-cat"></span></p>
+            <p><strong>Muuzaji:</strong> <span id="modal-prod-designer"></span></p>
+            <p><strong>Hali:</strong> <span id="modal-prod-status" class="badge"></span></p>
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin: 15px 0;">
+                <strong style="display: block; margin-bottom: 5px; color: var(--primary);">Maelezo Kamili:</strong>
+                <p id="modal-prod-desc" style="margin: 0; white-space: pre-wrap; font-size: 0.95em; color: #444;"></p>
+            </div>
             <div id="modal-action-buttons" style="display: flex; gap: 10px; margin-top: 20px;"></div>
         </div>
     </div>
@@ -485,10 +509,14 @@
     <div id="admin-seller-detail-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAdminSellerModal()">&times;</span>
-            <h2 style="color: var(--primary); margin-top: 0;">Kitambulisho cha Mtumiaji</h2>
-            <div id="modal-seller-id-container" style="display: flex; justify-content: center; margin-top: 10px;"></div>
-            <p><strong>Username:</strong> <span id="modal-seller-username"></span></p>
-            <p><strong>NIDA:</strong> <span id="modal-seller-nida"></span></p>
+            <h2 style="color: var(--primary); margin-top: 0;">Taarifa na Kitambulisho cha Muuzaji/Mwandishi</h2>
+            <div style="text-align: center; margin-bottom: 15px;">
+                <div id="modal-seller-id-container" style="display: flex; justify-content: center; margin-top: 10px;"></div>
+            </div>
+            <p><strong>Jina la Mtumiaji:</strong> <span id="modal-seller-username"></span></p>
+            <p><strong>Namba ya NIDA:</strong> <span id="modal-seller-nida" style="color: var(--primary); font-weight: bold;"></span></p>
+            <p><strong>Hali ya Ithibati:</strong> <span id="modal-seller-status" class="badge"></span></p>
+            <p><strong>Tarehe ya Usajili:</strong> <span id="modal-seller-date"></span></p>
             <div id="modal-seller-action-buttons" style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;"></div>
         </div>
     </div>
@@ -501,7 +529,7 @@
 
     <footer>
         <p><strong>SokoSmart TZ</strong> - Soko Salama la Kidijitali na Hadithi Tanzania</p>
-        <p>Msaada na Huduma kwa Wateja: <strong>0623630553</strong></p>
+        <p>Msaada na Huduma kwa Wateja (Admin Support): <strong>0623630553</strong></p>
     </footer>
 
     <script>
@@ -608,7 +636,7 @@
             } else if(tabId === 'stories-feed') {
                 hero.style.display = 'none';
                 searchBarContainer.style.display = 'none';
-                loadStoriesFeed(); // Ukurasa wa Kusoma Hadithi (Namba 2)
+                loadStoriesFeed();
             } else {
                 hero.style.display = 'none';
                 searchBarContainer.style.display = 'none';
@@ -641,7 +669,7 @@
                                     secBtn.innerText = "+ Weka Hadithi Mpya";
                                     secBtn.onclick = () => switchTab('storyteller-upload-section');
                                 }
-                                loadMyStories(); // Dashibodi ya Profaili ya Msimulizi (Namba 3)
+                                loadMyStories();
                             } else {
                                 if(secTitle) secTitle.innerText = "Bidhaa Zangu";
                                 if(secBtn) {
@@ -666,7 +694,6 @@
             }
         }
 
-        // UKURASA WA KUSOMA HADITHI (STORIES FEED - NAMBA 2)
         function loadStoriesFeed() {
             fetch('/api/stories')
                 .then(res => res.json())
@@ -696,7 +723,6 @@
                 });
         }
 
-        // DASHIBODI YA PROFAILI YA MSIMULIZI (STORYTELLER PROFILE/DASHBOARD - NAMBA 3)
         function loadMyStories() {
             if(!currentUser || currentUserRole !== 'storyteller') return;
 
@@ -737,11 +763,6 @@
 
         async function handleStoryUpload(e) {
             e.preventDefault();
-            if(currentUserRole !== 'storyteller' || currentUserStatus !== 'approved') {
-                alert('Akaunti yako haijapitishwa na Admin.');
-                return;
-            }
-
             const imgFile = document.getElementById('story-image-file').files[0];
             let imgBase64 = imgFile ? await compressImage(imgFile) : "";
 
@@ -960,21 +981,109 @@
             fetch('/api/delete-design?id=' + id, { method: 'POST' }).then(() => loadMyProducts());
         }
 
+        function openMarketImageModal(imgSrc) {
+            const modal = document.getElementById('market-image-modal');
+            const modalImg = document.getElementById('market-modal-img');
+            if(modal && modalImg) {
+                modalImg.src = imgSrc;
+                modal.style.display = 'flex';
+            }
+        }
+
+        function closeMarketImageModal() {
+            const modal = document.getElementById('market-image-modal');
+            if(modal) { modal.style.display = 'none'; }
+        }
+
         function loadAdminData() {
+            // Wauzaji
             fetch('/api/admin/sellers').then(res => res.json()).then(data => {
-                document.getElementById('admin-sellers-list').innerHTML = data.map(u => `
-                    <div style="padding:5px 0; border-bottom:1px solid #ddd; display:flex; justify-content:space-between;">
-                        <span>👤 ${u.username} (${u.verification_status})</span>
-                        <button onclick="approveUser(${u.id})" style="background:var(--success); color:#fff; border:none; padding:3px 6px;">Idhinisha</button>
+                window.adminAllSellers = data;
+                const sellersList = document.getElementById('admin-sellers-list');
+                if(!data || data.length === 0) {
+                    sellersList.innerHTML = '<p>Hakuna wauzaji wapya.</p>';
+                    return;
+                }
+                sellersList.innerHTML = data.map(u => {
+                    let statusBadge = u.verification_status === 'approved'
+                        ? `<span class="badge-success"> ✅ Imethibitishwa (Verified)</span>`
+                        : `<span class="badge">⏳ Inasubiri (Pending)</span>`;
+                    return `
+                    <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            👤 <strong>${u.username}</strong> (NIDA: ${u.id_number || 'N/A'}) - Hali: ${statusBadge}
+                            <br><small style="color:#666;">Tarehe: ${u.created_at}</small>
+                        </div>
+                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                            <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">🔍 Angalia Kitambulisho</button>
+                            <button onclick="approveUser(${u.id})" style="background:var(--success); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">✅ Idhinisha</button>
+                            <button onclick="rejectUser(${u.id})" style="background:var(--accent); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">❌ Kataa na Sababu</button>
+                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">🗑️ Futa Kabisa</button>
+                        </div>
+                    </div>
+                `}).join('');
+            });
+
+            // Waandishi
+            fetch('/api/admin/storytellers').then(res => res.json()).then(data => {
+                window.adminAllStorytellers = data;
+                const storyList = document.getElementById('admin-storytellers-list');
+                if(!data || data.length === 0) {
+                    storyList.innerHTML = '<p>Hakuna waandishi.</p>';
+                    return;
+                }
+                storyList.innerHTML = data.map(u => {
+                    let statusBadge = u.verification_status === 'approved'
+                        ? `<span class="badge-success"> ✅ Imethibitishwa</span>`
+                        : `<span class="badge">⏳ Inasubiri</span>`;
+                    return `
+                    <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            ✍️ <strong>${u.username}</strong> (ID: ${u.id_number || 'N/A'}) - Hali: ${statusBadge}
+                        </div>
+                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                            <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">🔍 Kitambulisho</button>
+                            <button onclick="approveUser(${u.id})" style="background:var(--success); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">✅ Idhinisha</button>
+                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">🗑️ Futa</button>
+                        </div>
+                    </div>
+                `}).join('');
+            });
+
+            // Wanunuzi
+            fetch('/api/admin/buyers').then(res => res.json()).then(data => {
+                const buyersList = document.getElementById('admin-buyers-list');
+                if(!data || data.length === 0) {
+                    buyersList.innerHTML = '<p>Hakuna wanunuzi.</p>';
+                    return;
+                }
+                buyersList.innerHTML = data.map(u => `
+                    <div style="border-bottom:1px solid #eee; padding:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em;">
+                        <span>🛒 <strong>${u.username}</strong> - <span class="badge-success">Approved Buyer</span></span>
+                        <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.8em;">Futa</button>
                     </div>
                 `).join('');
             });
 
-            fetch('/api/admin/storytellers').then(res => res.json()).then(data => {
-                document.getElementById('admin-storytellers-list').innerHTML = data.map(u => `
-                    <div style="padding:5px 0; border-bottom:1px solid #ddd; display:flex; justify-content:space-between;">
-                        <span>✍️ ${u.username} (${u.verification_status})</span>
-                        <button onclick="approveUser(${u.id})" style="background:var(--success); color:#fff; border:none; padding:3px 6px;">Idhinisha</button>
+            // Bidhaa
+            fetch('/api/admin/designs').then(res => res.json()).then(data => {
+                window.adminAllDesigns = data;
+                const list = document.getElementById('admin-designs-list');
+                if(!data || data.length === 0) {
+                    list.innerHTML = '<p>Hakuna bidhaa.</p>';
+                    return;
+                }
+                list.innerHTML = data.map(d => `
+                    <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br><small>Muuzaji: ${d.designer_name} | Hali: <span class="badge">${d.status}</span></small>
+                        </div>
+                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                            <button onclick="openAdminModal(${d.id})" style="background:var(--primary); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">Soma</button>
+                            <button onclick="approveDesign(${d.id})" style="background:var(--success); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">Idhinisha</button>
+                            <button onclick="rejectDesign(${d.id})" style="background:var(--accent); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">Kataa</button>
+                            <button onclick="deleteDesign(${d.id})" style="background:var(--danger); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">Futa</button>
+                        </div>
                     </div>
                 `).join('');
             });
@@ -982,6 +1091,80 @@
 
         function approveUser(id) {
             fetch('/api/admin/approve-user?id=' + id, { method: 'POST' }).then(() => loadAdminData());
+        }
+
+        function rejectUser(id) {
+            let reason = prompt("Weka sababu ya kukataa ombi hili:");
+            if(reason === null) return;
+            fetch('/api/admin/reject-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${id}&reason=` + encodeURIComponent(reason)
+            }).then(() => loadAdminData());
+        }
+
+        function deleteUser(id, username) {
+            if(!confirm(`Futa mtumiaji "${username}"?`)) return;
+            fetch('/api/admin/delete-user?id=' + id, { method: 'POST' }).then(() => loadAdminData());
+        }
+
+        function openAdminSellerModal(id) {
+            let allUsers = [...(window.adminAllSellers || []), ...(window.adminAllStorytellers || [])];
+            const u = allUsers.find(item => item.id === id);
+            if(!u) return;
+            let container = document.getElementById('modal-seller-id-container');
+            if(u.id_image_url) {
+                container.innerHTML = `<img src="${u.id_image_url}" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; cursor: pointer;" onclick="openMarketImageModal('${u.id_image_url}')">`;
+            } else {
+                container.innerHTML = `<small style="color:var(--danger);">Hakuna picha ya kitambulisho.</small>`;
+            }
+            document.getElementById('modal-seller-username').innerText = u.username;
+            document.getElementById('modal-seller-nida').innerText = u.id_number || 'N/A';
+            document.getElementById('modal-seller-status').innerText = u.verification_status || 'pending';
+            document.getElementById('modal-seller-date').innerText = u.created_at || 'N/A';
+            document.getElementById('admin-seller-detail-modal').style.display = 'flex';
+        }
+
+        function closeAdminSellerModal() {
+            document.getElementById('admin-seller-detail-modal').style.display = 'none';
+        }
+
+        function openAdminModal(id) {
+            const d = window.adminAllDesigns.find(item => item.id === id);
+            if(!d) return;
+            document.getElementById('modal-image-container').innerHTML = `<img src="${d.image_url}" style="width: 100px; height: 100px; object-fit: contain;">`;
+            document.getElementById('modal-prod-title').innerText = d.title;
+            document.getElementById('modal-prod-price').innerText = "Tsh " + d.price.toLocaleString();
+            document.getElementById('modal-prod-location').innerText = d.location || 'Tanzania';
+            document.getElementById('modal-prod-vendor-phone').innerText = d.vendor_phone || 'N/A';
+            document.getElementById('modal-prod-cat').innerText = d.category;
+            document.getElementById('modal-prod-designer').innerText = d.designer_name;
+            document.getElementById('modal-prod-status').innerText = d.status;
+            document.getElementById('modal-prod-desc').innerText = d.description;
+            document.getElementById('admin-detail-modal').style.display = 'flex';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-detail-modal').style.display = 'none';
+        }
+
+        function approveDesign(id) {
+            fetch('/api/admin/approve?id=' + id, { method: 'POST' }).then(() => loadAdminData());
+        }
+
+        function rejectDesign(id) {
+            let reason = prompt("Sababu ya kukataa bidhaa:");
+            if(reason === null) return;
+            fetch('/api/admin/reject', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `id=${id}&reason=` + encodeURIComponent(reason)
+            }).then(() => loadAdminData());
+        }
+
+        function deleteDesign(id) {
+            if(!confirm("Futa bidhaa hii?")) return;
+            fetch('/api/admin/delete-design?id=' + id, { method: 'POST' }).then(() => loadAdminData());
         }
 
         updateAuthUI();
