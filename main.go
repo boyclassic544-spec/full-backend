@@ -113,7 +113,7 @@ func main() {
 	http.HandleFunc("/api/storyteller/upload", uploadStoryJSONHandler)
 	http.HandleFunc("/api/delete-story", deleteMyStoryHandler)
 
-	// Admin Routes
+	// Admin Routes (Admin Mkuu Pekee)
 	http.HandleFunc("/api/admin/login", adminLoginHandler)
 	http.HandleFunc("/api/admin/designs", adminGetDesignsHandler)
 	http.HandleFunc("/api/admin/approve", adminApproveDesignHandler)
@@ -134,7 +134,6 @@ func main() {
 	http.HandleFunc("/api/admin/reject-user", adminRejectUserHandler)
 	http.HandleFunc("/api/admin/delete-user", adminDeleteUserHandler)
 	http.HandleFunc("/api/admin/approve-subscription", adminApproveSubscriptionHandler)
-	http.HandleFunc("/api/admin/add-subadmin", createSubAdminHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -418,7 +417,7 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isExpired := false
-	if role != "buyer" && role != "sub_admin" && trialEnds.Valid && time.Now().After(trialEnds.Time) && subStatus != "active" {
+	if role != "buyer" && trialEnds.Valid && time.Now().After(trialEnds.Time) && subStatus != "active" {
 		isExpired = true
 	}
 
@@ -457,7 +456,7 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isExpired := false
-	if u.Role != "buyer" && u.Role != "sub_admin" && trialEnds.Valid && time.Now().After(trialEnds.Time) && u.SubscriptionStatus != "active" {
+	if u.Role != "buyer" && trialEnds.Valid && time.Now().After(trialEnds.Time) && u.SubscriptionStatus != "active" {
 		isExpired = true
 	}
 
@@ -579,7 +578,7 @@ func checkSubscriptionAndVerification(username string) (bool, string) {
 		return false, "Akaunti yako bado haijapitishwa na Admin."
 	}
 
-	if role == "buyer" || role == "sub_admin" {
+	if role == "buyer" {
 		return true, ""
 	}
 
@@ -985,7 +984,7 @@ func deleteMyStoryHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi imefutwa!"})
 }
 
-// ----------------- ADMIN API -----------------
+// ----------------- ADMIN API (ADMIN MKUU PEKEE) -----------------
 
 func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -1002,55 +1001,6 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false})
 	}
-}
-
-func createSubAdminHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	
-	// Jaribu kusoma kupitia JSON au Form data ili isigome kamwe
-	var username, password string
-	contentType := r.Header.Get("Content-Type")
-	if strings.Contains(contentType, "application/json") {
-		var payload struct {
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
-			username = payload.Username
-			password = payload.Password
-		}
-	}
-
-	if username == "" {
-		r.ParseForm()
-		username = r.FormValue("username")
-		password = r.FormValue("password")
-	}
-
-	if username == "" || password == "" {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina na nenosiri la sub-admin!"})
-		return
-	}
-
-	_, err := db.Exec(`
-		INSERT INTO app_accounts (username, password, role, verification_status, subscription_status)
-		VALUES ($1, $2, 'sub_admin', 'approved', 'active')`,
-		username, password)
-
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili linatumika tayari au kosa la database!"})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"message": "Sub-Admin ameongezwa kikamilifu kwenye mfumo!",
-	})
 }
 
 func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1215,9 +1165,21 @@ func adminDeleteStoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	storyID := r.URL.Query().Get("id")
+	if storyID == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "ID ya hadithi inahitajika!"})
+		return
+	}
+
+	_, err := db.Exec("DELETE FROM stories WHERE id = $1", storyID)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kufuta hadithi kwenye database"})
+		return
+	}
+
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": false, 
-		"message": "Sub-admin hana ruhusa ya kufuta hadithi!",
+		"success": true, 
+		"message": "Hadithi imefutwa kikamilifu na Admin Mkuu!",
 	})
 }
 
