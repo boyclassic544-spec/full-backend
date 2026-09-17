@@ -60,7 +60,6 @@ type User struct {
 	ID                 int    `json:"id"`
 	Username           string `json:"username"`
 	Role               string `json:"role"`
-	AdminLevel         string `json:"admin_level"`
 	VerificationStatus string `json:"verification_status"`
 	IDType             string `json:"id_type"`
 	IDNumber           string `json:"id_number"`
@@ -111,10 +110,6 @@ func main() {
 
 	// Admin Routes
 	http.HandleFunc("/api/admin/login", adminLoginHandler)
-	http.HandleFunc("/api/admin/list-admins", adminListAdminsHandler)
-	http.HandleFunc("/api/admin/add-admin", adminAddAdminHandler)
-	http.HandleFunc("/api/admin/delete-admin", adminDeleteAdminHandler)
-
 	http.HandleFunc("/api/admin/designs", adminGetDesignsHandler)
 	http.HandleFunc("/api/admin/approve", adminApproveDesignHandler)
 	http.HandleFunc("/api/admin/reject", adminRejectDesignHandler)
@@ -162,7 +157,6 @@ func initDB() {
 		username TEXT UNIQUE NOT NULL,
 		password TEXT NOT NULL,
 		role TEXT DEFAULT 'buyer',
-		admin_level TEXT DEFAULT 'sub_admin',
 		verification_status TEXT DEFAULT 'approved',
 		id_type TEXT DEFAULT '',
 		id_number TEXT DEFAULT '',
@@ -174,8 +168,6 @@ func initDB() {
 	if err != nil {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la app_accounts: %v", err)
 	}
-
-	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS admin_level TEXT DEFAULT 'sub_admin';")
 
 	queryDesigns := `
 	CREATE TABLE IF NOT EXISTS designs (
@@ -422,8 +414,8 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var u User
-	err := db.QueryRow("SELECT id, username, role, COALESCE(admin_level, 'sub_admin'), verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, '') FROM app_accounts WHERE username = $1", username).
-		Scan(&u.ID, &u.Username, &u.Role, &u.AdminLevel, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason)
+	err := db.QueryRow("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, '') FROM app_accounts WHERE username = $1", username).
+		Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Mtumiaji hajapatikana"})
@@ -434,7 +426,6 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 		"success":             true,
 		"username":            u.Username,
 		"role":                u.Role,
-		"admin_level":         u.AdminLevel,
 		"verification_status": u.VerificationStatus,
 		"id_type":             u.IDType,
 		"id_number":           u.IDNumber,
@@ -503,8 +494,8 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var title, description, category, designerName, location, vendorPhone, videoURL string
+	var img1, img2, img3, img4 string
 	var price float64
-	var finalImg string
 
 	contentType := r.Header.Get("Content-Type")
 	if strings.Contains(contentType, "application/json") {
@@ -513,6 +504,9 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 			Description  string  `json:"description"`
 			Price        float64 `json:"price"`
 			ImageURL     string  `json:"image_url"`
+			ImageURL2    string  `json:"image_url2"`
+			ImageURL3    string  `json:"image_url3"`
+			ImageURL4    string  `json:"image_url4"`
 			VideoURL     string  `json:"video_url"`
 			Category     string  `json:"category"`
 			DesignerName string  `json:"designer_name"`
@@ -524,7 +518,10 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 			title = payload.Title
 			description = payload.Description
 			price = payload.Price
-			finalImg = payload.ImageURL
+			img1 = payload.ImageURL
+			img2 = payload.ImageURL2
+			img3 = payload.ImageURL3
+			img4 = payload.ImageURL4
 			videoURL = payload.VideoURL
 			category = payload.Category
 			designerName = payload.DesignerName
@@ -553,10 +550,13 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		priceStr := r.FormValue("price")
 		fmt.Sscanf(priceStr, "%f", &price)
 
-		finalImg = r.FormValue("image_url")
-		if finalImg == "" {
-			finalImg = r.FormValue("image")
+		img1 = r.FormValue("image_url")
+		if img1 == "" {
+			img1 = r.FormValue("image")
 		}
+		img2 = r.FormValue("image_url2")
+		img3 = r.FormValue("image_url3")
+		img4 = r.FormValue("image_url4")
 	}
 
 	if designerName != "" {
@@ -571,14 +571,29 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if strings.HasPrefix(finalImg, "data:") {
-		if url, saveErr := saveBase64Media(finalImg); saveErr == nil {
-			finalImg = url
+	if strings.HasPrefix(img1, "data:") {
+		if url, saveErr := saveBase64Media(img1); saveErr == nil {
+			img1 = url
+		}
+	}
+	if strings.HasPrefix(img2, "data:") {
+		if url, saveErr := saveBase64Media(img2); saveErr == nil {
+			img2 = url
+		}
+	}
+	if strings.HasPrefix(img3, "data:") {
+		if url, saveErr := saveBase64Media(img3); saveErr == nil {
+			img3 = url
+		}
+	}
+	if strings.HasPrefix(img4, "data:") {
+		if url, saveErr := saveBase64Media(img4); saveErr == nil {
+			img4 = url
 		}
 	}
 
-	if finalImg == "" {
-		finalImg = "https://via.placeholder.com/300"
+	if img1 == "" {
+		img1 = "https://via.placeholder.com/300"
 	}
 	if category == "" {
 		category = "Bidhaa"
@@ -587,8 +602,8 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		location = "Tanzania"
 	}
 
-	_, err := db.Exec("INSERT INTO designs (title, description, price, image_url, video_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'approved', '')",
-		title, description, price, finalImg, videoURL, category, designerName, location, vendorPhone)
+	_, err := db.Exec("INSERT INTO designs (title, description, price, image_url, image_url2, image_url3, image_url4, video_url, category, designer_name, location, vendor_phone, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'approved', '')",
+		title, description, price, img1, img2, img3, img4, videoURL, category, designerName, location, vendorPhone)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi bidhaa"})
@@ -610,6 +625,9 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		Description string  `json:"description"`
 		Price       float64 `json:"price"`
 		ImageURL    string  `json:"image_url"`
+		ImageURL2   string  `json:"image_url2"`
+		ImageURL3   string  `json:"image_url3"`
+		ImageURL4   string  `json:"image_url4"`
 		Category    string  `json:"category"`
 	}
 
@@ -617,8 +635,8 @@ func updateDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&payload)
 
 	w.Header().Set("Content-Type", "application/json")
-	_, err := db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, category = $5 WHERE id = $6",
-		payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.Category, payload.ID)
+	_, err := db.Exec("UPDATE designs SET title = $1, description = $2, price = $3, image_url = $4, image_url2 = $5, image_url3 = $6, image_url4 = $7, category = $8 WHERE id = $9",
+		payload.Title, payload.Description, payload.Price, payload.ImageURL, payload.ImageURL2, payload.ImageURL3, payload.ImageURL4, payload.Category, payload.ID)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusasisha"})
@@ -669,7 +687,7 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Oda imepokelewa!"})
 }
 
-// ----------------- API ZA HADITHI -----------------
+// ----------------- API ZA HADITHI (REKODI NA KUHUSISHA STORYTELLER) -----------------
 
 func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, rejection_reason, created_at FROM stories WHERE status = 'approved' ORDER BY id DESC")
@@ -811,132 +829,15 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	r.ParseForm()
+	password := r.FormValue("password")
+
 	w.Header().Set("Content-Type", "application/json")
-	
-	var username, password string
-	contentType := r.Header.Get("Content-Type")
-	if strings.Contains(contentType, "application/json") {
-		var payload struct {
-			Username string `json:"username"`
-			Password string `json:"password"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
-			username = payload.Username
-			password = payload.Password
-		}
-	}
-
-	if username == "" {
-		r.ParseForm()
-		username = r.FormValue("username")
-		password = r.FormValue("password")
-	}
-
 	if password == "khalidsec2026" {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success":     true,
-			"username":    username != "" ? username : "SuperAdmin",
-			"admin_level": "super_admin",
-		})
-		return
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": true})
+	} else {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false})
 	}
-
-	var storedPass, adminLevel string
-	err := db.QueryRow("SELECT password, COALESCE(admin_level, 'sub_admin') FROM app_accounts WHERE username = $1 AND role = 'admin'", username).Scan(&storedPass, &adminLevel)
-	
-	if err == nil && storedPass == password {
-		json.NewEncoder(w).Encode(map[string]interface{}{
-			"success":     true,
-			"username":    username,
-			"admin_level": adminLevel,
-		})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": false, 
-		"message": "Nenosiri au jina la admin si sahihi",
-	})
-}
-
-func adminListAdminsHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	rows, err := db.Query("SELECT id, username, role, COALESCE(admin_level, 'sub_admin'), verification_status, created_at FROM app_accounts WHERE role = 'admin' ORDER BY id DESC")
-	if err != nil {
-		w.Write([]byte(`[]`))
-		return
-	}
-	defer rows.Close()
-
-	var admins []User
-	for rows.Next() {
-		var u User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.AdminLevel, &u.VerificationStatus, &u.CreatedAt); err != nil {
-			continue
-		}
-		admins = append(admins, u)
-	}
-
-	if admins == nil {
-		admins = []User{}
-	}
-
-	json.NewEncoder(w).Encode(admins)
-}
-
-func adminAddAdminHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-
-	var username, password, adminLevel string
-	contentType := r.Header.Get("Content-Type")
-	if strings.Contains(contentType, "application/json") {
-		var payload struct {
-			Username   string `json:"username"`
-			Password   string `json:"password"`
-			AdminLevel string `json:"admin_level"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
-			username = payload.Username
-			password = payload.Password
-			adminLevel = payload.AdminLevel
-		}
-	}
-
-	if username == "" {
-		r.ParseForm()
-		username = r.FormValue("username")
-		password = r.FormValue("password")
-		adminLevel = r.FormValue("admin_level")
-	}
-
-	if adminLevel == "" {
-		adminLevel = "sub_admin"
-	}
-
-	if username == "" || password == "" {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina na nenosiri la admin!"})
-		return
-	}
-
-	_, err := db.Exec(`
-		INSERT INTO app_accounts (username, password, role, admin_level, verification_status)
-		VALUES ($1, $2, 'admin', $3, 'approved')`,
-		username, password, adminLevel)
-
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Admin mwenye jina hili yupo tayari!"})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"message": "Admin mpya ameongezwa kikamilifu!",
-	})
 }
 
 func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1130,7 +1031,7 @@ func adminGetOrdersHandler(w http.ResponseWriter, r *http.Request) {
 
 func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	rows, err := db.Query("SELECT id, username, role, COALESCE(admin_level, 'sub_admin'), verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), created_at FROM app_accounts ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), created_at FROM app_accounts ORDER BY id DESC")
 	if err != nil {
 		w.Write([]byte(`[]`))
 		return
@@ -1140,7 +1041,7 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.AdminLevel, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.CreatedAt); err != nil {
+		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.CreatedAt); err != nil {
 			continue
 		}
 		users = append(users, u)
@@ -1275,30 +1176,12 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID := r.URL.Query().Get("id")
-	w.Header().Set("Content-Type", "application/json")
 	_, err := db.Exec("DELETE FROM app_accounts WHERE id = $1", userID)
+	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana"})
 		return
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Amefutwa!"})
-}
-
-func adminDeleteAdminHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
-		return
-	}
-
-	adminID := r.URL.Query().Get("id")
-	w.Header().Set("Content-Type", "application/json")
-	_, err := db.Exec("DELETE FROM app_accounts WHERE id = $1 AND role = 'admin'", adminID)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kufuta admin"})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Admin amefutwa mafanikio!"})
 }
