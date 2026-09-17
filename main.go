@@ -851,7 +851,7 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success":     true,
 			"username":    username,
-			"admin_Level": adminLevel,
+			"admin_level": adminLevel,
 		})
 		return
 	}
@@ -1295,10 +1295,10 @@ func adminDeleteAdminHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	adminID := r.URL.Query().Get("id")
-	_, err := db.Exec("DELETE FROM app_accounts WHERE id = $1 AND role = 'admin'", adminID)
 	w.Header().Set("Content-Type", "application/json")
+	_, err := db.Exec("DELETE FROM app_accounts WHERE id = $1 AND role = 'admin'", adminID)
 	if err != nil {
-		json.NewEncoder(w).Code = http.StatusInternalServerError
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kufuta admin"})
 		return
 	}
