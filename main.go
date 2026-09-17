@@ -1092,7 +1092,7 @@ func adminGetStorytellersHandler(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.CreatedAt); err != nil {
 			continue
 		}
-		storytellers = append(storytellers, u}
+		storytellers = append(storytellers, u)
 	}
 
 	if storytellers == nil {
