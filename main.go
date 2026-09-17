@@ -1384,3 +1384,4 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		"message": "Mtumiaji amefutwa kikamilifu na Admin!",
 	})
 }
+
