@@ -65,6 +65,10 @@ type User struct {
 	IDNumber           string `json:"id_number"`
 	IDImageURL         string `json:"id_image_url"`
 	RejectionReason    string `json:"rejection_reason"`
+	SubscriptionStatus string `json:"subscription_status"`
+	TrialEndsAt        string `json:"trial_ends_at"`
+	PaymentPhone       string `json:"payment_phone"`
+	PaymentName        string `json:"payment_name"`
 	CreatedAt          string `json:"created_at"`
 }
 
@@ -93,6 +97,7 @@ func main() {
 	http.HandleFunc("/api/signup", signupHandler)
 	http.HandleFunc("/api/signin", signinHandler)
 	http.HandleFunc("/api/profile", profileHandler)
+	http.HandleFunc("/api/submit-subscription-payment", submitSubscriptionPaymentHandler)
 	
 	// Routes za Soko Kuu (Sellers / Products)
 	http.HandleFunc("/api/designs", getDesignsHandler)
@@ -128,6 +133,7 @@ func main() {
 	http.HandleFunc("/api/admin/approve-user", adminApproveUserHandler)
 	http.HandleFunc("/api/admin/reject-user", adminRejectUserHandler)
 	http.HandleFunc("/api/admin/delete-user", adminDeleteUserHandler)
+	http.HandleFunc("/api/admin/approve-subscription", adminApproveSubscriptionHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -162,6 +168,10 @@ func initDB() {
 		id_number TEXT DEFAULT '',
 		id_image_url TEXT DEFAULT '',
 		rejection_reason TEXT DEFAULT '',
+		subscription_status TEXT DEFAULT 'free',
+		trial_ends_at TIMESTAMP,
+		payment_phone TEXT DEFAULT '',
+		payment_name TEXT DEFAULT '',
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);`
 	_, err := db.Exec(queryUsers)
@@ -223,6 +233,10 @@ func initDB() {
 	}
 
 	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS cover_image TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'free';")
+	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMP;")
+	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS payment_phone TEXT DEFAULT '';")
+	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS payment_name TEXT DEFAULT '';")
 }
 
 func saveBase64Media(dataURL string) (string, error) {
@@ -338,10 +352,16 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	trialEnds := time.Now().Add(30 * 24 * time.Hour)
+	subStatus := "free"
+	if role == "buyer" {
+		subStatus = "active"
+	}
+
 	_, err := db.Exec(`
-		INSERT INTO app_accounts (username, password, role, verification_status, id_type, id_number, id_image_url)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-		username, password, role, verificationStatus, idType, idNumber, idImageURL)
+		INSERT INTO app_accounts (username, password, role, verification_status, id_type, id_number, id_image_url, subscription_status, trial_ends_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+		username, password, role, verificationStatus, idType, idNumber, idImageURL, subStatus, trialEnds)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili la mtumiaji linatumika tayari!"})
@@ -350,7 +370,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 
 	msg := "Akaunti imefunguliwa kikamilifu! Sasa unaweza kuingia."
 	if role == "seller" || role == "storyteller" {
-		msg = "Akaunti imewasilishwa kwa uongozi! Tafadhali subiri uthibitisho."
+		msg = "Akaunti imefunguliwa! Una mwezi 1 wa bure (Free Plan). Mwezi ujao utachangia Tsh 5,000 kupitia Tigo Lipa (45416553 - SALMIN TAMIMU HUSEIN). Tafadhali subiri uthibitisho wa Admin."
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -388,11 +408,17 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 		password = r.FormValue("password")
 	}
 
-	var storedPass, role, verificationStatus, rejectionReason string
-	err := db.QueryRow("SELECT password, role, verification_status, COALESCE(rejection_reason, '') FROM app_accounts WHERE username = $1", username).Scan(&storedPass, &role, &verificationStatus, &rejectionReason)
+	var storedPass, role, verificationStatus, rejectionReason, subStatus string
+	var trialEnds sql.NullTime
+	err := db.QueryRow("SELECT password, role, verification_status, COALESCE(rejection_reason, ''), COALESCE(subscription_status, 'free'), trial_ends_at FROM app_accounts WHERE username = $1", username).Scan(&storedPass, &role, &verificationStatus, &rejectionReason, &subStatus, &trialEnds)
 	if err != nil || storedPass != password {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina la mtumiaji au nenosiri si sahihi!"})
 		return
+	}
+
+	isExpired := false
+	if role != "buyer" && trialEnds.Valid && time.Now().After(trialEnds.Time) && subStatus != "active" {
+		isExpired = true
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -402,6 +428,8 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 		"role":                role,
 		"verification_status": verificationStatus,
 		"rejection_reason":    rejectionReason,
+		"subscription_status": subStatus,
+		"is_expired":          isExpired,
 	})
 }
 
@@ -414,12 +442,22 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var u User
-	err := db.QueryRow("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, '') FROM app_accounts WHERE username = $1", username).
-		Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason)
+	var trialEnds sql.NullTime
+	err := db.QueryRow("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), COALESCE(subscription_status, 'free'), trial_ends_at, COALESCE(payment_phone, ''), COALESCE(payment_name, '') FROM app_accounts WHERE username = $1", username).
+		Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.SubscriptionStatus, &trialEnds, &u.PaymentPhone, &u.PaymentName)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Mtumiaji hajapatikana"})
 		return
+	}
+
+	if trialEnds.Valid {
+		u.TrialEndsAt = trialEnds.Time.Format("2006-01-02 15:04:05")
+	}
+
+	isExpired := false
+	if u.Role != "buyer" && trialEnds.Valid && time.Now().After(trialEnds.Time) && u.SubscriptionStatus != "active" {
+		isExpired = true
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -431,7 +469,123 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 		"id_number":           u.IDNumber,
 		"id_image_url":        u.IDImageURL,
 		"rejection_reason":    u.RejectionReason,
+		"subscription_status": u.SubscriptionStatus,
+		"trial_ends_at":       u.TrialEndsAt,
+		"is_expired":          isExpired,
+		"payment_phone":       u.PaymentPhone,
+		"payment_name":        u.PaymentName,
 	})
+}
+
+func submitSubscriptionPaymentHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	var username, paymentPhone, paymentName string
+
+	contentType := r.Header.Get("Content-Type")
+	if strings.Contains(contentType, "application/json") {
+		var payload struct {
+			Username     string `json:"username"`
+			PaymentPhone string `json:"payment_phone"`
+			PaymentName  string `json:"payment_name"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
+			username = payload.Username
+			paymentPhone = payload.PaymentPhone
+			paymentName = payload.PaymentName
+		}
+	}
+
+	if username == "" {
+		r.ParseForm()
+		username = r.FormValue("username")
+		paymentPhone = r.FormValue("payment_phone")
+		paymentName = r.FormValue("payment_name")
+	}
+
+	if username == "" || paymentPhone == "" || paymentName == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Tafadhali jaza namba ya simu na jina ulilofanyia malipo!"})
+		return
+	}
+
+	_, err := db.Exec("UPDATE app_accounts SET payment_phone = $1, payment_name = $2, subscription_status = 'pending_payment' WHERE username = $3", paymentPhone, paymentName, username)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kutuma taarifa za malipo"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Ombi lako la malipo limetum সফলভাবে (Successfully) kwa Admin! Tafadhali subiri uhakiki.",
+	})
+}
+
+func adminApproveSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	userID := r.URL.Query().Get("id")
+	if userID == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "ID inahitajika"})
+		return
+	}
+
+	var currentTrial sql.NullTime
+	err := db.QueryRow("SELECT trial_ends_at FROM app_accounts WHERE id = $1", userID).Scan(&currentTrial)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Mtumiaji hajapatikana"})
+		return
+	}
+
+	baseTime := time.Now()
+	if currentTrial.Valid && currentTrial.Time.After(baseTime) {
+		baseTime = currentTrial.Time
+	}
+	newTrial := baseTime.Add(30 * 24 * time.Hour)
+
+	_, err = db.Exec("UPDATE app_accounts SET subscription_status = 'active', trial_ends_at = $1 WHERE id = $2", newTrial, userID)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kusasisha usajili"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Hongera! Malipo yamethibitishwa na akaunti imeongezewa mwezi 1 mpya kikamilifu.",
+	})
+}
+
+func checkSubscriptionAndVerification(username string) (bool, string) {
+	var role, vStatus, subStatus string
+	var trialEnds sql.NullTime
+
+	err := db.QueryRow("SELECT role, verification_status, COALESCE(subscription_status, 'free'), trial_ends_at FROM app_accounts WHERE username = $1", username).
+		Scan(&role, &vStatus, &subStatus, &trialEnds)
+
+	if err != nil {
+		return false, "Mtumiaji hajapatikana"
+	}
+
+	if vStatus != "approved" {
+		return false, "Akaunti yako bado haijapitishwa na Admin."
+	}
+
+	if role == "buyer" {
+		return true, ""
+	}
+
+	if trialEnds.Valid && time.Now().After(trialEnds.Time) && subStatus != "active" {
+		return false, "Mwezi wako wa bure umekwisha. Tafadhali lipa Tsh 5,000 kwenda Tigo Lipa: 45416553 (SALMIN TAMIMU HUSEIN) kisha utume namba yako na jina ili Admin akujulishe."
+	}
+
+	return true, ""
 }
 
 func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
@@ -560,12 +714,10 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if designerName != "" {
-		var vStatus string
-		err := db.QueryRow("SELECT verification_status FROM app_accounts WHERE username = $1", designerName).Scan(&vStatus)
-		if err != nil || vStatus != "approved" {
+		if ok, errMsg := checkSubscriptionAndVerification(designerName); !ok {
 			json.NewEncoder(w).Encode(map[string]interface{}{
 				"success": false,
-				"message": "Akaunti yako bado haijapitishwa na Admin.",
+				"message": errMsg,
 			})
 			return
 		}
@@ -784,6 +936,16 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		storytellerName = r.FormValue("storyteller_name")
 		if storytellerName == "" {
 			storytellerName = r.FormValue("designer_name")
+		}
+	}
+
+	if storytellerName != "" {
+		if ok, errMsg := checkSubscriptionAndVerification(storytellerName); !ok {
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"message": errMsg,
+			})
+			return
 		}
 	}
 
@@ -1031,7 +1193,7 @@ func adminGetOrdersHandler(w http.ResponseWriter, r *http.Request) {
 
 func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), created_at FROM app_accounts ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), COALESCE(subscription_status, 'free'), trial_ends_at, COALESCE(payment_phone, ''), COALESCE(payment_name, ''), created_at FROM app_accounts ORDER BY id DESC")
 	if err != nil {
 		w.Write([]byte(`[]`))
 		return
@@ -1041,8 +1203,12 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 	var users []User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.CreatedAt); err != nil {
+		var trialEnds sql.NullTime
+		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.SubscriptionStatus, &trialEnds, &u.PaymentPhone, &u.PaymentName, &u.CreatedAt); err != nil {
 			continue
+		}
+		if trialEnds.Valid {
+			u.TrialEndsAt = trialEnds.Time.Format("2006-01-02 15:04:05")
 		}
 		users = append(users, u)
 	}
@@ -1081,7 +1247,7 @@ func adminGetBuyersHandler(w http.ResponseWriter, r *http.Request) {
 
 func adminGetSellersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), created_at FROM app_accounts WHERE role = 'seller' ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), COALESCE(subscription_status, 'free'), trial_ends_at, COALESCE(payment_phone, ''), COALESCE(payment_name, ''), created_at FROM app_accounts WHERE role = 'seller' ORDER BY id DESC")
 	if err != nil {
 		w.Write([]byte(`[]`))
 		return
@@ -1091,8 +1257,12 @@ func adminGetSellersHandler(w http.ResponseWriter, r *http.Request) {
 	var sellers []User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.CreatedAt); err != nil {
+		var trialEnds sql.NullTime
+		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.SubscriptionStatus, &trialEnds, &u.PaymentPhone, &u.PaymentName, &u.CreatedAt); err != nil {
 			continue
+		}
+		if trialEnds.Valid {
+			u.TrialEndsAt = trialEnds.Time.Format("2006-01-02 15:04:05")
 		}
 		sellers = append(sellers, u)
 	}
@@ -1106,7 +1276,7 @@ func adminGetSellersHandler(w http.ResponseWriter, r *http.Request) {
 
 func adminGetStorytellersHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), created_at FROM app_accounts WHERE role = 'storyteller' ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, username, role, verification_status, COALESCE(id_type, ''), COALESCE(id_number, ''), COALESCE(id_image_url, ''), COALESCE(rejection_reason, ''), COALESCE(subscription_status, 'free'), trial_ends_at, COALESCE(payment_phone, ''), COALESCE(payment_name, ''), created_at FROM app_accounts WHERE role = 'storyteller' ORDER BY id DESC")
 	if err != nil {
 		w.Write([]byte(`[]`))
 		return
@@ -1116,8 +1286,12 @@ func adminGetStorytellersHandler(w http.ResponseWriter, r *http.Request) {
 	var storytellers []User
 	for rows.Next() {
 		var u User
-		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.CreatedAt); err != nil {
+		var trialEnds sql.NullTime
+		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.SubscriptionStatus, &trialEnds, &u.PaymentPhone, &u.PaymentName, &u.CreatedAt); err != nil {
 			continue
+		}
+		if trialEnds.Valid {
+			u.TrialEndsAt = trialEnds.Time.Format("2006-01-02 15:04:05")
 		}
 		storytellers = append(storytellers, u)
 	}
