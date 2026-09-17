@@ -175,7 +175,6 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la app_accounts: %v", err)
 	}
 
-	// Hakikisha column ya admin_level ipo kama jedwali lilikuwepo tayari
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS admin_level TEXT DEFAULT 'sub_admin';")
 
 	queryDesigns := `
@@ -833,7 +832,6 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 		password = r.FormValue("password")
 	}
 
-	// 1. Kama password ni master password ya kwanza
 	if password == "khalidsec2026" {
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success":     true,
@@ -843,7 +841,6 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 2. Angalia kwenye Database kama ni Admin aliyesajiliwa
 	var storedPass, adminLevel string
 	err := db.QueryRow("SELECT password, COALESCE(admin_level, 'sub_admin') FROM app_accounts WHERE username = $1 AND role = 'admin'", username).Scan(&storedPass, &adminLevel)
 	
@@ -1278,8 +1275,8 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userID := r.URL.Query().Get("id")
-	_, err := db.Exec("DELETE FROM app_accounts WHERE id = $1", userID)
 	w.Header().Set("Content-Type", "application/json")
+	_, err := db.Exec("DELETE FROM app_accounts WHERE id = $1", userID)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana"})
 		return
