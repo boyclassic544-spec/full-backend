@@ -72,14 +72,6 @@ type User struct {
 	CreatedAt          string `json:"created_at"`
 }
 
-type Feedback struct {
-	ID        int    `json:"id"`
-	Name      string `json:"name"`
-	Email     string `json:"email"`
-	Message   string `json:"message"`
-	CreatedAt string `json:"created_at"`
-}
-
 func main() {
 	var err error
 	connStr := os.Getenv("DATABASE_URL")
@@ -106,7 +98,6 @@ func main() {
 	http.HandleFunc("/api/signin", signinHandler)
 	http.HandleFunc("/api/profile", profileHandler)
 	http.HandleFunc("/api/submit-subscription-payment", submitSubscriptionPaymentHandler)
-	http.HandleFunc("/api/feedback", feedbackHandler)
 	
 	// Routes za Soko Kuu (Sellers / Products)
 	http.HandleFunc("/api/designs", getDesignsHandler)
@@ -144,7 +135,6 @@ func main() {
 	http.HandleFunc("/api/admin/delete-user", adminDeleteUserHandler)
 	http.HandleFunc("/api/admin/approve-subscription", adminApproveSubscriptionHandler)
 	http.HandleFunc("/api/admin/add-subadmin", createSubAdminHandler)
-	http.HandleFunc("/api/admin/feedback", adminGetFeedbackHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -241,19 +231,6 @@ func initDB() {
 	_, err = db.Exec(queryOrders)
 	if err != nil {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la orders: %v", err)
-	}
-
-	queryFeedback := `
-	CREATE TABLE IF NOT EXISTS feedback (
-		id SERIAL PRIMARY KEY,
-		name TEXT NOT NULL,
-		email TEXT DEFAULT '',
-		message TEXT NOT NULL,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-	);`
-	_, err = db.Exec(queryFeedback)
-	if err != nil {
-		log.Fatalf("Imeshindikana kutengeneza jedwali la feedback: %v", err)
 	}
 
 	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS cover_image TEXT DEFAULT '';")
@@ -584,53 +561,6 @@ func adminApproveSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
 		"message": "Hongera! Malipo yamethibitishwa na akaunti imeongezewa mwezi 1 mpya kikamilifu.",
-	})
-}
-
-func feedbackHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	var name, email, message string
-
-	contentType := r.Header.Get("Content-Type")
-	if strings.Contains(contentType, "application/json") {
-		var payload struct {
-			Name    string `json:"name"`
-			Email   string `json:"email"`
-			Message string `json:"message"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
-			name = payload.Name
-			email = payload.Email
-			message = payload.Message
-		}
-	}
-
-	if name == "" {
-		r.ParseForm()
-		name = r.FormValue("name")
-		email = r.FormValue("email")
-		message = r.FormValue("message")
-	}
-
-	if name == "" || message == "" {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Tafadhali jaza jina lako na ujumbe wako!"})
-		return
-	}
-
-	_, err := db.Exec("INSERT INTO feedback (name, email, message) VALUES ($1, $2, $3)", name, email, message)
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kutuma maoni."})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"message": "Asante sana! Maoni yako yamewasilishwa kikamilifu.",
 	})
 }
 
@@ -1082,6 +1012,7 @@ func createSubAdminHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	
+	// Jaribu kusoma kupitia JSON au Form data ili isigome kamwe
 	var username, password string
 	contentType := r.Header.Get("Content-Type")
 	if strings.Contains(contentType, "application/json") {
@@ -1490,29 +1421,4 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		"success": true, 
 		"message": "Mtumiaji amefutwa kikamilifu na Admin!",
 	})
-}
-
-func adminGetFeedbackHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	rows, err := db.Query("SELECT id, name, COALESCE(email, ''), message, created_at FROM feedback ORDER BY id DESC")
-	if err != nil {
-		w.Write([]byte(`[]`))
-		return
-	}
-	defer rows.Close()
-
-	var feedbacks []Feedback
-	for rows.Next() {
-		var f Feedback
-		if err := rows.Scan(&f.ID, &f.Name, &f.Email, &f.Message, &f.CreatedAt); err != nil {
-			continue
-		}
-		feedbacks = append(feedbacks, f)
-	}
-
-	if feedbacks == nil {
-		feedbacks = []Feedback{}
-	}
-
-	json.NewEncoder(w).Encode(feedbacks)
 }
