@@ -81,9 +81,34 @@
         .section.active { display: block; }
         .form-card { background: #fff; max-width: 450px; margin: 0 auto; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #ddd; }
 
-        .admin-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
+        .admin-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; flex-wrap: wrap; gap: 10px; }
         .badge { background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
         .badge-success { background: var(--success); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+        .badge-super { background: #6c5ce7; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+        .badge-sub { background: #0984e3; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
+
+        /* Admin Quick Stats Bar */
+        .admin-stats-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 25px; }
+        @media (max-width: 700px) { .admin-stats-bar { grid-template-columns: repeat(2, 1fr); } }
+        .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 10px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+        .stat-card .stat-num { font-size: 1.4em; font-weight: bold; color: var(--primary); display: block; }
+        .stat-card .stat-label { font-size: 0.72em; color: #666; margin-top: 2px; display: block; }
+
+        /* Admin card-based grid layout (replaces long single-column rows) */
+        .admin-card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        @media (max-width: 700px) { .admin-card-grid { grid-template-columns: 1fr; } }
+        .admin-item-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 8px; font-size: 0.9em; }
+        .admin-item-card .admin-item-top { display: flex; align-items: center; gap: 10px; }
+        .admin-item-card .admin-item-actions { display: flex; gap: 5px; flex-wrap: wrap; margin-top: auto; }
+        .admin-item-card .admin-item-actions button { border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75em; color: #fff; }
+
+        /* Admin Management (Super Admin only) */
+        .admin-mgmt-card { background: #fff8ec; border: 1px solid #f5cc8a; border-radius: 8px; padding: 15px; margin-bottom: 25px; }
+        .admin-mgmt-card h3 { margin-top: 0; }
+        .admin-add-form { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; align-items: end; }
+        @media (max-width: 700px) { .admin-add-form { grid-template-columns: 1fr; } }
+        .admin-add-form input, .admin-add-form select { margin: 0; }
+        .admin-add-form button { padding: 10px; }
 
         .auth-banner { background: #fff3cd; color: #856404; padding: 12px; text-align: center; font-size: 0.9em; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ffeeba; font-weight: bold; }
 
@@ -275,12 +300,6 @@
                     <strong style="display: block; margin-bottom: 5px; color: var(--primary);">Maelezo Kamili (Description):</strong>
                     <p id="detail-desc" style="margin: 0; white-space: pre-wrap; font-size: 0.9em; color: #444;"></p>
                 </div>
-
-                <div class="payment-box" style="border-radius: 6px;">
-                    <p style="margin:0 0 5px 0; font-size:0.85em;"><strong>Wasiliana na muuzaji au fanya malipo kupitia utaratibu rasmi:</strong></p>
-                    <input type="text" id="detail-pay-phone" placeholder="Namba yako ya simu ya malipo" style="margin-bottom:8px;">
-                    <button class="btn" id="detail-pay-btn">Nimemaliza Kulipa</button>
-                </div>
             </div>
         </div>
 
@@ -417,7 +436,7 @@
                     <label>Namba ya Simu ya Mwandishi (Ya Kupokea Malipo/Mawasiliano)</label>
                     <input type="text" id="story-phone" placeholder="Mf. 0712345678" required>
 
-                    <label>Picha ya Cover ya Hadithi (Lazima / Hiari)</label>
+                    <label>Picha ya Cover ya Hadithi (Lazima)</label>
                     <input type="file" id="story-image-file" accept="image/*" style="background: #fff; padding: 8px;" required>
 
                     <label>Ujumbe / Maudhui ya Hadithi (Andika hapa)</label>
@@ -449,7 +468,7 @@
                         </div>
 
                         <div id="storyteller-orders-box" style="display:none; margin-top: 20px; background: #fffdf9; border: 1px solid #e2d9c2; padding: 15px; border-radius: 8px;">
-                            <h4 style="margin: 0 0 10px 0; color: var(--primary);">Oda na Malipo ya Wasomaji (Subiri Uthibitishe)</h4>
+                            <h4 style="margin: 0 0 10px 0; color: var(--primary);">Oda na Malipo ya Wasomaji (Thibitisha au Kataa)</h4>
                             <div id="storyteller-orders-list">
                                 <p style="font-size: 0.85em; color: #666;">Hakuna oda mpya za malipo kwa sasa.</p>
                             </div>
@@ -467,70 +486,67 @@
             </div>
         </div>
 
-        <!-- 6. EDIT PRODUCT SECTION -->
-        <div id="edit-product" class="section">
-            <div class="form-card" style="max-width: 600px;">
-                <h2 style="margin-top:0; color: var(--primary);">Hariri Bidhaa Yako</h2>
-                <form id="edit-form" onsubmit="handleUpdateProductOptimized(event)">
-                    <input type="hidden" id="edit-id">
-                    <input type="hidden" id="edit-image-url-1">
-                    <input type="hidden" id="edit-image-url-2">
-                    <input type="hidden" id="edit-image-url-3">
-                    <input type="hidden" id="edit-image-url-4">
-                    <input type="hidden" id="edit-video-url">
-                    <label>Jina la Bidhaa / Huduma</label>
-                    <input type="text" id="edit-title" required>
-                    <label>Maelezo Kamili</label>
-                    <textarea id="edit-desc" rows="3" required></textarea>
-                    <label>Bei (TZS)</label>
-                    <input type="number" step="0.01" id="edit-price" required>
-                    <label>Eneo Lipo (Location)</label>
-                    <input type="text" id="edit-location" required>
-                    <label>Namba ya Simu</label>
-                    <input type="text" id="edit-vendor-phone" required>
-                    <button type="submit" class="btn" style="background: var(--success);">Hifadhi Mabadiliko</button>
-                </form>
-            </div>
-        </div>
-
         <!-- 7. ADMIN PANEL SECTION -->
         <div id="admin" class="section">
             <div class="form-card" style="max-width: 1000px;">
                 <div class="admin-panel-header">
                     <div>
                         <h2 style="margin:0; color: var(--primary);">SokoSmart Admin Portal</h2>
-                        <small style="color: #666;">Udhibiti wa Watumiaji, Ithibati, Bidhaa na Hadithi Zote (Hadi Ma-admin 10)</small>
+                        <small style="color: #666;">Udhibiti wa Watumiaji, Ithibati, Bidhaa na Hadithi Zote</small>
+                        <div style="margin-top:6px;"><span id="admin-level-badge" class="badge-super">Super Admin</span></div>
                     </div>
                     <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; font-weight:bold;">Toka (Logout)</button>
                 </div>
 
+                <!-- ADMIN QUICK STATS BAR -->
+                <div class="admin-stats-bar" id="admin-stats-bar">
+                    <div class="stat-card"><span class="stat-num" id="stat-designs-count">0</span><span class="stat-label">Bidhaa Zote</span></div>
+                    <div class="stat-card"><span class="stat-num" id="stat-pending-sellers-count">0</span><span class="stat-label">Wauzaji Wanaosubiri</span></div>
+                    <div class="stat-card"><span class="stat-num" id="stat-pending-storytellers-count">0</span><span class="stat-label">Waandishi Wanaosubiri</span></div>
+                    <div class="stat-card"><span class="stat-num" id="stat-buyers-count">0</span><span class="stat-label">Wanunuzi</span></div>
+                    <div class="stat-card"><span class="stat-num" id="stat-stories-count">0</span><span class="stat-label">Hadithi Zote</span></div>
+                </div>
+
+                <!-- ADMIN MANAGEMENT SECTION (Super Admin only) -->
+                <div class="admin-mgmt-card" id="admin-management-section" style="display:none;">
+                    <h3 style="color: var(--primary); margin-bottom: 10px;">🛠️ Usimamizi wa Maadmin (Admin Management)</h3>
+                    <p style="font-size:0.85em; color:#856404; margin-top:0;">Kama Super Admin, unaweza kuongeza Maadmin Wasaidizi (Sub-Admin) wenye ruhusa finyu, au kufuta admin yeyote isipokuwa Super Admin mkuu.</p>
+                    <form class="admin-add-form" onsubmit="handleAddAdmin(event)">
+                        <input type="text" id="new-admin-username" placeholder="Jina la Admin Mpya" required>
+                        <input type="password" id="new-admin-password" placeholder="Nenosiri" required>
+                        <select id="new-admin-level">
+                            <option value="sub">Sub-Admin (Msaidizi)</option>
+                            <option value="super">Super Admin</option>
+                        </select>
+                        <button type="submit" class="btn" style="background: var(--primary);">+ Ongeza Admin</button>
+                    </form>
+                    <div id="admin-management-list" style="margin-top:15px;">
+                        <p style="font-size:0.85em; color:#666;">Inapakia orodha ya maadmin...</p>
+                    </div>
+                </div>
+
                 <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 15px;">Hadithi Zote za Watumiaji (All Stories Management)</h3>
-                <div id="admin-stories-list" style="margin-bottom:30px; overflow-x: auto;">
+                <div id="admin-stories-list" class="admin-card-grid" style="margin-bottom:30px;">
                     <p>Inapakia hadithi...</p>
                 </div>
 
                 <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 25px;">Wauzaji Wanaosubiri Ithibati (Pending Sellers)</h3>
-                <div id="admin-sellers-list" style="margin-bottom:20px; overflow-x: auto;">
+                <div id="admin-sellers-list" class="admin-card-grid" style="margin-bottom:20px;">
                     <p>Inapakia wauzaji...</p>
                 </div>
 
                 <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 25px;">Waandishi wa Hadithi Wanaosubiri (Pending Storytellers)</h3>
-                <div id="admin-storytellers-list" style="margin-bottom:20px; overflow-x: auto;">
+                <div id="admin-storytellers-list" class="admin-card-grid" style="margin-bottom:20px;">
                     <p>Inapakia waandishi...</p>
                 </div>
 
                 <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 15px;">Wateja Waliojisajili (Approved Buyers)</h3>
-                <div id="admin-buyers-list" style="margin-bottom:30px; overflow-x: auto;">
+                <div id="admin-buyers-list" class="admin-card-grid" style="margin-bottom:30px;">
                     <p>Inapakia wateja...</p>
                 </div>
 
-                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Oda za Malipo na Miamala</h3>
-                <div id="admin-orders-list" style="margin-bottom:30px; overflow-x: auto;">
-                    <p>Inapakia oda...</p>
-                </div>
-
                 <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Ukaguzi na Udhibiti wa Bidhaa (Admin Actions)</h3>
-                <div id="admin-designs-list" style="overflow-x: auto;">
+                <div id="admin-designs-list" class="admin-card-grid">
                     <p>Inapakia bidhaa...</p>
                 </div>
             </div>
@@ -577,7 +593,6 @@
                 <strong style="display: block; margin-bottom: 5px; color: var(--primary);">Maelezo Kamili:</strong>
                 <p id="modal-prod-desc" style="margin: 0; white-space: pre-wrap; font-size: 0.95em; color: #444;"></p>
             </div>
-            <div id="modal-action-buttons" style="display: flex; gap: 10px; margin-top: 20px;"></div>
         </div>
     </div>
 
@@ -593,7 +608,6 @@
             <p><strong>Namba ya NIDA:</strong> <span id="modal-seller-nida" style="color: var(--primary); font-weight: bold;"></span></p>
             <p><strong>Hali ya Ithibati:</strong> <span id="modal-seller-status" class="badge"></span></p>
             <p><strong>Tarehe ya Usajili:</strong> <span id="modal-seller-date"></span></p>
-            <div id="modal-seller-action-buttons" style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;"></div>
         </div>
     </div>
 
@@ -614,9 +628,10 @@
         let currentUserStatus = localStorage.getItem('sokosmart_status') || 'pending';
         let allApprovedDesigns = [];
         let allApprovedStories = [];
-        let currentSelectedCategory = 'All';
 
         let storyPaymentOrders = JSON.parse(localStorage.getItem('sokosmart_story_orders') || '[]');
+        let currentAdminLevel = localStorage.getItem('sokosmart_admin_level') || 'super';
+        let currentAdminUsername = localStorage.getItem('sokosmart_admin_username') || '';
 
         function toggleStoryPriceField() {
             let storyType = document.getElementById('story-type').value;
@@ -711,7 +726,7 @@
 
         function switchTab(tabId) {
             if(!currentUser && ['market', 'designer', 'my-products', 'storyteller-upload-section'].includes(tabId)) {
-                if(tabId !== 'stories-feed') tabId = 'signin';
+                if(tabId !== 'stories-feed') { tabId = 'signin'; }
             }
 
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -828,17 +843,6 @@
             document.getElementById('modal-story-author').innerText = s.storyteller_name;
             document.getElementById('modal-story-date').innerText = s.created_at ? s.created_at.substring(0,10) : '';
 
-            let isOnline = true; 
-            let dot = document.getElementById('author-status-dot');
-            let txt = document.getElementById('author-status-text');
-            if(isOnline) {
-                dot.style.backgroundColor = 'var(--success)';
-                txt.innerText = 'Online';
-            } else {
-                dot.style.backgroundColor = 'var(--danger)';
-                txt.innerText = 'Offline';
-            }
-
             let contentDiv = document.getElementById('modal-story-content');
             let existingOrder = storyPaymentOrders.find(o => o.storyId === id && o.username === currentUser);
 
@@ -846,13 +850,13 @@
                 contentDiv.innerText = s.content;
                 document.getElementById('payment-status-notice').innerText = "✅ Malipo yako yamethibitishwa na mwandishi. Furahia kusoma!";
             } else if(existingOrder && existingOrder.status === 'rejected') {
-                contentDiv.innerText = "[Hadithi imefungwa: Mwandishi amekataa au hakujiridhisha na malipo yako. Tafadhali rudia kulipa kwa usahihi au wasiliana naye.]";
+                contentDiv.innerText = "[Hadithi imefungwa: Mwandishi amekataa au hakujiridhisha na malipo yako.]";
                 document.getElementById('payment-status-notice').innerText = "❌ Malipo yako yamekataliwa na mwandishi.";
             } else if(existingOrder && existingOrder.status === 'pending') {
-                contentDiv.innerText = "[Hadithi imefungwa: Subiri mwandishi akague malipo yako na kuyathibitisha (confirm)...]";
+                contentDiv.innerText = "[Hadithi imefungwa: Subiri mwandishi akague malipo yako na kuyathibitisha...]";
                 document.getElementById('payment-status-notice').innerText = "⏳ Ombi lako la malipo limeshawasilishwa. Subiri uthibitisho.";
             } else {
-                contentDiv.innerText = "[Hadithi imefungwa. Weka namba yako ya simu hapa chini na bonyeza 'Nimemaliza Kulipa Hadithi' ili kusubiri uthibitisho kutoka kwa mwandishi...]";
+                contentDiv.innerText = "[Hadithi imefungwa. Weka namba yako ya simu hapa chini na bonyeza 'Nimemaliza Kulipa Hadithi' ili kusubiri uthibitisho...]";
                 document.getElementById('payment-status-notice').innerText = "";
             }
 
@@ -904,9 +908,9 @@
             }
 
             localStorage.setItem('sokosmart_story_orders', JSON.stringify(storyPaymentOrders));
-            alert('Ombi lako la malipo limetumwa kwa mwandishi ' + s.storyteller_name + '! Subiri akague na kudhibitisha.');
+            alert('Ombi lako la malipo limetumwa kwa mwandishi ' + s.storyteller_name + '!');
             document.getElementById('payment-status-notice').innerText = "⏳ Ombi limetumwa. Subiri mwandishi adhibitishe.";
-            document.getElementById('modal-story-content').innerText = "[Ombi lako la malipo limeshawasilishwa kwa mwandishi. Subiri akague na ku-confirm...]";
+            document.getElementById('modal-story-content').innerText = "[Ombi lako la malipo limeshawasilishwa kwa mwandishi. Subiri akague...]";
         }
 
         function loadStorytellerOrders() {
@@ -1080,25 +1084,114 @@
         }
 
         function openAdminLogin() {
+            let uname = prompt("Weka Jina la Admin (Admin Username) - au acha wazi kama admin wa zamani:");
             let pwd = prompt("Weka Password ya Admin:");
             if(!pwd) return;
             fetch('/api/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `password=${encodeURIComponent(pwd)}`
+                body: `username=${encodeURIComponent(uname || '')}&password=${encodeURIComponent(pwd)}`
             })
             .then(res => res.json())
             .then(data => {
                 if(data.success) {
+                    // admin_level inatokana na backend; kama backend ya zamani haijatuma admin_level,
+                    // tunachukulia kama Super Admin (tabia ya awali ya password moja kuu).
+                    currentAdminLevel = data.admin_level || 'super';
+                    currentAdminUsername = data.username || uname || 'Admin';
+                    localStorage.setItem('sokosmart_admin_level', currentAdminLevel);
+                    localStorage.setItem('sokosmart_admin_username', currentAdminUsername);
+
                     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
                     document.getElementById('admin').classList.add('active');
+                    updateAdminLevelBadge();
                     loadAdminData();
-                } else { alert('Password si sahihi!'); }
+                } else { alert('Jina au Password si sahihi!'); }
             });
         }
 
+        function updateAdminLevelBadge() {
+            const badge = document.getElementById('admin-level-badge');
+            const mgmtSection = document.getElementById('admin-management-section');
+            if(!badge) return;
+            if(currentAdminLevel === 'super') {
+                badge.innerText = '👑 Super Admin' + (currentAdminUsername ? ' — ' + currentAdminUsername : '');
+                badge.className = 'badge-super';
+                if(mgmtSection) mgmtSection.style.display = 'block';
+            } else {
+                badge.innerText = '🛡️ Sub-Admin (Msaidizi)' + (currentAdminUsername ? ' — ' + currentAdminUsername : '');
+                badge.className = 'badge-sub';
+                if(mgmtSection) mgmtSection.style.display = 'none';
+            }
+        }
+
         function logoutAdmin() {
+            localStorage.removeItem('sokosmart_admin_level');
+            localStorage.removeItem('sokosmart_admin_username');
+            currentAdminLevel = 'super';
+            currentAdminUsername = '';
             if(currentUser) { switchTab('market'); } else { switchTab('signin'); }
+        }
+
+        // ===== ADMIN MANAGEMENT (Super Admin only) =====
+        function loadAdminManagementList() {
+            if(currentAdminLevel !== 'super') return;
+            fetch('/api/admin/list-admins')
+                .then(res => res.json())
+                .then(data => {
+                    window.adminAllAdmins = data || [];
+                    const container = document.getElementById('admin-management-list');
+                    if(!data || data.length === 0) {
+                        container.innerHTML = '<p style="font-size:0.85em; color:#666;">Hakuna maadmin wengine bado.</p>';
+                        return;
+                    }
+                    container.innerHTML = `<div class="admin-card-grid">${data.map(a => `
+                        <div class="admin-item-card">
+                            <div class="admin-item-top">
+                                <strong>${a.username}</strong>
+                                <span class="${a.admin_level === 'super' ? 'badge-super' : 'badge-sub'}">${a.admin_level === 'super' ? 'Super Admin' : 'Sub-Admin'}</span>
+                            </div>
+                            <div class="admin-item-actions">
+                                <button onclick="deleteAdminAccount(${a.id}, '${a.username}')" style="background:var(--danger);">🗑️ Futa Admin</button>
+                            </div>
+                        </div>
+                    `).join('')}</div>`;
+                })
+                .catch(() => {
+                    document.getElementById('admin-management-list').innerHTML = '<p style="font-size:0.85em; color:#666;">Huduma ya usimamizi wa maadmin haipo bado kwenye seva.</p>';
+                });
+        }
+
+        function handleAddAdmin(e) {
+            e.preventDefault();
+            let uname = document.getElementById('new-admin-username').value.trim();
+            let pwd = document.getElementById('new-admin-password').value;
+            let level = document.getElementById('new-admin-level').value;
+
+            fetch('/api/admin/add-admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `username=${encodeURIComponent(uname)}&password=${encodeURIComponent(pwd)}&admin_level=${encodeURIComponent(level)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message || 'Admin mpya ameongezwa!');
+                if(data.success) {
+                    document.getElementById('new-admin-username').value = '';
+                    document.getElementById('new-admin-password').value = '';
+                    loadAdminManagementList();
+                }
+            });
+        }
+
+        function deleteAdminAccount(id, username) {
+            if(!confirm(`Una uhakika unataka kufuta admin "${username}"?`)) return;
+            fetch('/api/admin/delete-admin?id=' + id, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || 'Admin amefutwa.');
+                    loadAdminManagementList();
+                });
         }
 
         function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
@@ -1234,11 +1327,7 @@
             const videoBox = document.getElementById('detail-video-box');
             const videoElem = document.getElementById('detail-video');
             if(d.video_url && d.video_url.trim() !== "") {
-                if(!videoElem) {
-                    videoBox.innerHTML = `<video id="detail-video" controls style="width: 100%; max-height: 250px; background: #000; border-radius: 6px;" src="${d.video_url}"></video>`;
-                } else {
-                    videoElem.src = d.video_url;
-                }
+                videoElem.src = d.video_url;
                 videoBox.style.display = 'block';
             } else {
                 videoBox.style.display = 'none';
@@ -1276,7 +1365,7 @@
 
         function deleteMyProduct(id) {
             if(!confirm("Futa bidhaa hii?")) return;
-            fetch('/api/delete-design?id=' + id, { method: 'POST' }).then(() => loadMyProducts());
+            fetch('/api/admin/delete-design?id=' + id, { method: 'POST' }).then(() => loadMyProducts());
         }
 
         function openMarketImageModal(imgSrc) {
@@ -1294,23 +1383,28 @@
         }
 
         function loadAdminData() {
+            updateAdminLevelBadge();
+            loadAdminManagementList();
+
             fetch('/api/admin/stories').then(res => res.json()).then(data => {
                 const storiesList = document.getElementById('admin-stories-list');
+                const statEl = document.getElementById('stat-stories-count');
+                if(statEl) statEl.innerText = data ? data.length : 0;
                 if(!data || data.length === 0) {
                     storiesList.innerHTML = '<p>Hakuna hadithi zozote zilizopostiwa kwenye mfumo.</p>';
                     return;
                 }
                 storiesList.innerHTML = data.map(s => `
-                    <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; flex-wrap:wrap; gap:10px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="admin-item-card">
+                        <div class="admin-item-top">
                             ${s.cover_image ? `<img src="${s.cover_image}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px;">` : ''}
                             <div>
                                 📖 <strong>${s.title}</strong> <br>
                                 <small style="color:#666;">Mwandishi: <strong>${s.storyteller_name}</strong> (Simu: ${s.story_phone || 'N/A'})</small>
                             </div>
                         </div>
-                        <div style="display:flex; gap:5px;">
-                            <button onclick="adminDeleteStory(${s.id})" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">🗑️ Futa Hadithi</button>
+                        <div class="admin-item-actions">
+                            <button onclick="adminDeleteStory(${s.id})" style="background:var(--danger);">🗑️ Futa Hadithi</button>
                         </div>
                     </div>
                 `).join('');
@@ -1319,6 +1413,9 @@
             fetch('/api/admin/sellers').then(res => res.json()).then(data => {
                 window.adminAllSellers = data;
                 const sellersList = document.getElementById('admin-sellers-list');
+                const pendingCount = (data || []).filter(u => u.verification_status !== 'approved').length;
+                const statEl = document.getElementById('stat-pending-sellers-count');
+                if(statEl) statEl.innerText = pendingCount;
                 if(!data || data.length === 0) {
                     sellersList.innerHTML = '<p>Hakuna wauzaji wapya.</p>';
                     return;
@@ -1328,14 +1425,15 @@
                         ? `<span class="badge-success"> ✅ Imethibitishwa (Verified)</span>`
                         : `<span class="badge">⏳ Inasubiri (Pending)</span>`;
                     return `
-                    <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; flex-wrap:wrap; gap:10px;">
-                        <div>
-                            👤 <strong>${u.username}</strong> (NIDA: ${u.id_number || 'N/A'}) - Hali: ${statusBadge}
+                    <div class="admin-item-card">
+                        <div class="admin-item-top">
+                            👤 <strong>${u.username}</strong>
                         </div>
-                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                            <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">🔍 Angalia Kitambulisho</button>
-                            <button onclick="approveUser(${u.id})" style="background:var(--success); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">✅ Idhinisha</button>
-                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.75em;">🗑️ Futa Kabisa</button>
+                        <div style="font-size:0.85em; color:#666;">NIDA: ${u.id_number || 'N/A'} — Hali: ${statusBadge}</div>
+                        <div class="admin-item-actions">
+                            <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary);">🔍 Kitambulisho</button>
+                            <button onclick="approveUser(${u.id})" style="background:var(--success);">✅ Idhinisha</button>
+                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger);">🗑️ Futa Kabisa</button>
                         </div>
                     </div>
                 `}).join('');
@@ -1344,6 +1442,9 @@
             fetch('/api/admin/storytellers').then(res => res.json()).then(data => {
                 window.adminAllStorytellers = data;
                 const storyList = document.getElementById('admin-storytellers-list');
+                const pendingCount = (data || []).filter(u => u.verification_status !== 'approved').length;
+                const statEl = document.getElementById('stat-pending-storytellers-count');
+                if(statEl) statEl.innerText = pendingCount;
                 if(!data || data.length === 0) {
                     storyList.innerHTML = '<p>Hakuna waandishi.</p>';
                     return;
@@ -1353,14 +1454,15 @@
                         ? `<span class="badge-success"> ✅ Imethibitishwa</span>`
                         : `<span class="badge">⏳ Inasubiri</span>`;
                     return `
-                    <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em; flex-wrap:wrap; gap:10px;">
-                        <div>
-                            ✍️ <strong>${u.username}</strong> (ID: ${u.id_number || 'N/A'}) - Hali: ${statusBadge}
+                    <div class="admin-item-card">
+                        <div class="admin-item-top">
+                            ✍️ <strong>${u.username}</strong>
                         </div>
-                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                            <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">🔍 Kitambulisho</button>
-                            <button onclick="approveUser(${u.id})" style="background:var(--success); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">✅ Idhinisha</button>
-                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">🗑️ Futa</button>
+                        <div style="font-size:0.85em; color:#666;">ID: ${u.id_number || 'N/A'} — Hali: ${statusBadge}</div>
+                        <div class="admin-item-actions">
+                            <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary);">🔍 Kitambulisho</button>
+                            <button onclick="approveUser(${u.id})" style="background:var(--success);">✅ Idhinisha</button>
+                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger);">🗑️ Futa</button>
                         </div>
                     </div>
                 `}).join('');
@@ -1368,14 +1470,19 @@
 
             fetch('/api/admin/buyers').then(res => res.json()).then(data => {
                 const buyersList = document.getElementById('admin-buyers-list');
+                const statEl = document.getElementById('stat-buyers-count');
+                if(statEl) statEl.innerText = data ? data.length : 0;
                 if(!data || data.length === 0) {
                     buyersList.innerHTML = '<p>Hakuna wanunuzi.</p>';
                     return;
                 }
                 buyersList.innerHTML = data.map(u => `
-                    <div style="border-bottom:1px solid #eee; padding:8px 0; display:flex; justify-content:space-between; align-items:center; font-size:0.9em;">
-                        <span>🛒 <strong>${u.username}</strong> - <span class="badge-success">Approved Buyer</span></span>
-                        <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger); color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.8em;">Futa</button>
+                    <div class="admin-item-card">
+                        <div class="admin-item-top">🛒 <strong>${u.username}</strong></div>
+                        <div><span class="badge-success">Approved Buyer</span></div>
+                        <div class="admin-item-actions">
+                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger);">Futa</button>
+                        </div>
                     </div>
                 `).join('');
             });
@@ -1383,20 +1490,23 @@
             fetch('/api/admin/designs').then(res => res.json()).then(data => {
                 window.adminAllDesigns = data;
                 const list = document.getElementById('admin-designs-list');
+                const statEl = document.getElementById('stat-designs-count');
+                if(statEl) statEl.innerText = data ? data.length : 0;
                 if(!data || data.length === 0) {
                     list.innerHTML = '<p>Hakuna bidhaa.</p>';
                     return;
                 }
                 list.innerHTML = data.map(d => `
-                    <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                        <div>
-                            <strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br><small>Muuzaji: ${d.designer_name} | Hali: <span class="badge">${d.status}</span></small>
+                    <div class="admin-item-card">
+                        <div class="admin-item-top">
+                            <strong>${d.title}</strong>
                         </div>
-                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
-                            <button onclick="openAdminModal(${d.id})" style="background:var(--primary); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">Soma</button>
-                            <button onclick="approveDesign(${d.id})" style="background:var(--success); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">Idhinisha</button>
-                            <button onclick="rejectDesign(${d.id})" style="background:var(--accent); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">Kataa</button>
-                            <button onclick="deleteDesign(${d.id})" style="background:var(--danger); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em;">Futa</button>
+                        <div style="font-size:0.85em; color:#666;">Tsh ${d.price.toLocaleString()} — Muuzaji: ${d.designer_name} — Hali: <span class="badge">${d.status}</span></div>
+                        <div class="admin-item-actions">
+                            <button onclick="openAdminModal(${d.id})" style="background:var(--primary);">Soma</button>
+                            <button onclick="approveDesign(${d.id})" style="background:var(--success);">Idhinisha</button>
+                            <button onclick="rejectDesign(${d.id})" style="background:var(--accent);">Kataa</button>
+                            <button onclick="deleteDesign(${d.id})" style="background:var(--danger);">Futa</button>
                         </div>
                     </div>
                 `).join('');
@@ -1486,3 +1596,4 @@
     </script>
 </body>
 </html>
+ 
