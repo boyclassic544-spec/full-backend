@@ -37,11 +37,10 @@ type Design struct {
 }
 
 type Story struct {
-	ID            int    `json:"id"`
-	Title         string `json:"title"`
-	Content       string `json:"content"`
-	CoverImage    string `json:"cover_image"`
-	AinaYaHadithi string `json:"aina_ya_hadithi"`
+	ID              int    `json:"id"`
+	Title           string `json:"title"`
+	Content         string `json:"content"`
+	CoverImage      string `json:"cover_image"`
 	StorytellerName string `json:"storyteller_name"`
 	Status          string `json:"status"`
 	RejectionReason string `json:"rejection_reason"`
@@ -210,7 +209,6 @@ func initDB() {
 		title TEXT NOT NULL,
 		content TEXT NOT NULL,
 		cover_image TEXT DEFAULT '',
-		aina_ya_hadithi TEXT DEFAULT 'bure',
 		storyteller_name TEXT NOT NULL,
 		status TEXT DEFAULT 'approved',
 		rejection_reason TEXT DEFAULT '',
@@ -236,7 +234,6 @@ func initDB() {
 	}
 
 	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS cover_image TEXT DEFAULT '';")
-	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS aina_ya_hadithi TEXT DEFAULT 'bure';")
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'free';")
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMP;")
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS payment_phone TEXT DEFAULT '';")
@@ -847,7 +844,7 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 // ----------------- API ZA HADITHI (REKODI NA KUHUSISHA STORYTELLER) -----------------
 
 func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), COALESCE(aina_ya_hadithi, 'bure'), storyteller_name, status, rejection_reason, created_at FROM stories WHERE status = 'approved' ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, rejection_reason, created_at FROM stories WHERE status = 'approved' ORDER BY id DESC")
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma hadithi", http.StatusInternalServerError)
 		return
@@ -857,7 +854,7 @@ func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	var stories []Story
 	for rows.Next() {
 		var s Story
-		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.AinaYaHadithi, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt); err != nil {
+		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt); err != nil {
 			continue
 		}
 		stories = append(stories, s)
@@ -877,7 +874,7 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 		storyteller = r.URL.Query().Get("designer")
 	}
 
-	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), COALESCE(aina_ya_hadithi, 'bure'), storyteller_name, status, rejection_reason, created_at FROM stories WHERE storyteller_name = $1 ORDER BY id DESC", storyteller)
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, rejection_reason, created_at FROM stories WHERE storyteller_name = $1 ORDER BY id DESC", storyteller)
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma hadithi zako", http.StatusInternalServerError)
 		return
@@ -887,7 +884,7 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	var stories []Story
 	for rows.Next() {
 		var s Story
-		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.AinaYaHadithi, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt); err != nil {
+		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt); err != nil {
 			continue
 		}
 		stories = append(stories, s)
@@ -909,7 +906,7 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	var title, content, coverImage, ainaYaHadithi, storytellerName string
+	var title, content, coverImage, storytellerName string
 
 	contentType := r.Header.Get("Content-Type")
 	if strings.Contains(contentType, "application/json") {
@@ -917,7 +914,6 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 			Title           string `json:"title"`
 			Content         string `json:"content"`
 			CoverImage      string `json:"cover_image"`
-			AinaYaHadithi   string `json:"aina_ya_hadithi"`
 			StorytellerName string `json:"storyteller_name"`
 		}
 		r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
@@ -925,7 +921,6 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 			title = payload.Title
 			content = payload.Content
 			coverImage = payload.CoverImage
-			ainaYaHadithi = payload.AinaYaHadithi
 			storytellerName = payload.StorytellerName
 		}
 	}
@@ -940,15 +935,10 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		if coverImage == "" {
 			coverImage = r.FormValue("image_url")
 		}
-		ainaYaHadithi = r.FormValue("aina_ya_hadithi")
 		storytellerName = r.FormValue("storyteller_name")
 		if storytellerName == "" {
 			storytellerName = r.FormValue("designer_name")
 		}
-	}
-
-	if ainaYaHadithi == "" {
-		ainaYaHadithi = "bure"
 	}
 
 	if storytellerName != "" {
@@ -967,8 +957,8 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, aina_ya_hadithi, storyteller_name, status, rejection_reason) VALUES ($1, $2, $3, $4, $5, 'approved', '')",
-		title, content, coverImage, ainaYaHadithi, storytellerName)
+	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, status, rejection_reason) VALUES ($1, $2, $3, $4, 'approved', '')",
+		title, content, coverImage, storytellerName)
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi hadithi: " + err.Error()})
@@ -1022,6 +1012,7 @@ func createSubAdminHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	
+	// Jaribu kusoma kupitia JSON au Form data ili isigome kamwe
 	var username, password string
 	contentType := r.Header.Get("Content-Type")
 	if strings.Contains(contentType, "application/json") {
@@ -1153,7 +1144,7 @@ func adminDeleteDesignHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminGetStoriesHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), COALESCE(aina_ya_hadithi, 'bure'), storyteller_name, status, rejection_reason, created_at FROM stories ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, rejection_reason, created_at FROM stories ORDER BY id DESC")
 	if err != nil {
 		http.Error(w, "Imeshindikana", http.StatusInternalServerError)
 		return
@@ -1163,7 +1154,7 @@ func adminGetStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	var stories []Story
 	for rows.Next() {
 		var s Story
-		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.AinaYaHadithi, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt); err != nil {
+		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt); err != nil {
 			continue
 		}
 		stories = append(stories, s)
