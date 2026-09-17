@@ -94,7 +94,7 @@
         .stat-card .stat-num { font-size: 1.4em; font-weight: bold; color: var(--primary); display: block; }
         .stat-card .stat-label { font-size: 0.72em; color: #666; margin-top: 2px; display: block; }
 
-        /* Admin card-based grid layout (replaces long single-column rows) */
+        /* Admin card-based grid layout */
         .admin-card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         @media (max-width: 700px) { .admin-card-grid { grid-template-columns: 1fr; } }
         .admin-item-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 8px; font-size: 0.9em; }
@@ -102,7 +102,7 @@
         .admin-item-card .admin-item-actions { display: flex; gap: 5px; flex-wrap: wrap; margin-top: auto; }
         .admin-item-card .admin-item-actions button { border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75em; color: #fff; }
 
-        /* Admin Management (Super Admin only) */
+        /* Admin Management */
         .admin-mgmt-card { background: #fff8ec; border: 1px solid #f5cc8a; border-radius: 8px; padding: 15px; margin-bottom: 25px; }
         .admin-mgmt-card h3 { margin-top: 0; }
         .admin-add-form { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; align-items: end; }
@@ -525,7 +525,7 @@
                     </div>
                 </div>
 
-                <!-- SEHEMU MPYA ILIYONGEZWA YA USIMAMIZI WA MALIPO YA MWEZI -->
+                <!-- SEHEMU YA USIMAMIZI WA MALIPO YA MWEZI -->
                 <div style="background: #ffffff; padding: 20px; border-radius: 8px; margin-top: 20px; color: #333;">
                     <h3>Usimamizi wa Malipo ya Mwezi (Sellers & Storytellers)</h3>
                     <table border="1" cellpadding="8" cellspacing="0" style="width:100%; margin-top:10px; border-collapse: collapse;">
@@ -1150,7 +1150,6 @@
             if(currentUser) { switchTab('market'); } else { switchTab('signin'); }
         }
 
-        // ===== ADMIN MANAGEMENT (Super Admin only) =====
         function loadAdminManagementList() {
             if(currentAdminLevel !== 'super') return;
             fetch('/api/admin/list-admins')
@@ -1402,8 +1401,6 @@
         function loadAdminData() {
             updateAdminLevelBadge();
             loadAdminManagementList();
-
-            // Kazi ya kuvuta data zote za watumiaji kutoka kwenye backend yako ya /api/admin/users
             loadAdminSubscriptions();
 
             fetch('/api/admin/stories').then(res => res.json()).then(data => {
@@ -1533,7 +1530,6 @@
             });
         }
 
-        // --- KAZI ZA USIMAMIZI WA MALIPO YA MWEZI ---
         function loadAdminSubscriptions() {
             fetch('/api/admin/users')
                 .then(res => res.json())
@@ -1585,7 +1581,6 @@
                 });
             }
         }
-        // --------------------------------------------
 
         function adminDeleteStory(id) {
             if(!confirm("Una uhakika unataka kufuta hadithi hii kama Admin?")) return;
@@ -1612,14 +1607,14 @@
             if(!u) return;
             let container = document.getElementById('modal-seller-id-container');
             if(u.id_image_url) {
-                container.innerHTML = `<img src="${u.id_image_url}" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; cursor: pointer;" onclick="openMarketImageModal('${u.id_image_url}')">`;
+                container.innerHTML = `<img src="${u.id_image_url}" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); cursor: pointer;" onclick="openMarketImageModal(this.src)">`;
             } else {
-                container.innerHTML = `<small style="color:var(--danger);">Hakuna picha ya kitambulisho.</small>`;
+                container.innerHTML = `<p style="color:#888;">Hakuna picha ya kitambulisho iliyowekwa.</p>`;
             }
             document.getElementById('modal-seller-username').innerText = u.username;
             document.getElementById('modal-seller-nida').innerText = u.id_number || 'N/A';
-            document.getElementById('modal-seller-status').innerText = u.verification_status || 'pending';
-            document.getElementById('modal-seller-date').innerText = u.created_at || 'N/A';
+            document.getElementById('modal-seller-status').innerText = u.verification_status;
+            document.getElementById('modal-seller-date').innerText = u.created_at ? u.created_at.substring(0, 10) : 'N/A';
             document.getElementById('admin-seller-detail-modal').style.display = 'flex';
         }
 
@@ -1628,9 +1623,8 @@
         }
 
         function openAdminModal(id) {
-            const d = window.adminAllDesigns.find(item => item.id === id);
+            const d = (window.adminAllDesigns || []).find(item => item.id === id);
             if(!d) return;
-            document.getElementById('modal-image-container').innerHTML = `<img src="${d.image_url}" style="width: 100px; height: 100px; object-fit: contain;">`;
             document.getElementById('modal-prod-title').innerText = d.title;
             document.getElementById('modal-prod-price').innerText = "Tsh " + d.price.toLocaleString();
             document.getElementById('modal-prod-location').innerText = d.location || 'Tanzania';
@@ -1639,6 +1633,18 @@
             document.getElementById('modal-prod-designer').innerText = d.designer_name;
             document.getElementById('modal-prod-status').innerText = d.status;
             document.getElementById('modal-prod-desc').innerText = d.description;
+
+            let imgContainer = document.getElementById('modal-image-container');
+            let imgs = [d.image_url, d.image_url2, d.image_url3, d.image_url4].filter(i => i && i.trim() !== '');
+            imgContainer.innerHTML = imgs.map(src => `<img src="${src}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; cursor: pointer;" onclick="openMarketImageModal(this.src)">`).join('');
+
+            let vidContainer = document.getElementById('modal-video-container');
+            if(d.video_url && d.video_url.trim() !== '') {
+                vidContainer.innerHTML = `<video src="${d.video_url}" controls style="max-width: 100%; max-height: 200px; border-radius: 4px;"></video>`;
+            } else {
+                vidContainer.innerHTML = '';
+            }
+
             document.getElementById('admin-detail-modal').style.display = 'flex';
         }
 
@@ -1647,17 +1653,11 @@
         }
 
         function approveDesign(id) {
-            fetch('/api/admin/approve?id=' + id, { method: 'POST' }).then(() => loadAdminData());
+            fetch('/api/admin/approve-design?id=' + id, { method: 'POST' }).then(() => loadAdminData());
         }
 
         function rejectDesign(id) {
-            let reason = prompt("Sababu ya kukataa bidhaa:");
-            if(reason === null) return;
-            fetch('/api/admin/reject', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `id=${id}&reason=` + encodeURIComponent(reason)
-            }).then(() => loadAdminData());
+            fetch('/api/admin/reject-design?id=' + id, { method: 'POST' }).then(() => loadAdminData());
         }
 
         function deleteDesign(id) {
@@ -1665,8 +1665,42 @@
             fetch('/api/admin/delete-design?id=' + id, { method: 'POST' }).then(() => loadAdminData());
         }
 
-        updateAuthUI();
-        if (!currentUser) { switchTab('signin'); } else { refreshUserProfile().then(() => switchTab('market')); }
+        function filterDesigns() {
+            let query = document.getElementById('search-input').value.toLowerCase();
+            let loc = document.getElementById('location-filter').value;
+
+            let filtered = allApprovedDesigns.filter(d => {
+                let matchText = (d.title + ' ' + d.description + ' ' + d.category).toLowerCase();
+                let matchesQuery = matchText.includes(query);
+                let matchesLoc = loc === '' || (d.location && d.location.toLowerCase().includes(loc.toLowerCase()));
+                return matchesQuery && matchesLoc;
+            });
+            renderDesignsGrid(filtered);
+        }
+
+        function filterByCategory(cat) {
+            document.querySelectorAll('.category-chip').forEach(chip => chip.classList.remove('active'));
+            event.target.classList.add('active');
+
+            if(cat === 'All') {
+                renderDesignsGrid(allApprovedDesigns);
+            } else {
+                let filtered = allApprovedDesigns.filter(d => d.category === cat);
+                renderDesignsGrid(filtered);
+            }
+        }
+
+        window.onload = function() {
+            if(currentUser) {
+                refreshUserProfile().then(() => {
+                    updateAuthUI();
+                    switchTab('market');
+                });
+            } else {
+                updateAuthUI();
+                switchTab('stories-feed');
+            }
+        };
     </script>
 </body>
 </html> 
