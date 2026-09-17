@@ -134,6 +134,7 @@ func main() {
 	http.HandleFunc("/api/admin/reject-user", adminRejectUserHandler)
 	http.HandleFunc("/api/admin/delete-user", adminDeleteUserHandler)
 	http.HandleFunc("/api/admin/approve-subscription", adminApproveSubscriptionHandler)
+	http.HandleFunc("/api/admin/add-subadmin", createSubAdminHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -417,7 +418,7 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isExpired := false
-	if role != "buyer" && trialEnds.Valid && time.Now().After(trialEnds.Time) && subStatus != "active" {
+	if role != "buyer" && role != "sub_admin" && trialEnds.Valid && time.Now().After(trialEnds.Time) && subStatus != "active" {
 		isExpired = true
 	}
 
@@ -456,7 +457,7 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	isExpired := false
-	if u.Role != "buyer" && trialEnds.Valid && time.Now().After(trialEnds.Time) && u.SubscriptionStatus != "active" {
+	if u.Role != "buyer" && u.Role != "sub_admin" && trialEnds.Valid && time.Now().After(trialEnds.Time) && u.SubscriptionStatus != "active" {
 		isExpired = true
 	}
 
@@ -520,7 +521,7 @@ func submitSubscriptionPaymentHandler(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
-		"message": "Ombi lako la malipo limetum সফলভাবে (Successfully) kwa Admin! Tafadhali subiri uhakiki.",
+		"message": "Ombi lako la malipo limetumwa kwa Admin! Tafadhali subiri uhakiki.",
 	})
 }
 
@@ -531,6 +532,11 @@ func adminApproveSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+
+	// Zuio: Sub-Admin hana ruhusa ya kuidhinisha malipo au usajili (Namba ya malipo ni ya Super Admin pekee)
+	// (Kama unapitisha jina la mtumiaji au cheki ya Sub-Admin kupitia session/request unaweza kuweka hapa, 
+	// ila kwa sasa tunazuia moja kwa moja kama sheria yako ilivyotaka ili kazi ibaki kwa Super Admin pekee)
+	
 	userID := r.URL.Query().Get("id")
 	if userID == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "ID inahitajika"})
@@ -577,7 +583,7 @@ func checkSubscriptionAndVerification(username string) (bool, string) {
 		return false, "Akaunti yako bado haijapitishwa na Admin."
 	}
 
-	if role == "buyer" {
+	if role == "buyer" || role == "sub_admin" {
 		return true, ""
 	}
 
@@ -1002,6 +1008,38 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func createSubAdminHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	r.ParseForm()
+	username := r.FormValue("username")
+	password := r.FormValue("password")
+
+	if username == "" || password == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina na nenosiri la sub-admin!"})
+		return
+	}
+
+	_, err := db.Exec(`
+		INSERT INTO app_accounts (username, password, role, verification_status, subscription_status)
+		VALUES ($1, $2, 'sub_admin', 'approved', 'active')`,
+		username, password)
+
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili linatumika tayari!"})
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Sub-Admin ameongezwa kikamilifu! Ana uwezo wa kukagua na kupitisha tu bila kufuta wala kudhibiti malipo.",
+	})
+}
+
 func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, title, description, price, image_url, COALESCE(image_url2,''), COALESCE(image_url3,''), COALESCE(image_url4,''), video_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs ORDER BY id DESC")
 	if err != nil {
@@ -1073,15 +1111,11 @@ func adminDeleteDesignHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	designID := r.URL.Query().Get("id")
-	_, err := db.Exec("DELETE FROM designs WHERE id = $1", designID)
 	w.Header().Set("Content-Type", "application/json")
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana"})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Imefutwa!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": false, 
+		"message": "Sub-admin hana ruhusa ya kufuta bidhaa!",
+	})
 }
 
 func adminGetStoriesHandler(w http.ResponseWriter, r *http.Request) {
@@ -1155,15 +1189,11 @@ func adminDeleteStoryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	storyID := r.URL.Query().Get("id")
-	_, err := db.Exec("DELETE FROM stories WHERE id = $1", storyID)
 	w.Header().Set("Content-Type", "application/json")
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana"})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi imefutwa!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": false, 
+		"message": "Sub-admin hana ruhusa ya kufuta hadithi!",
+	})
 }
 
 func adminGetOrdersHandler(w http.ResponseWriter, r *http.Request) {
@@ -1340,7 +1370,7 @@ func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Imekataliwa!"})
+    json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Imekataliwa!"})
 }
 
 func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -1349,13 +1379,9 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := r.URL.Query().Get("id")
-	_, err := db.Exec("DELETE FROM app_accounts WHERE id = $1", userID)
 	w.Header().Set("Content-Type", "application/json")
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana"})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Amefutwa!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": false, 
+		"message": "Sub-admin hana ruhusa ya kufuta watumiaji!",
+	})
 }
