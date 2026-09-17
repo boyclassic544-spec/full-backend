@@ -1012,28 +1012,31 @@ func createSubAdminHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	
-	// Jaribu kusoma kupitia JSON au Form data ili isigome kamwe
 	var username, password string
 	contentType := r.Header.Get("Content-Type")
+	
 	if strings.Contains(contentType, "application/json") {
 		var payload struct {
 			Username string `json:"username"`
 			Password string `json:"password"`
 		}
 		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
-			username = payload.Username
-			password = payload.Password
+			username = strings.TrimSpace(payload.Username)
+			password = strings.TrimSpace(payload.Password)
 		}
 	}
 
 	if username == "" {
-		r.ParseForm()
-		username = r.FormValue("username")
-		password = r.FormValue("password")
+		_ = r.ParseForm()
+		username = strings.TrimSpace(r.FormValue("username"))
+		password = strings.TrimSpace(r.FormValue("password"))
 	}
 
 	if username == "" || password == "" {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina na nenosiri la sub-admin!"})
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false, 
+			"message": "Jaza jina na nenosiri la sub-admin!",
+		})
 		return
 	}
 
@@ -1043,7 +1046,10 @@ func createSubAdminHandler(w http.ResponseWriter, r *http.Request) {
 		username, password)
 
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili linatumika tayari au kosa la database!"})
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false, 
+			"message": "Jina hili linatumika tayari au kosa la database!",
+		})
 		return
 	}
 
