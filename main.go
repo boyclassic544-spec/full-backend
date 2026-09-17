@@ -533,10 +533,6 @@ func adminApproveSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 
-	// Zuio: Sub-Admin hana ruhusa ya kuidhinisha malipo au usajili (Namba ya malipo ni ya Super Admin pekee)
-	// (Kama unapitisha jina la mtumiaji au cheki ya Sub-Admin kupitia session/request unaweza kuweka hapa, 
-	// ila kwa sasa tunazuia moja kwa moja kama sheria yako ilivyotaka ili kazi ibaki kwa Super Admin pekee)
-	
 	userID := r.URL.Query().Get("id")
 	if userID == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "ID inahitajika"})
@@ -1015,9 +1011,26 @@ func createSubAdminHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	r.ParseForm()
-	username := r.FormValue("username")
-	password := r.FormValue("password")
+	
+	// Jaribu kusoma kupitia JSON au Form data ili isigome kamwe
+	var username, password string
+	contentType := r.Header.Get("Content-Type")
+	if strings.Contains(contentType, "application/json") {
+		var payload struct {
+			Username string `json:"username"`
+			Password string `json:"password"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
+			username = payload.Username
+			password = payload.Password
+		}
+	}
+
+	if username == "" {
+		r.ParseForm()
+		username = r.FormValue("username")
+		password = r.FormValue("password")
+	}
 
 	if username == "" || password == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina na nenosiri la sub-admin!"})
@@ -1030,13 +1043,13 @@ func createSubAdminHandler(w http.ResponseWriter, r *http.Request) {
 		username, password)
 
 	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili linatumika tayari!"})
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina hili linatumika tayari au kosa la database!"})
 		return
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
-		"message": "Sub-Admin ameongezwa kikamilifu! Ana uwezo wa kukagua na kupitisha tu bila kufuta wala kudhibiti malipo.",
+		"message": "Sub-Admin ameongezwa kikamilifu kwenye mfumo!",
 	})
 }
 
@@ -1112,9 +1125,21 @@ func adminDeleteDesignHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	designID := r.URL.Query().Get("id")
+	if designID == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "ID ya bidhaa inahitajika!"})
+		return
+	}
+
+	_, err := db.Exec("DELETE FROM designs WHERE id = $1", designID)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kufuta bidhaa kwenye database"})
+		return
+	}
+
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": false, 
-		"message": "Sub-admin hana ruhusa ya kufuta bidhaa!",
+		"success": true, 
+		"message": "Bidhaa imefutwa kikamilifu na Admin!",
 	})
 }
 
@@ -1380,8 +1405,20 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	userID := r.URL.Query().Get("id")
+	if userID == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "ID ya mtumiaji inahitajika!"})
+		return
+	}
+
+	_, err := db.Exec("DELETE FROM app_accounts WHERE id = $1", userID)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kufuta mtumiaji kwenye database"})
+		return
+	}
+
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": false, 
-		"message": "Sub-admin hana ruhusa ya kufuta watumiaji!",
+		"success": true, 
+		"message": "Mtumiaji amefutwa kikamilifu na Admin!",
 	})
 }
