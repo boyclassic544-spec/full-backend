@@ -235,7 +235,7 @@
                     <div id="modal-story-content" style="font-size: 1em; color: #2c2c2c; line-height: 1.85; white-space: pre-wrap; max-height: 50vh; overflow-y: auto; padding-right: 5px; margin-bottom: 20px;"></div>
                 </div>
                 
-                <div id="story-payment-wrapper" style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2d9c2;">
+                <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2d9c2;">
                     <h4 style="margin: 0 0 8px 0; color: var(--primary);">Wasiliana na Mwandishi / Nunua Hati hii</h4>
                     <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">Simu ya Mwandishi:</p>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -844,7 +844,6 @@
                                     <div class="story-grid-meta">
                                         ✍️ <strong>${s.storyteller_name}</strong><br>
                                         📅 ${s.created_at ? s.created_at.substring(0,10) : ''}
-                                        ${s.is_paid ? `<br><span style="color:var(--accent); font-weight:bold;">💰 Tsh ${s.price || 0}</span>` : '<br><span style="color:var(--success); font-weight:bold;">🟢 Bure</span>'}
                                     </div>
                                 </div>
                             </div>
@@ -864,31 +863,23 @@
             document.getElementById('modal-story-date').innerText = s.created_at ? s.created_at.substring(0,10) : '';
 
             let contentDiv = document.getElementById('modal-story-content');
-            let paymentWrapper = document.getElementById('story-payment-wrapper');
+            let existingOrder = storyPaymentOrders.find(o => o.storyId === id && o.username === currentUser);
 
-            // ANGALIZO LA BURE AU KULIPIA LIMEBADILISHWA HAPA:
-            if (!s.is_paid) {
-                // Hii ni hadithi ya bure - inasomeka moja kwa moja bila masharti ya malipo
+            if(s.story_type === 'free') {
                 contentDiv.innerText = s.content;
-                if(paymentWrapper) paymentWrapper.style.display = 'none';
+                document.getElementById('payment-status-notice').innerText = "📖 Hadithi hii ni ya bure. Furahia kusoma!";
+            } else if(existingOrder && existingOrder.status === 'confirmed') {
+                contentDiv.innerText = s.content;
+                document.getElementById('payment-status-notice').innerText = "✅ Malipo yako yamethibitishwa na mwandishi. Furahia kusoma!";
+            } else if(existingOrder && existingOrder.status === 'rejected') {
+                contentDiv.innerText = "[Hadithi imefungwa: Mwandishi amekataa au hakujiridhisha na malipo yako.]";
+                document.getElementById('payment-status-notice').innerText = "❌ Malipo yako yamekataliwa na mwandishi.";
+            } else if(existingOrder && existingOrder.status === 'pending') {
+                contentDiv.innerText = "[Hadithi imefungwa: Subiri mwandishi akague malipo yako na kuyathibitisha...]";
+                document.getElementById('payment-status-notice').innerText = "⏳ Ombi lako la malipo limeshawasilishwa. Subiri uthibitisho.";
             } else {
-                // Hii ni hadithi ya kulipia - inaangalia kama imelipiwa au la
-                if(paymentWrapper) paymentWrapper.style.display = 'block';
-                let existingOrder = storyPaymentOrders.find(o => o.storyId === id && o.username === currentUser);
-
-                if(existingOrder && existingOrder.status === 'confirmed') {
-                    contentDiv.innerText = s.content;
-                    document.getElementById('payment-status-notice').innerText = "✅ Malipo yako yamethibitishwa na mwandishi. Furahia kusoma!";
-                } else if(existingOrder && existingOrder.status === 'rejected') {
-                    contentDiv.innerText = "[Hadithi imefungwa: Mwandishi amekataa au hakujiridhisha na malipo yako.]";
-                    document.getElementById('payment-status-notice').innerText = "❌ Malipo yako yamekataliwa na mwandishi.";
-                } else if(existingOrder && existingOrder.status === 'pending') {
-                    contentDiv.innerText = "[Hadithi imefungwa: Subiri mwandishi akague malipo yako na kuyathibitisha...]";
-                    document.getElementById('payment-status-notice').innerText = "⏳ Ombi lako la malipo limeshawasilishwa. Subiri uthibitisho.";
-                } else {
-                    contentDiv.innerText = "[Hadithi ya Kulipia. Weka namba yako ya simu hapa chini na bonyeza 'Nimemaliza Kulipa Hadithi' ili kusubiri uthibitisho...]";
-                    document.getElementById('payment-status-notice').innerText = "";
-                }
+                contentDiv.innerText = "[Hadithi imefungwa. Weka namba yako ya simu hapa chini na bonyeza 'Nimemaliza Kulipa Hadithi' ili kusubiri uthibitisho...]";
+                document.getElementById('payment-status-notice').innerText = "";
             }
 
             const phoneBtn = document.getElementById('modal-story-phone-btn');
@@ -1005,7 +996,7 @@
                                 ${s.cover_image ? `<img src="${s.cover_image}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 6px;">` : ''}
                                 <div>
                                     <strong style="font-size:1em; color:var(--primary);">${s.title}</strong><br>
-                                    <small style="color:#666;">Aina: ${s.is_paid ? 'Kulipia (Tsh ' + s.price + ')' : 'Bure'} | Hali: <span class="badge">${s.status}</span></small>
+                                    <small style="color:#666;">Simu: ${s.story_phone || 'N/A'} | Hali: <span class="badge">${s.status}</span></small>
                                 </div>
                             </div>
                             <div>
@@ -1031,14 +1022,10 @@
             const imgFile = document.getElementById('story-image-file').files[0];
             let imgBase64 = imgFile ? await compressImage(imgFile) : "";
 
-            const storyTypeVal = document.getElementById('story-type').value;
-            const isPaidBool = (storyTypeVal === 'paid');
-            const priceVal = isPaidBool ? parseFloat(document.getElementById('story-price').value || 0) : 0;
-
             const payload = {
                 title: document.getElementById('story-title').value,
-                is_paid: isPaidBool,
-                price: priceVal,
+                story_type: document.getElementById('story-type').value,
+                story_price: document.getElementById('story-price').value || 0,
                 story_phone: document.getElementById('story-phone').value,
                 content: document.getElementById('story-content').value,
                 cover_image: imgBase64,
@@ -1419,6 +1406,7 @@
             updateAdminLevelBadge();
             loadAdminManagementList();
 
+            // Kazi ya kuvuta data zote za watumiaji kutoka kwenye backend yako ya /api/admin/users
             loadAdminSubscriptions();
 
             fetch('/api/admin/stories').then(res => res.json()).then(data => {
@@ -1435,7 +1423,7 @@
                             ${s.cover_image ? `<img src="${s.cover_image}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px;">` : ''}
                             <div>
                                 📖 <strong>${s.title}</strong> <br>
-                                <small style="color:#666;">Mwandishi: <strong>${s.storyteller_name}</strong> | Aina: ${s.is_paid ? 'Kulipia' : 'Bure'}</small>
+                                <small style="color:#666;">Mwandishi: <strong>${s.storyteller_name}</strong> (Simu: ${s.story_phone || 'N/A'})</small>
                             </div>
                         </div>
                         <div class="admin-item-actions">
@@ -1548,6 +1536,7 @@
             });
         }
 
+        // --- KAZI ZA USIMAMIZI WA MALIPO YA MWEZI ---
         function loadAdminSubscriptions() {
             fetch('/api/admin/users')
                 .then(res => res.json())
@@ -1599,6 +1588,7 @@
                 });
             }
         }
+        // --------------------------------------------
 
         function adminDeleteStory(id) {
             if(!confirm("Una uhakika unataka kufuta hadithi hii kama Admin?")) return;
