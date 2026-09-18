@@ -977,7 +977,8 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, price, is_paid) VALUES ($1, $2, $3, $4, $5, $6)", title, content, coverImage, storytellerName, price, isPaid)
+	// HAPA IMEBADILISHWA: Hadithi inawekwa moja kwa moja kuwa 'approved' ili isikae pending
+	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, status, price, is_paid) VALUES ($1, $2, $3, $4, 'approved', $5, $6)", title, content, coverImage, storytellerName, price, isPaid)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi hadithi: " + err.Error()})
 		return
