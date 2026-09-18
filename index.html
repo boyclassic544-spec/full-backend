@@ -858,37 +858,61 @@
         function openStoryModal(id) {
             const s = allApprovedStories.find(item => item.id === id);
             if(!s) return;
+
             document.getElementById('modal-story-title').innerText = s.title;
             document.getElementById('modal-story-author').innerText = s.storyteller_name;
-            document.getElementById('modal-story-date').innerText = s.created_at ? s.created_at.substring(0,10) : '';
+            document.getElementById('modal-story-date').innerText =
+                s.created_at ? s.created_at.substring(0,10) : '';
 
             let contentDiv = document.getElementById('modal-story-content');
-            let existingOrder = storyPaymentOrders.find(o => o.storyId === id && o.username === currentUser);
+            let paymentBox = document.querySelector('#story-reader-modal .payment-box');
 
-            if(s.story_type === 'free') {
-                contentDiv.innerText = s.content;
-                document.getElementById('payment-status-notice').innerText = "📖 Hadithi hii ni ya bure. Furahia kusoma!";
+            const isFreeStory =
+                String(s.story_type || '').toLowerCase() === 'free' ||
+                (s.story_type == null && Number(s.story_price || 0) === 0);
+
+            let existingOrder = storyPaymentOrders.find(
+                o => o.storyId === id && o.username === currentUser
+            );
+
+            if(isFreeStory) {
+                contentDiv.innerText = s.content || '';
+                document.getElementById('payment-status-notice').innerText =
+                    "📖 Hadithi hii ni ya BURE. Furahia kusoma!";
+                if(paymentBox) paymentBox.style.display = 'none';
             } else if(existingOrder && existingOrder.status === 'confirmed') {
                 contentDiv.innerText = s.content;
-                document.getElementById('payment-status-notice').innerText = "✅ Malipo yako yamethibitishwa na mwandishi. Furahia kusoma!";
+                document.getElementById('payment-status-notice').innerText =
+                    "✅ Malipo yako yamethibitishwa na mwandishi. Furahia kusoma!";
+                if(paymentBox) paymentBox.style.display = 'block';
             } else if(existingOrder && existingOrder.status === 'rejected') {
-                contentDiv.innerText = "[Hadithi imefungwa: Mwandishi amekataa au hakujiridhisha na malipo yako.]";
-                document.getElementById('payment-status-notice').innerText = "❌ Malipo yako yamekataliwa na mwandishi.";
+                contentDiv.innerText =
+                    "[Hadithi imefungwa: Mwandishi amekataa au hakujiridhisha na malipo yako.]";
+                document.getElementById('payment-status-notice').innerText =
+                    "❌ Malipo yako yamekataliwa na mwandishi.";
+                if(paymentBox) paymentBox.style.display = 'block';
             } else if(existingOrder && existingOrder.status === 'pending') {
-                contentDiv.innerText = "[Hadithi imefungwa: Subiri mwandishi akague malipo yako na kuyathibitisha...]";
-                document.getElementById('payment-status-notice').innerText = "⏳ Ombi lako la malipo limeshawasilishwa. Subiri uthibitisho.";
+                contentDiv.innerText =
+                    "[Hadithi imefungwa: Subiri mwandishi akague malipo yako na kuyathibitisha...]";
+                document.getElementById('payment-status-notice').innerText =
+                    "⏳ Ombi lako la malipo limeshawasilishwa. Subiri uthibitisho.";
+                if(paymentBox) paymentBox.style.display = 'block';
             } else {
-                contentDiv.innerText = "[Hadithi imefungwa. Weka namba yako ya simu hapa chini na bonyeza 'Nimemaliza Kulipa Hadithi' ili kusubiri uthibitisho...]";
+                contentDiv.innerText =
+                    "[Hadithi imefungwa. Weka namba yako ya simu hapa chini na bonyeza 'Nimemaliza Kulipa Hadithi' ili kusubiri uthibitisho...]";
                 document.getElementById('payment-status-notice').innerText = "";
+                if(paymentBox) paymentBox.style.display = 'block';
             }
 
             const phoneBtn = document.getElementById('modal-story-phone-btn');
             let phoneNum = s.story_phone || '0623630553';
-            phoneBtn.innerText = `📞 Wasiliana na ${s.storyteller_name} (${phoneNum})`;
+            phoneBtn.innerText =
+                `📞 Wasiliana na ${s.storyteller_name} (${phoneNum})`;
             phoneBtn.href = `tel:${phoneNum}`;
 
             const coverBox = document.getElementById('modal-story-cover-box');
             const coverImg = document.getElementById('modal-story-img');
+
             if(s.cover_image) {
                 coverImg.src = s.cover_image;
                 coverBox.style.display = 'block';
@@ -904,15 +928,39 @@
         }
 
         function submitStoryPayment() {
-            if(!currentUser) { alert('Tafadhali ingia kwanza!'); switchTab('signin'); return; }
-            let payPhone = document.getElementById('story-pay-phone').value.trim();
-            if(!payPhone) { alert('Weka namba yako ya simu ya malipo!'); return; }
-            
+            if(!currentUser) {
+                alert('Tafadhali ingia kwanza!');
+                switchTab('signin');
+                return;
+            }
+
             let titleText = document.getElementById('modal-story-title').innerText;
             let s = allApprovedStories.find(item => item.title === titleText);
             if(!s) return;
 
-            let existingIndex = storyPaymentOrders.findIndex(o => o.storyId === s.id && o.username === currentUser);
+            const isFreeStory =
+                String(s.story_type || '').toLowerCase() === 'free' ||
+                (s.story_type == null && Number(s.story_price || 0) === 0);
+
+            if(isFreeStory) {
+                document.getElementById('modal-story-content').innerText = s.content || '';
+                document.getElementById('payment-status-notice').innerText =
+                    "📖 Hadithi hii ni ya BURE. Hailipiwi.";
+                const paymentBox = document.querySelector('#story-reader-modal .payment-box');
+                if(paymentBox) paymentBox.style.display = 'none';
+                return;
+            }
+
+            let payPhone = document.getElementById('story-pay-phone').value.trim();
+            if(!payPhone) {
+                alert('Weka namba yako ya simu ya malipo!');
+                return;
+            }
+
+            let existingIndex = storyPaymentOrders.findIndex(
+                o => o.storyId === s.id && o.username === currentUser
+            );
+
             let newOrder = {
                 id: Date.now(),
                 storyId: s.id,
@@ -931,8 +979,10 @@
 
             localStorage.setItem('sokosmart_story_orders', JSON.stringify(storyPaymentOrders));
             alert('Ombi lako la malipo limetumwa kwa mwandishi ' + s.storyteller_name + '!');
-            document.getElementById('payment-status-notice').innerText = "⏳ Ombi limetumwa. Subiri mwandishi adhibitishe.";
-            document.getElementById('modal-story-content').innerText = "[Ombi lako la malipo limeshawasilishwa kwa mwandishi. Subiri akague...]";
+            document.getElementById('payment-status-notice').innerText =
+                "⏳ Ombi limetumwa. Subiri mwandishi adhibitishe.";
+            document.getElementById('modal-story-content').innerText =
+                "[Ombi lako la malipo limeshawasilishwa kwa mwandishi. Subiri akague...]";
         }
 
         function loadStorytellerOrders() {
@@ -1672,4 +1722,4 @@
         if (!currentUser) { switchTab('signin'); } else { refreshUserProfile().then(() => switchTab('market')); }
     </script>
 </body>
-</html> 
+</html>
