@@ -45,6 +45,8 @@ type Story struct {
 	Status          string `json:"status"`
 	RejectionReason string `json:"rejection_reason"`
 	CreatedAt       string `json:"created_at"`
+	Price          float64 `json:"price"`     // Ongeza hii kwa ajili ya bei
+    IsPaid         bool   `json:"is_paid"`    // Ongeza hii kutambua kama ni ya kulipia au bure
 }
 
 type Order struct {
@@ -113,9 +115,8 @@ func main() {
 	http.HandleFunc("/api/storyteller/upload", uploadStoryJSONHandler)
 	http.HandleFunc("/api/delete-story", deleteMyStoryHandler)
 
-	// Admin Routes (Admin Mkuu & Ongezeko la Admin Msaidizi / Super Admin)
+	// Admin Routes (Admin Mkuu Pekee)
 	http.HandleFunc("/api/admin/login", adminLoginHandler)
-	http.HandleFunc("/api/admin/add-admin", adminAddAdminHandler) // Route mpya ya fomu ya kuongeza admin
 	http.HandleFunc("/api/admin/designs", adminGetDesignsHandler)
 	http.HandleFunc("/api/admin/approve", adminApproveDesignHandler)
 	http.HandleFunc("/api/admin/reject", adminRejectDesignHandler)
@@ -134,6 +135,7 @@ func main() {
 	http.HandleFunc("/api/admin/approve-user", adminApproveUserHandler)
 	http.HandleFunc("/api/admin/reject-user", adminRejectUserHandler)
 	http.HandleFunc("/api/admin/delete-user", adminDeleteUserHandler)
+	http.HandleFunc("/api/admin/add-admin", adminAddAdminHandler)
 	http.HandleFunc("/api/admin/approve-subscription", adminApproveSubscriptionHandler)
 
 	port := os.Getenv("PORT")
@@ -213,6 +215,8 @@ func initDB() {
 		status TEXT DEFAULT 'approved',
 		rejection_reason TEXT DEFAULT '',
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		price NUMERIC DEFAULT 0,
+    is_paid BOOLEAN DEFAULT FALSE
 	);`
 	_, err = db.Exec(queryStories)
 	if err != nil {
@@ -922,6 +926,8 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 			content = payload.Content
 			coverImage = payload.CoverImage
 			storytellerName = payload.StorytellerName
+			Price   float64 `json:"price"`
+            IsPaid  bool    `json:"is_paid"`
 		}
 	}
 
@@ -957,16 +963,12 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, status, rejection_reason) VALUES ($1, $2, $3, $4, 'approved', '')",
-		title, content, coverImage, storytellerName)
-
+			_, err = db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, price, is_paid) VALUES ($1, $2, $3, $4, $5, $6)", title, content, coverImage, storytellerName, price, isPaid)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi hadithi: " + err.Error()})
 		return
 	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi yako imechapishwa kikamilifu kwenye Ukurasa wa Hadithi!"})
-}
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi yako imechapishwa kikamilifu"})
 
 func deleteMyStoryHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -985,7 +987,7 @@ func deleteMyStoryHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi imefutwa!"})
 }
 
-// ----------------- ADMIN API & ADD ADMIN HANDLER -----------------
+// ----------------- ADMIN API (ADMIN MKUU PEKEE) -----------------
 
 func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -1002,54 +1004,6 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false})
 	}
-}
-
-// Handler mpya inayofanya fomu ya kuongeza admin (Super Admin / Admin Msaidizi) kufanya kazi kikamilifu
-func adminAddAdminHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-
-	var newAdmin struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-		Role     string `json:"role"`
-	}
-
-	r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
-	if err := json.NewDecoder(r.Body).Decode(&newAdmin); err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Taarifa zilizotumwa si sahihi"})
-		return
-	}
-
-	if newAdmin.Username == "" || newAdmin.Password == "" {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina na nenosiri la admin mpya"})
-		return
-	}
-
-	if newAdmin.Role == "" {
-		newAdmin.Role = "super_admin"
-	}
-
-	// Kuhifadhi admin mpya kwenye database (app_accounts)
-	_, err := db.Exec(`
-		INSERT INTO app_accounts (username, password, role, verification_status)
-		VALUES ($1, $2, $3, 'approved')
-		ON CONFLICT (username) DO UPDATE SET password = $2, role = $3`,
-		newAdmin.Username, newAdmin.Password, newAdmin.Role)
-
-	if err != nil {
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi admin: " + err.Error()})
-		return
-	}
-
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true,
-		"message": "Admin ameongezwa kikamilifu kwenye mfumo!",
-	})
 }
 
 func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
@@ -1433,3 +1387,42 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		"message": "Mtumiaji amefutwa kikamilifu na Admin!",
 	})
 }
+type AdminRequest struct {
+    Username string `json:"username"`
+    Password string `json:"password"`
+    Role     string `json:"role"`
+}
+
+func adminAddAdminHandler(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodPost {
+        http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+
+    var req AdminRequest
+    err := json.NewDecoder(r.Body).Decode(&req)
+    if err != nil || req.Username == "" || req.Password == "" {
+        json.NewEncoder(w).Encode(map[string]interface{}{
+            "success": false, 
+            "message": "Taarifa zilizotumwa si sahihi",
+        })
+        return
+    }
+
+    _, err = db.Exec("INSERT INTO admins (username, password, role) VALUES ($1, $2, $3)", req.Username, req.Password, req.Role)
+    if err != nil {
+        json.NewEncoder(w).Encode(map[string]interface{}{
+            "success": false, 
+            "message": "Imeshindwa kuongeza admin kwenye mfumo.",
+        })
+        return
+    }
+
+    json.NewEncoder(w).Encode(map[string]interface{}{
+        "success": true, 
+        "message": "Admin ameongezwa vizuri kabisa!",
+    })
+}
+
