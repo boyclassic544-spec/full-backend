@@ -873,15 +873,6 @@ func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stories)
-		stories = append(stories, s)
-	}
-
-	if stories == nil {
-		stories = []Story{}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(stories)
 }
 
 func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
@@ -913,7 +904,7 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stories)
-  }
+}
 
 func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
