@@ -59,70 +59,15 @@
         @media (max-width: 600px) {
             .stories-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
         }
-        .story-grid-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #dcdde1; display: flex; flex-direction: column; justify-content: space-between; position: relative; cursor: pointer; transition: transform 0.2s; }
-        .story-grid-card:hover { transform: translateY(-2px); }
+        .story-grid-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #dcdde1; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
         .story-grid-img { width: 100%; height: 150px; background: #000; overflow: hidden; position: relative; }
         .story-grid-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .story-badge { position: absolute; top: 10px; right: 10px; padding: 4px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; color: #fff; z-index: 10; }
+        .story-badge.free { background: var(--success); }
+        .story-badge.premium { background: var(--danger); }
         .story-grid-body { padding: 12px; display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
         .story-grid-title { font-size: 0.95em; font-weight: bold; color: var(--primary); margin: 0 0 6px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .story-grid-meta { font-size: 0.75em; color: #718096; margin-bottom: 10px; }
-
-        /* ===== STORY BADGES (FREE / PREMIUM) ===== */
-        .story-badge {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.7em;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            color: #fff;
-            z-index: 10;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            text-transform: uppercase;
-        }
-        .story-badge-free {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            border: 1px solid #1e8449;
-        }
-        .story-badge-premium {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            border: 1px solid #b9770e;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .story-badge-premium .lock-icon { font-size: 0.9em; }
-
-        /* ===== FREE STORY CARD HIGHLIGHT ===== */
-        .story-grid-card.story-free {
-            border: 2px solid var(--success);
-            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.15);
-        }
-        .story-grid-card.story-free .story-grid-body { background: #f0fdf4; }
-
-        /* ===== PREMIUM STORY CARD HIGHLIGHT ===== */
-        .story-grid-card.story-premium {
-            border: 2px solid var(--accent);
-            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.15);
-        }
-        .story-grid-card.story-premium .story-grid-body { background: #fffbf0; }
-
-        .story-price-tag { font-size: 0.75em; font-weight: bold; color: #b9770e; margin-top: 4px; display: block; }
-
-        /* ===== READER MODAL BANNERS ===== */
-        .story-free-banner {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            color: #fff; padding: 10px 15px; border-radius: 6px;
-            text-align: center; font-weight: bold; font-size: 0.9em; margin-bottom: 15px;
-        }
-        .story-premium-banner {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            color: #fff; padding: 10px 15px; border-radius: 6px;
-            text-align: center; font-weight: bold; font-size: 0.9em;
-            margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
 
         .story-reader-content {
             background-color: #fdfbf7 !important;
@@ -145,12 +90,14 @@
         .badge-super { background: #6c5ce7; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
         .badge-sub { background: #0984e3; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
 
+        /* Admin Quick Stats Bar */
         .admin-stats-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 25px; }
         @media (max-width: 700px) { .admin-stats-bar { grid-template-columns: repeat(2, 1fr); } }
         .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 10px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
         .stat-card .stat-num { font-size: 1.4em; font-weight: bold; color: var(--primary); display: block; }
         .stat-card .stat-label { font-size: 0.72em; color: #666; margin-top: 2px; display: block; }
 
+        /* Admin card-based grid layout (replaces long single-column rows) */
         .admin-card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
         @media (max-width: 700px) { .admin-card-grid { grid-template-columns: 1fr; } }
         .admin-item-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 8px; font-size: 0.9em; }
@@ -158,6 +105,7 @@
         .admin-item-card .admin-item-actions { display: flex; gap: 5px; flex-wrap: wrap; margin-top: auto; }
         .admin-item-card .admin-item-actions button { border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75em; color: #fff; }
 
+        /* Admin Management (Super Admin only) */
         .admin-mgmt-card { background: #fff8ec; border: 1px solid #f5cc8a; border-radius: 8px; padding: 15px; margin-bottom: 25px; }
         .admin-mgmt-card h3 { margin-top: 0; }
         .admin-add-form { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; align-items: end; }
@@ -274,8 +222,6 @@
                     <img id="modal-story-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
                 
-                <div id="modal-story-type-banner"></div>
-
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h2 id="modal-story-title" style="color: var(--primary); margin: 0; font-size: 1.3em;"></h2>
                     <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85em; background: #fff; padding: 4px 10px; border-radius: 20px; border: 1px solid #ddd;">
@@ -292,16 +238,17 @@
                     <div id="modal-story-content" style="font-size: 1em; color: #2c2c2c; line-height: 1.85; white-space: pre-wrap; max-height: 50vh; overflow-y: auto; padding-right: 5px; margin-bottom: 20px;"></div>
                 </div>
                 
-                <div id="story-payment-section" style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2d9c2;">
-                    <h4 style="margin: 0 0 8px 0; color: var(--primary);">Wasiliana na Mwandishi / Nunua Hati hii</h4>
-                    <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">Simu ya Mwandishi:</p>
+                <div id="story-payment-section" style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2d9c2; display: none;">
+                    <h4 style="margin: 0 0 8px 0; color: var(--primary);">Maelekezo ya Kulipia Hadithi Hii ya Kulipia</h4>
+                    <p style="font-size: 0.85em; color: #666; margin-bottom: 8px;">Tafadhali tuma malipo kwenda kwa namba ya simu ya mwandishi hapa chini:</p>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                         <a id="modal-story-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 07XXXXXXXX</a>
                     </div>
                     <div class="payment-box" style="border-radius: 6px;">
-                        <p style="margin:0 0 5px 0; font-size:0.85em;"><strong>Weka namba yako ya simu ya malipo ili kununua huduma hii:</strong></p>
+                        <p style="margin:0 0 5px 0; font-size:0.85em;"><strong>Weka namba yako ya simu na namba ya muamala (Transaction ID) baada ya kulipia:</strong></p>
                         <input type="text" id="story-pay-phone" placeholder="Namba yako ya simu ya malipo" style="margin-bottom:8px;">
-                        <button class="btn" onclick="submitStoryPayment()">Nimemaliza Kulipa Hadithi</button>
+                        <input type="text" id="story-tx-id" placeholder="Weka Namba ya Muamala (Transaction ID)" style="margin-bottom:8px;">
+                        <button class="btn" onclick="submitStoryPayment()">Wasilisha Taarifa za Malipo</button>
                         <p id="payment-status-notice" style="font-size: 0.8em; margin-top: 8px; color: var(--primary); font-weight: bold;"></p>
                     </div>
                 </div>
@@ -880,7 +827,6 @@
             }
         }
 
-        // ===== STORIES FEED WITH FREE/PREMIUM BADGES =====
         function loadStoriesFeed() {
             fetch('/api/stories')
                 .then(res => res.json())
@@ -891,31 +837,878 @@
                         container.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:20px; background:#fff; border-radius:8px;">Hakuna hadithi zilizochapishwa kwa sasa.</p>';
                         return;
                     }
-                    container.innerHTML = allApprovedStories.map(s => renderStoryCard(s)).join('');
+                    container.innerHTML = allApprovedStories.map(s => {
+                        let isPaid = s.story_type === 'paid' && Number(s.story_price) > 0;
+                        let badgeHtml = isPaid ? `<div class="story-badge premium">🔒 PREMIUM</div>` : `<div class="story-badge free">FREE</div>`;
+                        return `
+                        <div class="story-grid-card">
+                            ${badgeHtml}
+                            <div>
+                                <div class="story-grid-img">
+                                    <img src="${s.cover_image || 'https://via.placeholder.com/300'}" alt="${s.title}">
+                                </div>
+                                <div class="story-grid-body">
+                                    <h3 class="story-grid-title">${s.title}</h3>
+                                    <div class="story-grid-meta">
+                                        ✍️ <strong>${s.storyteller_name}</strong><br>
+                                        📅 ${s.created_at ? s.created_at.substring(0,10) : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="padding: 10px; background: #f8f9fa; border-top: 1px solid #eee;">
+                                <button class="btn" style="background: var(--primary); font-size: 0.85em; padding: 8px;" onclick="openStoryModal(${s.id})">Soma Hadithi</button>
+                            </div>
+                        </div>
+                    `}).join('');
                 });
         }
 
-        // ===== RENDER STORY CARD WITH FREE/PREMIUM BADGE =====
-        function renderStoryCard(s) {
-            // Determine if story is free or paid
-            // story_type can be 'free' or 'paid'. Default to 'free' if not set.
-            const isPaid = (s.story_type === 'paid') || (s.story_price && parseFloat(s.story_price) > 0);
-            const badgeHtml = isPaid
-                ? `<div class="story-badge story-badge-premium"><span class="lock-icon">🔒</span> PREMIUM</div>`
-                : `<div class="story-badge story-badge-free">FREE</div>`;
-            const cardClass = isPaid ? 'story-premium' : 'story-free';
-            const priceTag = isPaid
-                ? `<span class="story-price-tag">💰 Tsh ${parseFloat(s.story_price || 0).toLocaleString()}</span>`
-                : `<span class="story-price-tag" style="color: #27ae60;">✅ Soma Bure</span>`;
+        function openStoryModal(id) {
+            const s = allApprovedStories.find(item => item.id === id);
+            if(!s) return;
+            document.getElementById('modal-story-title').innerText = s.title;
+            document.getElementById('modal-story-author').innerText = s.storyteller_name;
+            document.getElementById('modal-story-date').innerText = s.created_at ? s.created_at.substring(0,10) : '';
 
-            return `
-                <div class="story-grid-card ${cardClass}" onclick="openStoryModal(${s.id})">
+            let contentDiv = document.getElementById('modal-story-content');
+            let paymentSection = document.getElementById('story-payment-section');
+            let existingOrder = storyPaymentOrders.find(o => o.storyId === id && o.username === currentUser);
+
+            let isPaid = s.story_type === 'paid' && Number(s.story_price) > 0;
+
+            if(!isPaid) {
+                // Hadithi ya Bure
+                contentDiv.innerText = s.content;
+                paymentSection.style.display = 'none';
+            } else {
+                // Hadithi ya Kulipia
+                if(existingOrder && existingOrder.status === 'confirmed') {
+                    contentDiv.innerText = s.content;
+                    paymentSection.style.display = 'none';
+                    document.getElementById('payment-status-notice').innerText = "✅ Malipo yako yamethibitishwa na mwandishi. Furahia kusoma!";
+                } else if(existingOrder && existingOrder.status === 'pending') {
+                    contentDiv.innerText = "[Hadithi hii ya kulipia imefungwa: Ombi lako la muamala limewasilishwa. Subiri mwandishi akague na kudhibitisha...]";
+                    paymentSection.style.display = 'block';
+                    document.getElementById('payment-status-notice').innerText = "⏳ Malipo yako yanasubiri uthibitisho wa mwandishi.";
+                } else if(existingOrder && existingOrder.status === 'rejected') {
+                    contentDiv.innerText = "[Hadithi hii imefungwa: Muamala wako umekataliwa. Tafadhali rudia kulipia na uweke namba sahihi ya muamala.]";
+                    paymentSection.style.display = 'block';
+                    document.getElementById('payment-status-notice').innerText = "❌ Muamala wako umekataliwa. Tafadhali wasilisha tena.";
+                } else {
+                    contentDiv.innerText = `[Hii ni hadithi ya kulipia (Bei: TZS ${s.story_price}). Tafadhali fuata maelezo ya malipo hapa chini ili uweze kusoma maudhui kamili.]`;
+                    paymentSection.style.display = 'block';
+                    document.getElementById('payment-status-notice').innerText = "";
+                }
+            }
+
+            const phoneBtn = document.getElementById('modal-story-phone-btn');
+            let phoneNum = s.story_phone || '0623630553';
+            phoneBtn.innerText = `📞 Tuma Malipo kwa ${s.storyteller_name} (${phoneNum})`;
+            phoneBtn.href = `tel:${phoneNum}`;
+
+            const coverBox = document.getElementById('modal-story-cover-box');
+            const coverImg = document.getElementById('modal-story-img');
+            if(s.cover_image) {
+                coverImg.src = s.cover_image;
+                coverBox.style.display = 'block';
+            } else {
+                coverBox.style.display = 'none';
+            }
+
+            document.getElementById('story-reader-modal').style.display = 'flex';
+        }
+
+        function closeStoryModal() {
+            document.getElementById('story-reader-modal').style.display = 'none';
+        }
+
+        function submitStoryPayment() {
+            if(!currentUser) { alert('Tafadhali ingia kwanza!'); switchTab('signin'); return; }
+            let payPhone = document.getElementById('story-pay-phone').value.trim();
+            let txId = document.getElementById('story-tx-id').value.trim();
+            if(!payPhone || !txId) { alert('Tafadhali jaza namba yako ya simu na namba ya muamala!'); return; }
+            
+            let titleText = document.getElementById('modal-story-title').innerText;
+            let s = allApprovedStories.find(item => item.title === titleText);
+            if(!s) return;
+
+            let existingIndex = storyPaymentOrders.findIndex(o => o.storyId === s.id && o.username === currentUser);
+            let newOrder = {
+                id: Date.now(),
+                storyId: s.id,
+                storyTitle: s.title,
+                storyteller: s.storyteller_name,
+                username: currentUser,
+                phone: payPhone,
+                transactionId: txId,
+                status: 'pending'
+            };
+
+            if(existingIndex >= 0) {
+                storyPaymentOrders[existingIndex] = newOrder;
+            } else {
+                storyPaymentOrders.push(newOrder);
+            }
+
+            localStorage.setItem('sokosmart_story_orders', JSON.stringify(storyPaymentOrders));
+            alert('Taarifa za muamala wako zimetumwa kwa mwandishi ' + s.storyteller_name + '!');
+            document.getElementById('payment-status-notice').innerText = "⏳ Taarifa zimewasilishwa. Subiri mwandishi adhibitishe.";
+            document.getElementById('modal-story-content').innerText = "[Taarifa za malipo zimewasilishwa. Subiri mwandishi akague namba ya muamala...]";
+        }
+
+        function loadStorytellerOrders() {
+            if(!currentUser || currentUserRole !== 'storyteller') return;
+            const container = document.getElementById('storyteller-orders-list');
+            let myOrders = storyPaymentOrders.filter(o => o.storyteller === currentUser);
+
+            if(!myOrders || myOrders.length === 0) {
+                container.innerHTML = '<p style="font-size: 0.85em; color: #666;">Hakuna oda mpya za malipo kutoka kwa wasomaji.</p>';
+                return;
+            }
+
+            container.innerHTML = myOrders.map(o => `
+                <div style="border-bottom: 1px solid #eee; padding: 8px 0; font-size: 0.85em; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px;">
                     <div>
-                        <div class="story-grid-img">
-                            ${badgeHtml}
-                            <img src="${s.cover_image || 'https://via.placeholder.com/300'}" alt="${s.title}">
+                        📖 <strong>${o.storyTitle}</strong><br>
+                        👤 Msomaji: <strong>${o.username}</strong> | Simu: ${o.phone} | Muamala ID: <strong>${o.transactionId || 'N/A'}</strong> | Hali: <span class="badge">${o.status}</span>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button onclick="confirmStoryPayment(${o.id})" style="background:var(--success); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em; font-weight:bold;">Confirm ✅</button>
+                        <button onclick="rejectStoryPayment(${o.id})" style="background:var(--danger); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em; font-weight:bold;">Kataa ❌</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function confirmStoryPayment(orderId) {
+            let order = storyPaymentOrders.find(o => o.id === orderId);
+            if(order) {
+                order.status = 'confirmed';
+                localStorage.setItem('sokosmart_story_orders', JSON.stringify(storyPaymentOrders));
+                alert('Umemdhibitishia (Confirm) msomaji huyu!');
+                loadStorytellerOrders();
+            }
+        }
+
+        function rejectStoryPayment(orderId) {
+            let order = storyPaymentOrders.find(o => o.id === orderId);
+            if(order) {
+                order.status = 'rejected';
+                localStorage.setItem('sokosmart_story_orders', JSON.stringify(storyPaymentOrders));
+                alert('Umerekodi kama Umekataa malipo haya!');
+                loadStorytellerOrders();
+            }
+        }
+
+        function loadMyStories() {
+            if(!currentUser || currentUserRole !== 'storyteller') return;
+
+            fetch('/api/my-stories?storyteller=' + encodeURIComponent(currentUser))
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('my-products-list');
+                    if(!data || data.length === 0) {
+                        list.innerHTML = '<p style="text-align:center; color:#666; padding:15px;">Huna hadithi yoyote uliyoweka bado.</p>';
+                        return;
+                    }
+                    list.innerHTML = data.map(s => `
+                        <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                ${s.cover_image ? `<img src="${s.cover_image}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 6px;">` : ''}
+                                <div>
+                                    <strong style="font-size:1em; color:var(--primary);">${s.title}</strong><br>
+                                    <small style="color:#666;">Aina: ${s.story_type} | Bei: ${s.story_price || 0} | Simu: ${s.story_phone || 'N/A'} | Hali: <span class="badge">${s.status}</span></small>
+                                </div>
+                            </div>
+                            <div>
+                                <button onclick="deleteMyStory(${s.id})" style="background:var(--danger); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.8em;">Futa Hadithi</button>
+                            </div>
                         </div>
-                        <div class="story-grid-body">
-                            <h3 class="story-grid-title">${s.title}</h3>
-                            <div class="story-grid-meta">
-                                ✍️ <strong>${s.storyteller_name}</strong
+                    `).join('');
+                });
+        }
+
+        function deleteMyStory(id) {
+            if(!confirm("Una uhakika unataka kufuta hadithi hii?")) return;
+            fetch('/api/delete-story?id=' + id, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || 'Hadithi imefutwa!');
+                    loadMyStories();
+                });
+        }
+
+        async function handleStoryUpload(e) {
+            e.preventDefault();
+            const imgFile = document.getElementById('story-image-file').files[0];
+            let imgBase64 = imgFile ? await compressImage(imgFile) : "";
+
+            const payload = {
+                title: document.getElementById('story-title').value,
+                story_type: document.getElementById('story-type').value,
+                story_price: document.getElementById('story-price').value || 0,
+                story_phone: document.getElementById('story-phone').value,
+                content: document.getElementById('story-content').value,
+                cover_image: imgBase64,
+                storyteller_name: currentUser
+            };
+
+            fetch('/api/storyteller/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message || 'Hadithi imewasilishwa!');
+                if(data.success) {
+                    document.getElementById('story-upload-form').reset();
+                    switchTab('stories-feed');
+                }
+            });
+        }
+
+        async function handleSignup(e) {
+            e.preventDefault();
+            let role = document.getElementById('su-role').value;
+            let u = document.getElementById('su-username').value.trim();
+            let nida = role !== 'buyer' ? document.getElementById('su-nida').value.trim() : '';
+            let p = document.getElementById('su-password').value;
+            let cp = document.getElementById('su-confirm-password').value;
+
+            if(p !== cp) { alert('Nenosiri halilingani!'); return; }
+
+            const idFileInput = document.getElementById('su-id-file');
+            let idCardBase64 = (role !== 'buyer' && idFileInput.files && idFileInput.files[0]) ? await compressImage(idFileInput.files[0]) : "";
+
+            fetch('/api/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `username=${encodeURIComponent(u)}&role=${encodeURIComponent(role)}&nida=${encodeURIComponent(nida)}&id_card=${encodeURIComponent(idCardBase64)}&password=${encodeURIComponent(p)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                if(data.success) { switchTab('signin'); }
+            });
+        }
+
+        function handleSignin(e) {
+            e.preventDefault();
+            let u = document.getElementById('si-username').value.trim();
+            let p = document.getElementById('si-password').value;
+
+            fetch('/api/signin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message);
+                if(data.success) {
+                    currentUser = u;
+                    currentUserRole = data.role || 'buyer';
+                    currentUserStatus = data.status || 'pending';
+                    localStorage.setItem('sokosmart_user', u);
+                    localStorage.setItem('sokosmart_role', currentUserRole);
+                    localStorage.setItem('sokosmart_status', currentUserStatus);
+                    updateAuthUI();
+                    switchTab('market');
+                }
+            });
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.clear();
+            updateAuthUI();
+            switchTab('signin');
+        }
+
+        function openAdminLogin() {
+            let uname = prompt("Weka Jina la Admin (Admin Username) - au acha wazi kama admin wa zamani:");
+            let pwd = prompt("Weka Password ya Admin:");
+            if(!pwd) return;
+            fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `username=${encodeURIComponent(uname || '')}&password=${encodeURIComponent(pwd)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    currentAdminLevel = data.admin_level || 'super';
+                    currentAdminUsername = data.username || uname || 'Admin';
+                    localStorage.setItem('sokosmart_admin_level', currentAdminLevel);
+                    localStorage.setItem('sokosmart_admin_username', currentAdminUsername);
+
+                    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                    document.getElementById('admin').classList.add('active');
+                    updateAdminLevelBadge();
+                    loadAdminData();
+                } else { alert('Jina au Password si sahihi!'); }
+            });
+        }
+
+        function updateAdminLevelBadge() {
+            const badge = document.getElementById('admin-level-badge');
+            const mgmtSection = document.getElementById('admin-management-section');
+            if(!badge) return;
+            if(currentAdminLevel === 'super') {
+                badge.innerText = '👑 Super Admin' + (currentAdminUsername ? ' — ' + currentAdminUsername : '');
+                badge.className = 'badge-super';
+                if(mgmtSection) mgmtSection.style.display = 'block';
+            } else {
+                badge.innerText = '🛡️ Sub-Admin (Msaidizi)' + (currentAdminUsername ? ' — ' + currentAdminUsername : '');
+                badge.className = 'badge-sub';
+                if(mgmtSection) mgmtSection.style.display = 'none';
+            }
+        }
+
+        function logoutAdmin() {
+            localStorage.removeItem('sokosmart_admin_level');
+            localStorage.removeItem('sokosmart_admin_username');
+            currentAdminLevel = 'super';
+            currentAdminUsername = '';
+            if(currentUser) { switchTab('market'); } else { switchTab('signin'); }
+        }
+
+        // ===== ADMIN MANAGEMENT (Super Admin only) =====
+        function loadAdminManagementList() {
+            if(currentAdminLevel !== 'super') return;
+            fetch('/api/admin/list-admins')
+                .then(res => res.json())
+                .then(data => {
+                    window.adminAllAdmins = data || [];
+                    const container = document.getElementById('admin-management-list');
+                    if(!data || data.length === 0) {
+                        container.innerHTML = '<p style="font-size:0.85em; color:#666;">Hakuna maadmin wengine bado.</p>';
+                        return;
+                    }
+                    container.innerHTML = `<div class="admin-card-grid">${data.map(a => `
+                        <div class="admin-item-card">
+                            <div class="admin-item-top">
+                                <strong>${a.username}</strong>
+                                <span class="${a.admin_level === 'super' ? 'badge-super' : 'badge-sub'}">${a.admin_level === 'super' ? 'Super Admin' : 'Sub-Admin'}</span>
+                            </div>
+                            <div class="admin-item-actions">
+                                <button onclick="deleteAdminAccount(${a.id}, '${a.username}')" style="background:var(--danger);">🗑️ Futa Admin</button>
+                            </div>
+                        </div>
+                    `).join('')}</div>`;
+                })
+                .catch(() => {
+                    document.getElementById('admin-management-list').innerHTML = '<p style="font-size:0.85em; color:#666;">Huduma ya usimamizi wa maadmin haipo bado kwenye seva.</p>';
+                });
+        }
+
+        function handleAddAdmin(e) {
+            e.preventDefault();
+            let uname = document.getElementById('new-admin-username').value.trim();
+            let pwd = document.getElementById('new-admin-password').value;
+            let level = document.getElementById('new-admin-level').value;
+
+            fetch('/api/admin/add-admin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `username=${encodeURIComponent(uname)}&password=${encodeURIComponent(pwd)}&admin_level=${encodeURIComponent(level)}`
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message || 'Admin mpya ameongezwa!');
+                if(data.success) {
+                    document.getElementById('new-admin-username').value = '';
+                    document.getElementById('new-admin-password').value = '';
+                    loadAdminManagementList();
+                }
+            });
+        }
+
+        function deleteAdminAccount(id, username) {
+            if(!confirm(`Una uhakika unataka kufuta admin "${username}"?`)) return;
+            fetch('/api/admin/delete-admin?id=' + id, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || 'Admin amefutwa.');
+                    loadAdminManagementList();
+                });
+        }
+
+        function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function (event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function () {
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                };
+            });
+        }
+
+        function readVideoAsDataURL(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function (event) {
+                    resolve(event.target.result);
+                };
+            });
+        }
+
+        async function handleUploadOptimized(e) {
+            e.preventDefault();
+            const file1 = document.getElementById('up-image-file-1').files[0];
+            const file2 = document.getElementById('up-image-file-2').files[0];
+            const file3 = document.getElementById('up-image-file-3').files[0];
+            const file4 = document.getElementById('up-image-file-4').files[0];
+            const videoFile = document.getElementById('up-video-file').files[0];
+
+            let img1 = file1 ? await compressImage(file1) : "";
+            let img2 = file2 ? await compressImage(file2) : "";
+            let img3 = file3 ? await compressImage(file3) : "";
+            let img4 = file4 ? await compressImage(file4) : "";
+            let vid = videoFile ? await readVideoAsDataURL(videoFile) : "";
+
+            const payload = {
+                title: document.getElementById('up-title').value,
+                description: document.getElementById('up-desc').value,
+                price: parseFloat(document.getElementById('up-price').value),
+                location: document.getElementById('up-location').value,
+                vendor_phone: document.getElementById('up-vendor-phone').value,
+                image_url: img1,
+                image_url2: img2,
+                image_url3: img3,
+                image_url4: img4,
+                video_url: vid,
+                category: document.getElementById('up-cat').value,
+                designer_name: currentUser
+            };
+
+            fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message || 'Bidhaa imewasilishwa!');
+                if(data.success) { switchTab('my-products'); }
+            });
+        }
+
+        function loadDesigns() {
+            if(!currentUser) return;
+            fetch('/api/designs')
+                .then(res => res.json())
+                .then(data => {
+                    allApprovedDesigns = data || [];
+                    renderDesignsGrid(allApprovedDesigns);
+                });
+        }
+
+        function renderDesignsGrid(data) {
+            const grid = document.getElementById('designs-grid');
+            if(!data || data.length === 0) {
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1;">Hakuna bidhaa zilizopatikana.</p>';
+                return;
+            }
+            grid.innerHTML = data.map(d => `
+                <div class="card" onclick="openProductDetails(${d.id})">
+                    <div class="card-img-wrapper"><img src="${d.image_url || 'https://via.placeholder.com/300'}"></div>
+                    <div class="card-content">
+                        <h3>${d.title}</h3>
+                        <span class="price">Tsh ${d.price.toLocaleString()}</span>
+                        <p>📍 ${d.location || 'Tanzania'}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openProductDetails(id) {
+            const d = allApprovedDesigns.find(item => item.id === id);
+            if(!d) return;
+            document.getElementById('detail-title').innerText = d.title;
+            document.getElementById('detail-price').innerText = "Tsh " + d.price.toLocaleString();
+            document.getElementById('detail-location').innerText = d.location || 'Tanzania';
+            document.getElementById('detail-designer').innerText = d.designer_name;
+            document.getElementById('detail-desc').innerText = d.description;
+
+            const phoneBtn = document.getElementById('detail-phone-btn');
+            let phoneNum = d.vendor_phone || '0623630553';
+            phoneBtn.innerText = `📞 ${phoneNum}`;
+            phoneBtn.href = `tel:${phoneNum}`;
+
+            const mainImg = document.getElementById('detail-img');
+            mainImg.src = d.image_url || 'https://via.placeholder.com/300';
+
+            let imgs = [d.image_url, d.image_url2, d.image_url3, d.image_url4].filter(img => img && img.trim() !== "");
+            
+            const thumbsRow = document.getElementById('detail-thumbs-row');
+            if(imgs.length > 1) {
+                thumbsRow.style.display = 'flex';
+                thumbsRow.innerHTML = imgs.map((imgSrc, idx) => `
+                    <img src="${imgSrc}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 2px solid ${idx === 0 ? 'var(--primary)' : '#ddd'};" onclick="changeMainImage('${imgSrc}', this)">
+                `).join('');
+            } else {
+                thumbsRow.style.display = 'none';
+                thumbsRow.innerHTML = '';
+            }
+
+            const videoBox = document.getElementById('detail-video-box');
+            const videoElem = document.getElementById('detail-video');
+            if(d.video_url && d.video_url.trim() !== "") {
+                videoElem.src = d.video_url;
+                videoBox.style.display = 'block';
+            } else {
+                videoBox.style.display = 'none';
+            }
+
+            switchTab('product-details');
+        }
+
+        function changeMainImage(src, thumbElement) {
+            document.getElementById('detail-img').src = src;
+            document.querySelectorAll('#detail-thumbs-row img').forEach(img => {
+                img.style.borderColor = '#ddd';
+            });
+            thumbElement.style.borderColor = 'var(--primary)';
+        }
+
+        function loadMyProducts() {
+            if(!currentUser || currentUserRole !== 'seller') return;
+            fetch('/api/my-designs?designer=' + encodeURIComponent(currentUser))
+                .then(res => res.json())
+                .then(data => {
+                    const list = document.getElementById('my-products-list');
+                    if(!data || data.length === 0) {
+                        list.innerHTML = '<p style="text-align:center; color:#666;">Huna bidhaa zozote.</p>';
+                        return;
+                    }
+                    list.innerHTML = data.map(d => `
+                        <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center;">
+                            <div><strong>${d.title}</strong> - Tsh ${d.price.toLocaleString()} <br><small>Hali: ${d.status}</small></div>
+                            <button onclick="deleteMyProduct(${d.id})" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Futa</button>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        function deleteMyProduct(id) {
+            if(!confirm("Futa bidhaa hii?")) return;
+            fetch('/api/admin/delete-design?id=' + id, { method: 'POST' }).then(() => loadMyProducts());
+        }
+
+        function openMarketImageModal(imgSrc) {
+            const modal = document.getElementById('market-image-modal');
+            const modalImg = document.getElementById('market-modal-img');
+            if(modal && modalImg) {
+                modalImg.src = imgSrc;
+                modal.style.display = 'flex';
+            }
+        }
+
+        function closeMarketImageModal() {
+            const modal = document.getElementById('market-image-modal');
+            if(modal) { modal.style.display = 'none'; }
+        }
+
+        function loadAdminData() {
+            updateAdminLevelBadge();
+            loadAdminManagementList();
+
+            loadAdminSubscriptions();
+
+            fetch('/api/admin/stories').then(res => res.json()).then(data => {
+                const storiesList = document.getElementById('admin-stories-list');
+                const statEl = document.getElementById('stat-stories-count');
+                if(statEl) statEl.innerText = data ? data.length : 0;
+                if(!data || data.length === 0) {
+                    storiesList.innerHTML = '<p>Hakuna hadithi zozote zilizopostiwa kwenye mfumo.</p>';
+                    return;
+                }
+                storiesList.innerHTML = data.map(s => `
+                    <div class="admin-item-card">
+                        <div class="admin-item-top">
+                            ${s.cover_image ? `<img src="${s.cover_image}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px;">` : ''}
+                            <div>
+                                📖 <strong>${s.title}</strong> <br>
+                                <small style="color:#666;">Mwandishi: <strong>${s.storyteller_name}</strong> (Simu: ${s.story_phone || 'N/A'})</small>
+                            </div>
+                        </div>
+                        <div class="admin-item-actions">
+                            <button onclick="adminDeleteStory(${s.id})" style="background:var(--danger);">🗑️ Futa Hadithi</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+
+            fetch('/api/admin/sellers').then(res => res.json()).then(data => {
+                window.adminAllSellers = data;
+                const sellersList = document.getElementById('admin-sellers-list');
+                const pendingCount = (data || []).filter(u => u.verification_status !== 'approved').length;
+                const statEl = document.getElementById('stat-pending-sellers-count');
+                if(statEl) statEl.innerText = pendingCount;
+                if(!data || data.length === 0) {
+                    sellersList.innerHTML = '<p>Hakuna wauzaji wapya.</p>';
+                    return;
+                }
+                sellersList.innerHTML = data.map(u => {
+                    let statusBadge = u.verification_status === 'approved'
+                        ? `<span class="badge-success"> ✅ Imethibitishwa (Verified)</span>`
+                        : `<span class="badge">⏳ Inasubiri (Pending)</span>`;
+                    return `
+                    <div class="admin-item-card">
+                        <div class="admin-item-top">
+                            👤 <strong>${u.username}</strong>
+                        </div>
+                        <div style="font-size:0.85em; color:#666;">NIDA: ${u.id_number || 'N/A'} — Hali: ${statusBadge}</div>
+                        <div class="admin-item-actions">
+                            <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary);">🔍 Kitambulisho</button>
+                            <button onclick="approveUser(${u.id})" style="background:var(--success);">✅ Idhinisha</button>
+                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger);">🗑️ Futa Kabisa</button>
+                        </div>
+                    </div>
+                `}).join('');
+            });
+
+            fetch('/api/admin/storytellers').then(res => res.json()).then(data => {
+                window.adminAllStorytellers = data;
+                const storyList = document.getElementById('admin-storytellers-list');
+                const pendingCount = (data || []).filter(u => u.verification_status !== 'approved').length;
+                const statEl = document.getElementById('stat-pending-storytellers-count');
+                if(statEl) statEl.innerText = pendingCount;
+                if(!data || data.length === 0) {
+                    storyList.innerHTML = '<p>Hakuna waandishi.</p>';
+                    return;
+                }
+                storyList.innerHTML = data.map(u => {
+                    let statusBadge = u.verification_status === 'approved'
+                        ? `<span class="badge-success"> ✅ Imethibitishwa</span>`
+                        : `<span class="badge">⏳ Inasubiri</span>`;
+                    return `
+                    <div class="admin-item-card">
+                        <div class="admin-item-top">
+                            ✍️ <strong>${u.username}</strong>
+                        </div>
+                        <div style="font-size:0.85em; color:#666;">ID: ${u.id_number || 'N/A'} — Hali: ${statusBadge}</div>
+                        <div class="admin-item-actions">
+                            <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary);">🔍 Kitambulisho</button>
+                            <button onclick="approveUser(${u.id})" style="background:var(--success);">✅ Idhinisha</button>
+                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger);">🗑️ Futa</button>
+                        </div>
+                    </div>
+                `}).join('');
+            });
+
+            fetch('/api/admin/buyers').then(res => res.json()).then(data => {
+                const buyersList = document.getElementById('admin-buyers-list');
+                const statEl = document.getElementById('stat-buyers-count');
+                if(statEl) statEl.innerText = data ? data.length : 0;
+                if(!data || data.length === 0) {
+                    buyersList.innerHTML = '<p>Hakuna wanunuzi.</p>';
+                    return;
+                }
+                buyersList.innerHTML = data.map(u => `
+                    <div class="admin-item-card">
+                        <div class="admin-item-top">🛒 <strong>${u.username}</strong></div>
+                        <div><span class="badge-success">Approved Buyer</span></div>
+                        <div class="admin-item-actions">
+                            <button onclick="deleteUser(${u.id}, '${u.username}')" style="background:var(--danger);">Futa</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+
+            fetch('/api/admin/designs').then(res => res.json()).then(data => {
+                window.adminAllDesigns = data;
+                const list = document.getElementById('admin-designs-list');
+                const statEl = document.getElementById('stat-designs-count');
+                if(statEl) statEl.innerText = data ? data.length : 0;
+                if(!data || data.length === 0) {
+                    list.innerHTML = '<p>Hakuna bidhaa.</p>';
+                    return;
+                }
+                list.innerHTML = data.map(d => `
+                    <div class="admin-item-card">
+                        <div class="admin-item-top">
+                            <strong>${d.title}</strong>
+                        </div>
+                        <div style="font-size:0.85em; color:#666;">Tsh ${d.price.toLocaleString()} — Muuzaji: ${d.designer_name} — Hali: <span class="badge">${d.status}</span></div>
+                        <div class="admin-item-actions">
+                            <button onclick="openAdminModal(${d.id})" style="background:var(--primary);">Soma</button>
+                            <button onclick="approveDesign(${d.id})" style="background:var(--success);">Idhinisha</button>
+                            <button onclick="rejectDesign(${d.id})" style="background:var(--accent);">Kataa</button>
+                            <button onclick="deleteDesign(${d.id})" style="background:var(--danger);">Futa</button>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        function loadAdminSubscriptions() {
+            fetch('/api/admin/users')
+                .then(res => res.json())
+                .then(users => {
+                    const tbody = document.getElementById('adminSubscriptionsBody');
+                    if(!tbody) return;
+                    tbody.innerHTML = '';
+                    
+                    const paidUsers = users.filter(u => u.role === 'seller' || u.role === 'storyteller');
+                    
+                    if(paidUsers.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Hakuna wauzaji au waandishi waliopo kwa sasa.</td></tr>`;
+                        return;
+                    }
+                    
+                    paidUsers.forEach(user => {
+                        let statusColor = user.subscription_status === 'active' ? 'green' : (user.subscription_status === 'pending_payment' ? 'orange' : 'red');
+                        
+                        let row = `<tr>
+                            <td><b>${user.username}</b></td>
+                            <td>${user.role}</td>
+                            <td><span style="color: ${statusColor}; font-weight: bold;">${user.subscription_status}</span></td>
+                            <td>${user.trial_ends_at || 'Imekwisha'}</td>
+                            <td>
+                                <b>Simu:</b> ${user.payment_phone || 'Hajatuma'}<br>
+                                <b>Jina:</b> ${user.payment_name || 'Hajatuma'}
+                            </td>
+                            <td>
+                                <button onclick="approveSub(${user.id})" style="background: #28a745; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px;">Ongeza Siku 30</button>
+                            </td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                })
+                .catch(err => console.error("Hitilafu:", err));
+        }
+
+        function approveSub(userId) {
+            if(confirm("Una hakika unataka kuidhinisha malipo na kumuongezea mwezi 1 mtumiaji huyu?")) {
+                fetch('/api/admin/approve-subscription?id=' + userId, {
+                    method: 'POST'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    if(data.success) {
+                        loadAdminSubscriptions();
+                    }
+                });
+            }
+        }
+
+        function adminDeleteStory(id) {
+            if(!confirm("Una uhakika unataka kufuta hadithi hii kama Admin?")) return;
+            fetch('/api/admin/delete-story?id=' + id, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message || 'Hadithi imefutwa!');
+                    loadAdminData();
+                });
+        }
+
+        function approveUser(id) {
+            fetch('/api/admin/approve-user?id=' + id, { method: 'POST' }).then(() => loadAdminData());
+        }
+
+        function deleteUser(id, username) {
+            if(!confirm(`Futa mtumiaji "${username}"?`)) return;
+            fetch('/api/admin/delete-user?id=' + id, { method: 'POST' }).then(() => loadAdminData());
+        }
+
+        function openAdminSellerModal(id) {
+            let allUsers = [...(window.adminAllSellers || []), ...(window.adminAllStorytellers || [])];
+            let u = allUsers.find(item => item.id === id);
+            if(!u) return;
+
+            document.getElementById('modal-seller-username').innerText = u.username;
+            document.getElementById('modal-seller-nida').innerText = u.id_number || 'N/A';
+            document.getElementById('modal-seller-status').innerText = u.verification_status;
+            document.getElementById('modal-seller-status').className = u.verification_status === 'approved' ? 'badge-success' : 'badge';
+            document.getElementById('modal-seller-date').innerText = u.created_at ? u.created_at.substring(0, 10) : 'N/A';
+
+            let container = document.getElementById('modal-seller-id-container');
+            if(u.id_card_image) {
+                container.innerHTML = `<img src="${u.id_card_image}" style="max-width:100%; max-height:250px; border-radius:6px; object-fit:contain; border:1px solid #ccc;">`;
+            } else {
+                container.innerHTML = '<p style="color:#666;">Hakuna picha ya kitambulisho iliyowekwa.</p>';
+            }
+
+            document.getElementById('admin-seller-detail-modal').style.display = 'flex';
+        }
+
+        function closeAdminSellerModal() {
+            document.getElementById('admin-seller-detail-modal').style.display = 'none';
+        }
+
+        function openAdminModal(id) {
+            let d = window.adminAllDesigns.find(item => item.id === id);
+            if(!d) return;
+
+            document.getElementById('modal-prod-title').innerText = d.title;
+            document.getElementById('modal-prod-price').innerText = "Tsh " + d.price.toLocaleString();
+            document.getElementById('modal-prod-location').innerText = d.location || 'Tanzania';
+            document.getElementById('modal-prod-vendor-phone').innerText = d.vendor_phone || 'N/A';
+            document.getElementById('modal-prod-cat').innerText = d.category || 'N/A';
+            document.getElementById('modal-prod-designer').innerText = d.designer_name;
+            document.getElementById('modal-prod-status').innerText = d.status;
+            document.getElementById('modal-prod-desc').innerText = d.description;
+
+            let imgContainer = document.getElementById('modal-image-container');
+            let imgs = [d.image_url, d.image_url2, d.image_url3, d.image_url4].filter(img => img && img.trim() !== "");
+            if(imgs.length > 0) {
+                imgContainer.innerHTML = imgs.map(src => `<img src="${src}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;">`).join('');
+            } else {
+                imgContainer.innerHTML = '<p>Hakuna picha.</p>';
+            }
+
+            let videoContainer = document.getElementById('modal-video-container');
+            if(d.video_url && d.video_url.trim() !== "") {
+                videoContainer.innerHTML = `<video src="${d.video_url}" controls style="width: 100%; max-height: 180px; background:#000; border-radius:4px;"></video>`;
+            } else {
+                videoContainer.innerHTML = '';
+            }
+
+            document.getElementById('admin-detail-modal').style.display = 'flex';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-detail-modal').style.display = 'none';
+        }
+
+        function approveDesign(id) {
+            fetch('/api/admin/approve-design?id=' + id, { method: 'POST' }).then(() => loadAdminData());
+        }
+
+        function rejectDesign(id) {
+            fetch('/api/admin/reject-design?id=' + id, { method: 'POST' }).then(() => loadAdminData());
+        }
+
+        function deleteDesign(id) {
+            if(!confirm("Futa bidhaa hii kabisa?")) return;
+            fetch('/api/admin/delete-design?id=' + id, { method: 'POST' }).then(() => loadAdminData());
+        }
+
+        window.onload = function() {
+            updateAuthUI();
+            if(currentUser) {
+                switchTab('market');
+            } else {
+                switchTab('stories-feed');
+            }
+        };
+    </script>
+</body>
+</html>
+
