@@ -1404,8 +1404,7 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := db.TestExecDeleteUserOrSomethingElseIfAny // (Wait, let's keep exact clean db.Exec)
-	_, err = db.Exec("DELETE FROM app_accounts WHERE id = $1", userID)
+	_, err := db.Exec("DELETE FROM app_accounts WHERE id = $1", userID)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kufuta mtumiaji kwenye database"})
 		return
@@ -1454,4 +1453,4 @@ func adminAddAdminHandler(w http.ResponseWriter, r *http.Request) {
         "success": true, 
         "message": "Admin ameongezwa vizuri kabisa!",
     })
-} 
+}
