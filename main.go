@@ -850,7 +850,7 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 // ----------------- API ZA HADITHI (REKODI NA KUHUSISHA STORYTELLER) -----------------
 
 func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, created_at, price, is_paid FROM stories WHERE storyteller_name = $1", storyteller)
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), Mwandishi_name, status, created_at, price, is_paid FROM stories WHERE Mwandishi_name = $1", Mwandishi)
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma hadithi", http.StatusInternalServerError)
 		return
