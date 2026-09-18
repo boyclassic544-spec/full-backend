@@ -953,12 +953,24 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		if storytellerName == "" {
 			storytellerName = r.FormValue("designer_name")
 		}
-		if r.FormValue("price") != "" {
-			fmt.Sscanf(r.FormValue("price"), "%f", &price)
+		
+		priceStr := r.FormValue("price")
+		if priceStr != "" {
+			fmt.Sscanf(priceStr, "%f", &price)
 		}
-		if r.FormValue("is_paid") == "true" || r.FormValue("is_paid") == "1" {
+		
+		paidVal := r.FormValue("is_paid")
+		if paidVal == "true" || paidVal == "1" || paidVal == "on" {
 			isPaid = true
+		} else if price > 0 {
+			isPaid = true
+		} else {
+			isPaid = false
 		}
+	}
+
+	if price <= 0 {
+		isPaid = false
 	}
 
 	if storytellerName != "" {
@@ -977,7 +989,6 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// HAPA IMEBADILISHWA: Hadithi inawekwa moja kwa moja kuwa 'approved' ili isikae pending
 	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, status, price, is_paid) VALUES ($1, $2, $3, $4, 'approved', $5, $6)", title, content, coverImage, storytellerName, price, isPaid)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi hadithi: " + err.Error()})
@@ -1438,6 +1449,7 @@ func adminAddAdminHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    json.NewEncoder(w::http.ResponseWriter), etc.
     json.NewEncoder(w).Encode(map[string]interface{}{
         "success": true, 
         "message": "Admin ameongezwa vizuri kabisa!",
