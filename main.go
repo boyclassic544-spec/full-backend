@@ -850,7 +850,7 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 // ----------------- API ZA HADITHI (REKODI NA KUHUSISHA STORYTELLER) -----------------
 
 func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), Mwandishi_name, status, created_at, price, is_paid FROM stories WHERE Mwandishi_name = $1", Mwandishi)
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, COALESCE(rejection_reason, ''), created_at, price, is_paid FROM stories WHERE status = 'approved' ORDER BY id DESC")
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma hadithi", http.StatusInternalServerError)
 		return
@@ -861,8 +861,18 @@ func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var s Story
 		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt, &s.Price, &s.IsPaid); err != nil {
+			log.Printf("Kosa la kuscan hadithi: %v", err)
 			continue
 		}
+		stories = append(stories, s)
+	}
+
+	if stories == nil {
+		stories = []Story{}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stories)
 		stories = append(stories, s)
 	}
 
@@ -880,7 +890,7 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 		storyteller = r.URL.Query().Get("designer")
 	}
 
-	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, created_at, price, is_paid FROM stories WHERE storyteller_name = $1", storyteller)
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, COALESCE(rejection_reason, ''), created_at, price, is_paid FROM stories WHERE storyteller_name = $1 ORDER BY id DESC", storyteller)
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma hadithi zako", http.StatusInternalServerError)
 		return
@@ -890,7 +900,8 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	var stories []Story
 	for rows.Next() {
 		var s Story
-		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.CreatedAt, &s.Price, &s.IsPaid); err != nil {
+		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt, &s.Price, &s.IsPaid); err != nil {
+			log.Printf("Kosa la kuscan hadithi zako: %v", err)
 			continue
 		}
 		stories = append(stories, s)
@@ -902,7 +913,7 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stories)
-}
+  }
 
 func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -1439,4 +1450,4 @@ func adminAddAdminHandler(w http.ResponseWriter, r *http.Request) {
         "success": true, 
         "message": "Admin ameongezwa vizuri kabisa!",
     })
-}
+} 
