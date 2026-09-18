@@ -37,16 +37,16 @@ type Design struct {
 }
 
 type Story struct {
-	ID              int     `json:"id"`
-	Title           string  `json:"title"`
-	Content         string  `json:"content"`
-	CoverImage      string  `json:"cover_image"`
-	StorytellerName string  `json:"storyteller_name"`
-	Status          string  `json:"status"`
-	RejectionReason string  `json:"rejection_reason"`
-	CreatedAt       string  `json:"created_at"`
-	Price           float64 `json:"price"`
-	IsPaid          bool    `json:"is_paid"`
+	ID              int    `json:"id"`
+	Title           string `json:"title"`
+	Content         string `json:"content"`
+	CoverImage      string `json:"cover_image"`
+	StorytellerName string `json:"storyteller_name"`
+	Status          string `json:"status"`
+	RejectionReason string `json:"rejection_reason"`
+	CreatedAt       string `json:"created_at"`
+	Price          float64 `json:"price"`     // Ongeza hii kwa ajili ya bei
+    IsPaid         bool   `json:"is_paid"`    // Ongeza hii kutambua kama ni ya kulipia au bure
 }
 
 type Order struct {
@@ -214,9 +214,9 @@ func initDB() {
 		storyteller_name TEXT NOT NULL,
 		status TEXT DEFAULT 'approved',
 		rejection_reason TEXT DEFAULT '',
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		price NUMERIC DEFAULT 0,
-		is_paid BOOLEAN DEFAULT FALSE
+    is_paid BOOLEAN DEFAULT FALSE
 	);`
 	_, err = db.Exec(queryStories)
 	if err != nil {
@@ -238,8 +238,6 @@ func initDB() {
 	}
 
 	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS cover_image TEXT DEFAULT '';")
-	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS price NUMERIC DEFAULT 0;")
-	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;")
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'free';")
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMP;")
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS payment_phone TEXT DEFAULT '';")
@@ -850,7 +848,7 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 // ----------------- API ZA HADITHI (REKODI NA KUHUSISHA STORYTELLER) -----------------
 
 func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, COALESCE(rejection_reason, ''), created_at, price, is_paid FROM stories WHERE status = 'approved' ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, created_at, price, is_paid FROM stories WHERE storyteller_name = $1", storyteller)
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma hadithi", http.StatusInternalServerError)
 		return
@@ -860,7 +858,7 @@ func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	var stories []Story
 	for rows.Next() {
 		var s Story
-		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt, &s.Price, &s.IsPaid); err != nil {
+		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt); err != nil {
 			continue
 		}
 		stories = append(stories, s)
@@ -880,7 +878,7 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 		storyteller = r.URL.Query().Get("designer")
 	}
 
-	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, created_at, price, is_paid FROM stories WHERE storyteller_name = $1", storyteller)
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, rejection_reason, created_at FROM stories WHERE storyteller_name = $1 ORDER BY id DESC", storyteller)
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma hadithi zako", http.StatusInternalServerError)
 		return
@@ -890,7 +888,7 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	var stories []Story
 	for rows.Next() {
 		var s Story
-		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.CreatedAt, &s.Price, &s.IsPaid); err != nil {
+		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt); err != nil {
 			continue
 		}
 		stories = append(stories, s)
@@ -913,18 +911,14 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var title, content, coverImage, storytellerName string
-	var price float64
-	var isPaid bool
 
 	contentType := r.Header.Get("Content-Type")
 	if strings.Contains(contentType, "application/json") {
 		var payload struct {
-			Title           string  `json:"title"`
-			Content         string  `json:"content"`
-			CoverImage      string  `json:"cover_image"`
-			StorytellerName string  `json:"storyteller_name"`
-			Price           float64 `json:"price"`
-			IsPaid          bool    `json:"is_paid"`
+			Title           string `json:"title"`
+			Content         string `json:"content"`
+			CoverImage      string `json:"cover_image"`
+			StorytellerName string `json:"storyteller_name"`
 		}
 		r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
 		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
@@ -932,8 +926,8 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 			content = payload.Content
 			coverImage = payload.CoverImage
 			storytellerName = payload.StorytellerName
-			price = payload.Price
-			isPaid = payload.IsPaid
+			Price   float64 `json:"price"`
+            IsPaid  bool    `json:"is_paid"`
 		}
 	}
 
@@ -950,12 +944,6 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		storytellerName = r.FormValue("storyteller_name")
 		if storytellerName == "" {
 			storytellerName = r.FormValue("designer_name")
-		}
-		if r.FormValue("price") != "" {
-			fmt.Sscanf(r.FormValue("price"), "%f", &price)
-		}
-		if r.FormValue("is_paid") == "true" || r.FormValue("is_paid") == "1" {
-			isPaid = true
 		}
 	}
 
@@ -975,14 +963,12 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, price, is_paid) VALUES ($1, $2, $3, $4, $5, $6)", title, content, coverImage, storytellerName, price, isPaid)
+			_, err = db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, price, is_paid) VALUES ($1, $2, $3, $4, $5, $6)", title, content, coverImage, storytellerName, price, isPaid)
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi hadithi: " + err.Error()})
 		return
 	}
-	
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi yako imechapishwa kikamilifu"})
-}
 
 func deleteMyStoryHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -1111,7 +1097,7 @@ func adminDeleteDesignHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminGetStoriesHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, COALESCE(rejection_reason, ''), created_at, price, is_paid FROM stories ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, rejection_reason, created_at FROM stories ORDER BY id DESC")
 	if err != nil {
 		http.Error(w, "Imeshindikana", http.StatusInternalServerError)
 		return
@@ -1121,7 +1107,7 @@ func adminGetStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	var stories []Story
 	for rows.Next() {
 		var s Story
-		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt, &s.Price, &s.IsPaid); err != nil {
+		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt); err != nil {
 			continue
 		}
 		stories = append(stories, s)
@@ -1401,7 +1387,6 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		"message": "Mtumiaji amefutwa kikamilifu na Admin!",
 	})
 }
-
 type AdminRequest struct {
     Username string `json:"username"`
     Password string `json:"password"`
@@ -1440,3 +1425,4 @@ func adminAddAdminHandler(w http.ResponseWriter, r *http.Request) {
         "message": "Admin ameongezwa vizuri kabisa!",
     })
 }
+
