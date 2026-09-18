@@ -100,7 +100,7 @@ func main() {
 	http.HandleFunc("/api/signin", signinHandler)
 	http.HandleFunc("/api/profile", profileHandler)
 	http.HandleFunc("/api/submit-subscription-payment", submitSubscriptionPaymentHandler)
-	
+
 	// Routes za Soko Kuu (Sellers / Products)
 	http.HandleFunc("/api/designs", getDesignsHandler)
 	http.HandleFunc("/api/my-designs", getMyDesignsHandler)
@@ -121,7 +121,7 @@ func main() {
 	http.HandleFunc("/api/admin/approve", adminApproveDesignHandler)
 	http.HandleFunc("/api/admin/reject", adminRejectDesignHandler)
 	http.HandleFunc("/api/admin/delete-design", adminDeleteDesignHandler)
-	
+
 	http.HandleFunc("/api/admin/stories", adminGetStoriesHandler)
 	http.HandleFunc("/api/admin/approve-story", adminApproveStoryHandler)
 	http.HandleFunc("/api/admin/reject-story", adminRejectStoryHandler)
@@ -699,16 +699,16 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		title = r.FormValue("title")
 		description = r.FormValue("description")
 		category = r.FormValue("category")
-		
+
 		designerName = r.FormValue("designer_name")
 		if designerName == "" {
 			designerName = r.FormValue("designer")
 		}
-		
+
 		location = r.FormValue("location")
 		vendorPhone = r.FormValue("vendor_phone")
 		videoURL = r.FormValue("video_url")
-		
+
 		priceStr := r.FormValue("price")
 		fmt.Sscanf(priceStr, "%f", &price)
 
@@ -981,7 +981,13 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Kama ni ya bure (is_paid = false), bei inakuwa 0 ili msomaji asisumbuliwe na malipo
+	// Marekebisho: Hakikisha kama bei ni 0 au chini ya hapo, is_paid inakuwa false moja kwa moja
+	if price <= 0 {
+		isPaid = false
+		price = 0
+	}
+
+	// Kama si ya kulipia, bei inakuwa 0 ili isisumbue msomaji
 	if !isPaid {
 		price = 0
 	}
@@ -991,7 +997,7 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi hadithi: " + err.Error()})
 		return
 	}
-	
+
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi yako imechapishwa kikamilifu!"})
 }
 
@@ -1116,7 +1122,7 @@ func adminDeleteDesignHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true, 
+		"success": true,
 		"message": "Bidhaa imefutwa kikamilifu na Admin!",
 	})
 }
@@ -1206,7 +1212,7 @@ func adminDeleteStoryHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true, 
+		"success": true,
 		"message": "Hadithi imefutwa kikamilifu na Admin Mkuu!",
 	})
 }
@@ -1384,8 +1390,7 @@ func adminRejectUserHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana"})
 		return
 	}
-
-    json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Imekataliwa!"})
+	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Imekataliwa!"})
 }
 
 func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -1408,47 +1413,47 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"success": true, 
+		"success": true,
 		"message": "Mtumiaji amefutwa kikamilifu na Admin!",
 	})
 }
 
 type AdminRequest struct {
-    Username string `json:"username"`
-    Password string `json:"password"`
-    Role     string `json:"role"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 
 func adminAddAdminHandler(w http.ResponseWriter, r *http.Request) {
-    if r.Method != http.MethodPost {
-        http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
-        return
-    }
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
+		return
+	}
 
-    w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 
-    var req AdminRequest
-    err := json.NewDecoder(r.Body).Decode(&req)
-    if err != nil || req.Username == "" || req.Password == "" {
-        json.NewEncoder(w).Encode(map[string]interface{}{
-            "success": false, 
-            "message": "Taarifa zilizotumwa si sahihi",
-        })
-        return
-    }
+	var req AdminRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil || req.Username == "" || req.Password == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Taarifa zilizotumwa si sahihi",
+		})
+		return
+	}
 
-    _, err = db.Exec("INSERT INTO admins (username, password, role) VALUES ($1, $2, $3)", req.Username, req.Password, req.Role)
-    if err != nil {
-        json.NewEncoder(w).Encode(map[string]interface{}{
-            "success": false, 
-            "message": "Imeshindwa kuongeza admin kwenye mfumo.",
-        })
-        return
-    }
+	_, err = db.Exec("INSERT INTO admins (username, password, role) VALUES ($1, $2, $3)", req.Username, req.Password, req.Role)
+	if err != nil {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Imeshindwa kuongeza admin kwenye mfumo.",
+		})
+		return
+	}
 
-    json.NewEncoder(w).Encode(map[string]interface{}{
-        "success": true, 
-        "message": "Admin ameongezwa vizuri kabisa!",
-    })
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Admin ameongezwa vizuri kabisa!",
+	})
 }
  
