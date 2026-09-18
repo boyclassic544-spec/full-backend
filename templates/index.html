@@ -1667,6 +1667,44 @@
 
         updateAuthUI();
         if (!currentUser) { switchTab('signin'); } else { refreshUserProfile().then(() => switchTab('market')); }
-    </script>
+        
+
+    // --- WEKA HAPA KODI YMPYA YA KUONGEZA ADMIN ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const adminAddForm = document.querySelector('.admin-add-form');
+        if (adminAddForm) {
+            adminAddForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const username = document.getElementById('new-admin-username').value;
+                const password = document.getElementById('new-admin-password').value;
+                const role = document.getElementById('new-admin-level').value;
+
+                fetch('https://full-backend-production.up.railway.app/api/add-admin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password, role })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Imeshindwa kuongeza admin');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert("Admin ameongezwa vizuri kabisa!");
+                    adminAddForm.reset();
+                })
+                .catch(error => {
+                    console.error('Hitilafu:', error);
+                    alert('Imeshindwa kuongeza admin kwenye mfumo.');
+                });
+            });
+        }
+    });
+
+</script>
 </body>
-</html>
+</html> 
