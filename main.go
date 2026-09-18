@@ -880,7 +880,7 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 		storyteller = r.URL.Query().Get("designer")
 	}
 
-	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, COALESCE(rejection_reason, ''), created_at, price, is_paid FROM stories WHERE storyteller_name = $1 ORDER BY id DESC", storyteller)
+	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, created_at, price, is_paid FROM stories WHERE storyteller_name = $1", storyteller)
 	if err != nil {
 		http.Error(w, "Imeshindikana kusoma hadithi zako", http.StatusInternalServerError)
 		return
@@ -890,7 +890,7 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	var stories []Story
 	for rows.Next() {
 		var s Story
-		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.RejectionReason, &s.CreatedAt, &s.Price, &s.IsPaid); err != nil {
+		if err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.CoverImage, &s.StorytellerName, &s.Status, &s.CreatedAt, &s.Price, &s.IsPaid); err != nil {
 			continue
 		}
 		stories = append(stories, s)
