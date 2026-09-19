@@ -222,9 +222,8 @@
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h2 id="modal-story-title" style="color: var(--primary); margin: 0; font-size: 1.3em;"></h2>
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.85em; background: #fff; padding: 4px 10px; border-radius: 20px; border: 1px solid #ddd;">
-                        <span id="author-status-dot" style="width: 10px; height: 10px; background-color: var(--success); border-radius: 50%; display: inline-block;"></span>
-                        <span id="author-status-text" style="font-weight: bold; color: #555;">Online</span>
+                    <div id="modal-story-price-badge" style="display: none; align-items: center; gap: 6px; font-size: 0.85em; background: #fff3cd; padding: 4px 10px; border-radius: 20px; border: 1px solid #ffeeba; font-weight: bold; color: #856404;">
+                        💰 <span id="modal-story-price-text">Kulipia</span>
                     </div>
                 </div>
 
@@ -236,7 +235,7 @@
                     <div id="modal-story-content" style="font-size: 1em; color: #2c2c2c; line-height: 1.85; white-space: pre-wrap; max-height: 50vh; overflow-y: auto; padding-right: 5px; margin-bottom: 20px;"></div>
                 </div>
                 
-                <div style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2d9c2;">
+                <div id="story-payment-section" style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2d9c2;">
                     <h4 style="margin: 0 0 8px 0; color: var(--primary);">Wasiliana na Mwandishi / Nunua Hati hii</h4>
                     <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">Simu ya Mwandishi:</p>
                     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -412,7 +411,7 @@
             </div>
         </div>
 
-        <!-- STORYTELLER UPLOAD SECTION (IMErekebishwa) -->
+        <!-- STORYTELLER UPLOAD SECTION -->
         <div id="storyteller-upload-section" class="section">
             <div class="form-card" style="max-width: 600px;">
                 <h2 style="margin-top:0; color: var(--primary);">Andika na Chapisha Hadithi Yako</h2>
@@ -434,7 +433,6 @@
                         <input type="number" min="0" id="story-price" placeholder="Mf. 1000">
                     </div>
 
-                    <!-- Namba ya simu — required tu kwa hadithi ya kulipia -->
                     <label id="story-phone-label">Namba ya Simu ya Mwandishi (Hiari kwa hadithi ya bure)</label>
                     <input type="text" id="story-phone" placeholder="Mf. 0712345678" pattern="0[67]\d{8}">
 
@@ -720,7 +718,7 @@
             });
         }
 
-        // ================== STORY HELPERS (IMErekebishwa) ==================
+        // ================== STORY HELPERS ==================
         function toggleStoryPriceField() {
             let storyType = document.getElementById('story-type').value;
             let priceContainer = document.getElementById('story-price-container');
@@ -728,14 +726,12 @@
             let storyPhoneLabel = document.getElementById('story-phone-label');
 
             if (storyType === 'paid') {
-                // Hadithi ya kulipia — bei na simu ni LAZIMA
                 priceContainer.style.display = 'block';
                 document.getElementById('story-price').required = true;
                 storyPhoneInput.required = true;
                 storyPhoneLabel.innerText = 'Namba ya Simu ya Mwandishi (Ya Kupokea Malipo) *';
                 storyPhoneInput.placeholder = 'Mf. 0712345678';
             } else {
-                // Hadithi ya bure — bei na simu SI lazima
                 priceContainer.style.display = 'none';
                 document.getElementById('story-price').required = false;
                 document.getElementById('story-price').value = '';
@@ -977,6 +973,7 @@
                                     <div class="story-grid-meta">
                                         ✍️ <strong>${escapeHtml(s.storyteller_name)}</strong><br>
                                         📅 ${s.created_at ? s.created_at.substring(0, 10) : ''}
+                                        ${s.is_paid ? ' • 💰 Kulipia' : ' • 🆓 Bure'}
                                     </div>
                                 </div>
                             </div>
@@ -996,28 +993,50 @@
             return div.innerHTML;
         }
 
+        // ✅ IMErekebishwa: Sasa inakagua is_paid kwanza
         function openStoryModal(id) {
             const s = allApprovedStories.find(item => item.id === id);
             if (!s) return;
+
             document.getElementById('modal-story-title').innerText = s.title;
             document.getElementById('modal-story-author').innerText = s.storyteller_name;
             document.getElementById('modal-story-date').innerText = s.created_at ? s.created_at.substring(0, 10) : '';
 
             let contentDiv = document.getElementById('modal-story-content');
-            let existingOrder = storyPaymentOrders.find(o => o.storyId === id && o.username === currentUser);
+            let paymentSection = document.getElementById('story-payment-section');
+            let priceBadge = document.getElementById('modal-story-price-badge');
+            let priceText = document.getElementById('modal-story-price-text');
 
-            if (existingOrder && existingOrder.status === 'confirmed') {
+            // ✅ HAPA NDIO MAREKEBISHO: KAGUA KAMA NI YA BURE AU YA KULIPIA
+            if (!s.is_paid) {
+                // 🆓 HADITHI YA BURE — Onyesha maudhui moja kwa moja!
                 contentDiv.innerText = s.content;
-                document.getElementById('payment-status-notice').innerText = "✅ Malipo yako yamethibitishwa na mwandishi. Furahia kusoma!";
-            } else if (existingOrder && existingOrder.status === 'rejected') {
-                contentDiv.innerText = "[Hadithi imefungwa: Mwandishi amekataa au hakujiridhisha na malipo yako.]";
-                document.getElementById('payment-status-notice').innerText = "❌ Malipo yako yamekataliwa na mwandishi.";
-            } else if (existingOrder && existingOrder.status === 'pending') {
-                contentDiv.innerText = "[Hadithi imefungwa: Subiri mwandishi akague malipo yako na kuyathibitisha...]";
-                document.getElementById('payment-status-notice').innerText = "⏳ Ombi lako la malipo limeshawasilishwa. Subiri uthibitisho.";
-            } else {
-                contentDiv.innerText = "[Hadithi imefungwa. Weka namba yako ya simu hapa chini na bonyeza 'Nimemaliza Kulipa Hadithi' ili kusubiri uthibitisho...]";
                 document.getElementById('payment-status-notice').innerText = "";
+                if (paymentSection) paymentSection.style.display = 'none';
+                if (priceBadge) priceBadge.style.display = 'none';
+            } else {
+                // 💰 HADITHI YA KULIPIA — Onyesha boksi la malipo
+                if (paymentSection) paymentSection.style.display = 'block';
+                if (priceBadge) {
+                    priceBadge.style.display = 'flex';
+                    priceText.innerText = 'Kulipia: Tsh ' + Number(s.price || 0).toLocaleString();
+                }
+
+                let existingOrder = storyPaymentOrders.find(o => o.storyId === id && o.username === currentUser);
+
+                if (existingOrder && existingOrder.status === 'confirmed') {
+                    contentDiv.innerText = s.content;
+                    document.getElementById('payment-status-notice').innerText = "✅ Malipo yako yamethibitishwa na mwandishi. Furahia kusoma!";
+                } else if (existingOrder && existingOrder.status === 'rejected') {
+                    contentDiv.innerText = "[Hadithi imefungwa: Mwandishi amekataa au hakujiridhisha na malipo yako.]";
+                    document.getElementById('payment-status-notice').innerText = "❌ Malipo yako yamekataliwa na mwandishi.";
+                } else if (existingOrder && existingOrder.status === 'pending') {
+                    contentDiv.innerText = "[Hadithi imefungwa: Subiri mwandishi akague malipo yako na kuyathibitisha...]";
+                    document.getElementById('payment-status-notice').innerText = "⏳ Ombi lako la malipo limeshawasilishwa. Subiri uthibitisho.";
+                } else {
+                    contentDiv.innerText = "[Hadithi imefungwa. Weka namba yako ya simu hapa chini na bonyeza 'Nimemaliza Kulipa Hadithi' ili kusubiri uthibitisho...]";
+                    document.getElementById('payment-status-notice').innerText = "";
+                }
             }
 
             const phoneBtn = document.getElementById('modal-story-phone-btn');
@@ -1135,7 +1154,7 @@
                                 ${s.cover_image ? `<img src="${s.cover_image}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 6px;">` : ''}
                                 <div>
                                     <strong style="font-size:1em; color:var(--primary);">${escapeHtml(s.title)}</strong><br>
-                                    <small style="color:#666;">Hali: <span class="badge">${s.status}</span></small>
+                                    <small style="color:#666;">${s.is_paid ? '💰 Kulipia: Tsh ' + Number(s.price || 0).toLocaleString() : '🆓 Bure'} | Hali: <span class="badge">${s.status}</span></small>
                                 </div>
                             </div>
                             <div>
@@ -1157,7 +1176,6 @@
                 });
         }
 
-        // ✅ IMErekebishwa: handleStoryUpload yenye validation kamili
         async function handleStoryUpload(e) {
             e.preventDefault();
 
@@ -1197,7 +1215,7 @@
                 }
             }
 
-            // ✅ PICHA — compress kabla ya kutuma
+            // ✅ PICHA
             const imgFile = document.getElementById('story-image-file').files[0];
             if (!imgFile) {
                 alert('Chagua picha ya cover ya hadithi!');
@@ -1344,7 +1362,7 @@
             switchTab('signin');
         }
 
-        // ================== ADMIN LOGIN (MODAL) ==================
+        // ================== ADMIN LOGIN ==================
         function openAdminLogin() {
             document.getElementById('admin-login-username').value = '';
             document.getElementById('admin-login-password').value = '';
@@ -1721,6 +1739,7 @@
                                 <div>
                                     📖 <strong>${escapeHtml(s.title)}</strong> <br>
                                     <small style="color:#666;">Mwandishi: <strong>${escapeHtml(s.storyteller_name)}</strong></small>
+                                    <br><small>${s.is_paid ? '💰 Kulipia: Tsh ' + Number(s.price || 0).toLocaleString() : '🆓 Bure'}</small>
                                 </div>
                             </div>
                             <div class="admin-item-actions">
