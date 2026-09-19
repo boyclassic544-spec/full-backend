@@ -1,160 +1,1222 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sw">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1e3799">
-    <title>SokoSmart TZ - Soko Kuu la Kidijitali Tanzania</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="description" content="SokoSmart TZ - Soko Kuu la Kidijitali Tanzania">
+    <title>SokoSmart TZ — Soko la Kisasa la Tanzania</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
     <style>
+        /* ============ RESET & VARIABLES ============ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        
         :root {
-            --primary: #1e3799;
-            --accent: #f39c12;
-            --success: #27ae60;
-            --danger: #c0392b;
-            --bg-light: #f4f6f7;
-            --text-dark: #333;
+            /* Light Mode */
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --primary-dark: #4338ca;
+            --accent: #f59e0b;
+            --accent-light: #fbbf24;
+            --success: #10b981;
+            --success-dark: #059669;
+            --danger: #ef4444;
+            --danger-dark: #dc2626;
+            --warning: #f59e0b;
+            
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            --bg-card: #ffffff;
+            --bg-glass: rgba(255, 255, 255, 0.7);
+            
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-tertiary: #6b7280;
+            --text-muted: #9ca3af;
+            
+            --border: #e5e7eb;
+            --border-hover: #d1d5db;
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            
+            --radius-sm: 8px;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --radius-full: 9999px;
+            
+            --transition: 250ms cubic-bezier(0.4, 0, 0.2, 1);
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: var(--bg-light); color: var(--text-dark); line-height: 1.6; display: flex; flex-direction: column; min-height: 100vh; padding-bottom: 60px; }
-
-        header { background: var(--primary); color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 999; }
-        .logo { font-size: 1.5em; font-weight: bold; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 5px; }
-        .logo span { color: var(--accent); }
-        .nav-links { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .nav-links button, .nav-links a { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 6px 10px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 0.8em; transition: 0.3s; }
-        .nav-links button:hover, .nav-links a:hover { background: var(--accent); border-color: var(--accent); }
-
-        .search-location-bar { background: #fff; padding: 12px 20px; border-bottom: 1px solid #ddd; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .search-location-bar input, .search-location-bar select { flex: 1; min-width: 200px; margin: 0; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.9em; }
-
-        .categories-strip { display: flex; gap: 10px; overflow-x: auto; padding: 15px 20px; background: #fff; margin-bottom: 15px; border-bottom: 1px solid #eee; white-space: nowrap; }
-        .category-chip { background: #eef2f7; color: var(--primary); padding: 6px 14px; border-radius: 20px; font-size: 0.85em; font-weight: 600; cursor: pointer; border: 1px solid #dcdde1; transition: 0.2s; display: inline-block; }
-        .category-chip:hover, .category-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-
-        .hero { background: linear-gradient(135deg, #1e3799, #0c2461); color: white; text-align: center; padding: 30px 20px; margin-bottom: 20px; }
-        .hero h1 { font-size: 1.8em; margin-bottom: 8px; }
-        .hero p { font-size: 0.95em; color: #dcdde1; max-width: 650px; margin: 0 auto 12px auto; }
-        .features-strip { display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .feature-badge { background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 30px; font-size: 0.8em; }
-
-        .security-banner { background: #ffeaa7; color: #d63031; border: 1px solid #ffeaa7; padding: 10px 15px; text-align: center; font-size: 0.85em; font-weight: bold; margin-bottom: 20px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 15px 30px 15px; flex: 1; width: 100%; box-sizing: border-box; }
-
-        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        @media (max-width: 500px) {
-            .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --bg-card: #1e293b;
+            --bg-glass: rgba(30, 41, 59, 0.7);
+            
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-tertiary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --border: #334155;
+            --border-hover: #475569;
+            
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+            --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.4);
         }
-
-        .card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; border: 1px solid #dcdde1; cursor: pointer; transition: transform 0.2s; }
-        .card:hover { transform: translateY(-2px); }
-
-        .card-img-wrapper { position: relative; width: 100%; background-color: #111; display: flex; align-items: center; justify-content: center; height: 180px; overflow: hidden; }
-        .card img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-        .card-content { padding: 10px; }
-        .card h3 { margin: 0 0 6px 0; font-size: 0.95em; color: var(--primary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .card p { font-size: 0.8em; color: #666; margin-bottom: 6px; }
-        .price { color: var(--success); font-weight: bold; font-size: 0.95em; margin-bottom: 6px; display: block; }
-
-        .stories-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        @media (max-width: 600px) {
-            .stories-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        
+        html { scroll-behavior: smooth; }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 80px;
+            transition: background var(--transition), color var(--transition);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
-        .story-grid-card { background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #dcdde1; display: flex; flex-direction: column; justify-content: space-between; }
-        .story-grid-img { width: 100%; height: 150px; background: #000; overflow: hidden; }
-        .story-grid-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .story-grid-body { padding: 12px; display: flex; flex-direction: column; justify-content: space-between; flex: 1; }
-        .story-grid-title { font-size: 0.95em; font-weight: bold; color: var(--primary); margin: 0 0 6px 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .story-grid-meta { font-size: 0.75em; color: #718096; margin-bottom: 10px; }
-
-        .story-reader-content {
-            background-color: #fdfbf7 !important;
-            border: 2px solid #e2d9c2;
-            color: #2c2c2c;
+        
+        /* ============ SCROLLBAR ============ */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: var(--radius-full); }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+        
+        /* ============ HEADER ============ */
+        header {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-
-        .payment-box { background: #e8f8f5; border-top: 1px solid #a3e4d7; padding: 8px 10px; }
-        input, select, textarea { width: 100%; padding: 10px; margin: 6px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 0.9em; }
-        .btn { background: var(--success); color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-size: 1em; width: 100%; font-weight: bold; transition: background 0.2s; }
-        .btn:hover { background: #219653; }
-
-        .section { display: none; }
+        
+        .logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.4em;
+            font-weight: 800;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.5px;
+            transition: transform var(--transition);
+        }
+        .logo:hover { transform: scale(1.02); }
+        .logo span {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .nav-links button, .nav-links a {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid transparent;
+            padding: 8px 14px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: all var(--transition);
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        
+        .nav-links button:hover, .nav-links a:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-admin-nav {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
+            color: white !important;
+            border: none !important;
+            font-weight: 600 !important;
+        }
+        .btn-admin-nav:hover {
+            background: linear-gradient(135deg, #7c3aed, #5b21b6) !important;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4) !important;
+        }
+        
+        .btn-theme {
+            background: var(--bg-tertiary) !important;
+            color: var(--text-primary) !important;
+            border: 1px solid var(--border) !important;
+            padding: 8px 12px !important;
+            border-radius: var(--radius-full) !important;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .btn-theme:hover {
+            background: var(--primary) !important;
+            color: white !important;
+        }
+        
+        /* ============ HERO ============ */
+        .hero {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 20px 50px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.15) 0%, transparent 60%),
+                        radial-gradient(circle at 80% 30%, rgba(255,255,255,0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        
+        .hero h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(1.6em, 5vw, 2.5em);
+            margin-bottom: 12px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            position: relative;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .hero p {
+            font-size: 1em;
+            color: rgba(255,255,255,0.9);
+            max-width: 650px;
+            margin: 0 auto 20px;
+            position: relative;
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
+        
+        .features-strip {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            position: relative;
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+        
+        .feature-badge {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            font-size: 0.85em;
+            font-weight: 500;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ============ SEARCH BAR ============ */
+        .search-location-bar {
+            background: var(--bg-card);
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 60px;
+            z-index: 800;
+            backdrop-filter: blur(10px);
+        }
+        
+        .search-location-bar input, .search-location-bar select {
+            flex: 1;
+            min-width: 180px;
+            margin: 0;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.9em;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: inherit;
+            transition: all var(--transition);
+        }
+        
+        .search-location-bar input:focus, .search-location-bar select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        
+        /* ============ CATEGORIES ============ */
+        .categories-strip {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            scrollbar-width: none;
+        }
+        .categories-strip::-webkit-scrollbar { display: none; }
+        
+        .category-chip {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: var(--radius-full);
+            font-size: 0.85em;
+            font-weight: 500;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        
+        .category-chip:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+        
+        .category-chip.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        /* ============ CONTAINER ============ */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 16px 40px;
+            flex: 1;
+            width: 100%;
+        }
+        
+        /* ============ SECURITY BANNER ============ */
+        .security-banner {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            border: 1px solid #fbbf24;
+            padding: 12px 18px;
+            text-align: center;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 24px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        [data-theme="dark"] .security-banner {
+            background: linear-gradient(135deg, #78350f, #92400e);
+            color: #fef3c7;
+        }
+        
+        /* ============ CARDS GRID ============ */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+        
+        @media (max-width: 640px) {
+            .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+        }
+        
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        
+        .card-img-wrapper {
+            position: relative;
+            width: 100%;
+            background: var(--bg-tertiary);
+            height: 180px;
+            overflow: hidden;
+        }
+        
+        .card-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .card:hover .card-img-wrapper img {
+            transform: scale(1.08);
+        }
+        
+        .card-content {
+            padding: 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .card h3 {
+            margin: 0 0 8px;
+            font-size: 1em;
+            color: var(--text-primary);
+            font-weight: 600;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+        
+        .card p {
+            font-size: 0.8em;
+            color: var(--text-tertiary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .price {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 1.05em;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        /* ============ STORIES GRID ============ */
+        .stories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        
+        @media (max-width: 640px) {
+            .stories-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        }
+        
+        .story-grid-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: all var(--transition);
+            position: relative;
+        }
+        
+        .story-grid-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+        
+        .story-grid-img {
+            width: 100%;
+            height: 160px;
+            background: var(--bg-tertiary);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .story-grid-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .story-grid-card:hover .story-grid-img img {
+            transform: scale(1.08);
+        }
+        
+        .story-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 0.7em;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+            z-index: 2;
+        }
+        
+        .story-badge.free {
+            background: rgba(16, 185, 129, 0.95);
+            color: white;
+        }
+        
+        .story-badge.paid {
+            background: rgba(245, 158, 11, 0.95);
+            color: white;
+        }
+        
+        .story-grid-body {
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        
+        .story-grid-title {
+            font-size: 1em;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+        
+        .story-grid-meta {
+            font-size: 0.75em;
+            color: var(--text-tertiary);
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        /* ============ BUTTONS ============ */
+        .btn {
+            background: linear-gradient(135deg, var(--success), var(--success-dark));
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 0.95em;
+            width: 100%;
+            font-weight: 600;
+            transition: all var(--transition);
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 0.2px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            filter: brightness(1.05);
+        }
+        
+        .btn:active { transform: translateY(0); }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+        .btn-primary:hover {
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent), #d97706);
+        }
+        .btn-accent:hover {
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+        }
+        
+        /* ============ SECTIONS ============ */
+        .section { display: none; animation: fadeIn 0.3s ease; }
         .section.active { display: block; }
-        .form-card { background: #fff; max-width: 450px; margin: 0 auto; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #ddd; }
-
-        .admin-panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #ddd; padding-bottom: 10px; flex-wrap: wrap; gap: 10px; }
-        .badge { background: var(--accent); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
-        .badge-success { background: var(--success); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
-        .badge-super { background: #6c5ce7; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
-        .badge-sub { background: #0984e3; color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; }
-
-        .admin-stats-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 25px; }
-        @media (max-width: 700px) { .admin-stats-bar { grid-template-columns: repeat(2, 1fr); } }
-        .stat-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 10px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
-        .stat-card .stat-num { font-size: 1.4em; font-weight: bold; color: var(--primary); display: block; }
-        .stat-card .stat-label { font-size: 0.72em; color: #666; margin-top: 2px; display: block; }
-
-        .admin-card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ============ FORM CARD ============ */
+        .form-card {
+            background: var(--bg-card);
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 32px;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border);
+        }
+        
+        @media (max-width: 480px) {
+            .form-card { padding: 24px 20px; border-radius: var(--radius-lg); }
+        }
+        
+        .form-card h2 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        /* ============ INPUTS ============ */
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            margin: 6px 0;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            box-sizing: border-box;
+            font-size: 0.95em;
+            font-family: inherit;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all var(--transition);
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: var(--text-muted);
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            margin-top: 12px;
+            margin-bottom: 4px;
+            letter-spacing: 0.2px;
+        }
+        
+        /* ============ ROLE SELECTOR ============ */
+        .role-selector-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+            background: var(--bg-tertiary);
+            padding: 6px;
+            border-radius: var(--radius);
+        }
+        
+        .role-btn {
+            padding: 10px 8px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.85em;
+            transition: all var(--transition);
+            color: var(--text-secondary);
+            font-family: inherit;
+        }
+        
+        .role-btn.active {
+            background: var(--bg-primary);
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* ============ PROFILE HEADER ============ */
+        .profile-header-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark), #7c3aed);
+            color: white;
+            padding: 32px 24px;
+            border-radius: var(--radius-xl);
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .profile-header-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.15), transparent 70%);
+            pointer-events: none;
+        }
+        
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+            background: rgba(255,255,255,0.25);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 2.5em;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            border: 3px solid rgba(255,255,255,0.4);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        /* ============ ADMIN PANEL ============ */
+        .admin-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .badge {
+            background: var(--accent);
+            color: white;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 0.7em;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            letter-spacing: 0.3px;
+        }
+        
+        .badge-success { background: var(--success); }
+        .badge-super { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+        .badge-sub { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        
+        .admin-stats-bar {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        
+        @media (max-width: 900px) { .admin-stats-bar { grid-template-columns: repeat(2, 1fr); } }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px 14px;
+            text-align: center;
+            transition: all var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .stat-card .stat-num {
+            font-size: 1.6em;
+            font-weight: 800;
+            color: var(--primary);
+            display: block;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .stat-card .stat-label {
+            font-size: 0.75em;
+            color: var(--text-tertiary);
+            margin-top: 4px;
+            display: block;
+            font-weight: 500;
+        }
+        
+        .admin-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 12px;
+        }
+        
         @media (max-width: 700px) { .admin-card-grid { grid-template-columns: 1fr; } }
-        .admin-item-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 8px; font-size: 0.9em; }
-        .admin-item-card .admin-item-top { display: flex; align-items: center; gap: 10px; }
-        .admin-item-card .admin-item-actions { display: flex; gap: 5px; flex-wrap: wrap; margin-top: auto; }
-        .admin-item-card .admin-item-actions button { border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75em; color: #fff; }
-
-        .admin-mgmt-card { background: #fff8ec; border: 1px solid #f5cc8a; border-radius: 8px; padding: 15px; margin-bottom: 25px; }
-        .admin-mgmt-card h3 { margin-top: 0; }
-        .admin-add-form { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; align-items: end; }
-        @media (max-width: 700px) { .admin-add-form { grid-template-columns: 1fr; } }
+        
+        .admin-item-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px;
+            transition: all var(--transition);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+        
+        .admin-item-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .admin-item-card .admin-item-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .admin-item-card .admin-item-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: auto;
+            padding-top: 8px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .admin-item-card .admin-item-actions button {
+            border: none;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.75em;
+            color: white;
+            transition: all var(--transition);
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .admin-item-card .admin-item-actions button:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.1);
+        }
+        
+        .admin-mgmt-card {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(249, 115, 22, 0.08));
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 28px;
+        }
+        
+        [data-theme="dark"] .admin-mgmt-card {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(249, 115, 22, 0.15));
+        }
+        
+        .admin-add-form {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            align-items: end;
+        }
+        
+        @media (max-width: 900px) { .admin-add-form { grid-template-columns: 1fr; } }
+        
         .admin-add-form input, .admin-add-form select { margin: 0; }
-        .admin-add-form button { padding: 10px; }
-
-        .auth-banner { background: #fff3cd; color: #856404; padding: 12px; text-align: center; font-size: 0.9em; margin-bottom: 20px; border-radius: 4px; border: 1px solid #ffeeba; font-weight: bold; }
-
-        .role-selector-container { display: flex; gap: 5px; margin-bottom: 15px; }
-        .role-btn { flex: 1; padding: 8px 4px; border: 2px solid #ccc; background: #fff; border-radius: 4px; font-weight: bold; cursor: pointer; text-align: center; font-size: 0.75em; transition: 0.2s; }
-        .role-btn.active { border-color: var(--primary); background: #eef2f7; color: var(--primary); }
-
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #fff; border-top: 1px solid #ddd; display: flex; justify-content: space-around; padding: 8px 0; z-index: 1000; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); }
-        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #666; font-size: 0.75em; font-weight: 600; cursor: pointer; transition: color 0.2s; background: none; border: none; }
-        .bottom-nav-item span.icon { font-size: 1.3em; margin-bottom: 2px; }
-        .bottom-nav-item.active, .bottom-nav-item:hover { color: var(--primary); }
-
-        .profile-header-card { background: linear-gradient(135deg, var(--primary), #0c2461); color: #fff; padding: 25px; border-radius: 8px; text-align: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .profile-avatar { width: 80px; height: 80px; background: var(--accent); color: #fff; font-size: 2.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin: 0 auto 12px auto; border: 3px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
-        .modal-content { background-color: #fff; margin: auto; padding: 25px; border-radius: 8px; width: 90%; max-width: 600px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); position: relative; max-height: 90vh; overflow-y: auto; }
-        .close-modal { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-        .close-modal:hover { color: #000; }
-
-        #market-image-modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.95); align-items: center; justify-content: center; padding: 15px; box-sizing: border-box; }
-        #market-image-modal img { max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: 4px; box-shadow: 0 5px 30px rgba(0,0,0,0.7); }
-        .close-market-modal { position: absolute; top: 15px; right: 25px; color: #fff; font-size: 45px; font-weight: bold; cursor: pointer; z-index: 10000; }
-        .close-market-modal:hover { color: var(--accent); }
-
-        footer { background: var(--primary); color: #fff; text-align: center; padding: 15px; margin-top: auto; font-size: 0.85em; border-top: 3px solid var(--accent); margin-bottom: 50px; }
-        footer p { margin: 4px 0; }
-
-        .btn-admin-nav { background: #6c5ce7 !important; border-color: #6c5ce7 !important; font-weight: bold; }
-        .btn-admin-nav:hover { background: #5b4bc4 !important; }
+        
+        /* ============ AUTH BANNER ============ */
+        .auth-banner {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+            padding: 14px 18px;
+            text-align: center;
+            font-size: 0.9em;
+            margin-bottom: 24px;
+            border-radius: var(--radius);
+            border: 1px solid #fbbf24;
+            font-weight: 600;
+        }
+        
+        [data-theme="dark"] .auth-banner {
+            background: linear-gradient(135deg, #78350f, #92400e);
+            color: #fef3c7;
+        }
+        
+        /* ============ BOTTOM NAV ============ */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+            z-index: 1000;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+        }
+        
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-tertiary);
+            font-size: 0.7em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: none;
+            border: none;
+            padding: 6px 12px;
+            border-radius: var(--radius);
+            gap: 2px;
+            font-family: inherit;
+            position: relative;
+        }
+        
+        .bottom-nav-item .icon {
+            font-size: 1.4em;
+            margin-bottom: 2px;
+            transition: transform var(--transition);
+        }
+        
+        .bottom-nav-item.active {
+            color: var(--primary);
+        }
+        
+        .bottom-nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 0 0 4px 4px;
+        }
+        
+        .bottom-nav-item.active .icon {
+            transform: scale(1.15);
+        }
+        
+        .bottom-nav-item:hover {
+            color: var(--primary);
+        }
+        
+        /* ============ MODAL ============ */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            animation: fadeIn 0.2s ease;
+        }
+        
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border);
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            color: var(--text-tertiary);
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all var(--transition);
+            line-height: 1;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+        }
+        
+        .close-modal:hover {
+            color: white;
+            background: var(--danger);
+            transform: rotate(90deg);
+        }
+        
+        /* ============ STORY READER ============ */
+        .story-reader-content {
+            background: linear-gradient(180deg, var(--bg-card), var(--bg-secondary)) !important;
+            border: 2px solid var(--accent) !important;
+        }
+        
+        .payment-box {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(5, 150, 105, 0.08));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+        
+        /* ============ LIGHTBOX ============ */
+        #market-image-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(0, 0, 0, 0.95);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.2s ease;
+        }
+        
+        #market-image-modal img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: var(--radius);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+            animation: zoomIn 0.3s ease;
+        }
+        
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .close-market-modal {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            color: white;
+            font-size: 45px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10000;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            transition: all var(--transition);
+            line-height: 1;
+        }
+        
+        .close-market-modal:hover {
+            background: var(--danger);
+            transform: rotate(90deg);
+        }
+        
+        /* ============ FOOTER ============ */
+        footer {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: auto;
+            font-size: 0.85em;
+            border-top: 1px solid var(--border);
+            margin-bottom: 70px;
+        }
+        
+        footer p { margin: 6px 0; }
+        footer strong { color: var(--primary); }
+        
+        /* ============ TOAST ============ */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+        
+        .toast {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 14px 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--primary);
+            font-size: 0.9em;
+            font-weight: 500;
+            min-width: 280px;
+            max-width: 380px;
+            animation: slideInRight 0.3s ease;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: var(--warning); }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* ============ LOADING SKELETON ============ */
+        .skeleton {
+            background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--border) 50%, var(--bg-tertiary) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: var(--radius-sm);
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* ============ UTILITIES ============ */
+        .flex { display: flex; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .flex-between { display: flex; align-items: center; justify-content: space-between; }
+        .gap-2 { gap: 8px; }
+        .gap-4 { gap: 16px; }
+        .mt-4 { margin-top: 16px; }
+        .mb-4 { margin-bottom: 16px; }
+        .text-center { text-align: center; }
+        
+        /* ============ TABLES ============ */
+        table { border-collapse: collapse; width: 100%; border-radius: var(--radius); overflow: hidden; }
+        table th { background: var(--bg-tertiary); color: var(--text-primary); font-weight: 600; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px; }
+        table td { padding: 12px; border-top: 1px solid var(--border); font-size: 0.85em; color: var(--text-secondary); }
+        table tr:hover td { background: var(--bg-tertiary); }
     </style>
 </head>
 <body>
 
+    <!-- ============ TOAST CONTAINER ============ -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ============ HEADER ============ -->
     <header>
-        <a href="#" class="logo" onclick="checkMarketAccess()">SokoSmart <span>TZ</span></a>
+        <a href="#" class="logo" onclick="checkMarketAccess()">
+            🛒 SokoSmart <span>TZ</span>
+        </a>
         <div class="nav-links" id="nav-menu-container"></div>
     </header>
 
+    <!-- ============ HERO ============ -->
     <div class="hero" id="hero-section">
-        <h1>Soko Kuu la Kidijitali Tanzania</h1>
+        <h1>🇹🇿 Soko Kuu la Kidijitali Tanzania</h1>
         <p>Weka biashara au bidhaa yako bure, nunua na uuze kwa usalama kamili.</p>
         <div class="features-strip">
-            <div class="feature-badge">🔒 Salama 100% (Escrow)</div>
-            <div class="feature-badge">🛡️ Soko la Kuaminika Tanzania</div>
+            <div class="feature-badge">🔒 Salama 100%</div>
+            <div class="feature-badge">⚡ Haraka na Rahisi</div>
+            <div class="feature-badge">🛡️ Soko la Kuaminika</div>
         </div>
     </div>
 
+    <!-- ============ SEARCH BAR ============ -->
     <div id="search-bar-container" style="display:none;">
         <div class="search-location-bar">
             <input type="text" id="search-input" placeholder="🔍 Tafuta bidhaa, simu, magari..." oninput="filterDesigns()">
@@ -170,149 +1232,149 @@
         </div>
 
         <div class="categories-strip" id="categories-strip">
-            <div class="category-chip active" data-cat="All" onclick="filterByCategory('All', this)">Zote (All)</div>
-            <div class="category-chip" data-cat="Magari" onclick="filterByCategory('Magari', this)">🚗 Magari & Vyombo</div>
-            <div class="category-chip" data-cat="Simu" onclick="filterByCategory('Simu', this)">📱 Simu & Electronics</div>
-            <div class="category-chip" data-cat="Nyumba" onclick="filterByCategory('Nyumba', this)">🏠 Nyumba & Viwanja</div>
-            <div class="category-chip" data-cat="Mitindo" onclick="filterByCategory('Mitindo', this)">👕 Mitindo & Viatu</div>
-            <div class="category-chip" data-cat="Digital" onclick="filterByCategory('Digital', this)">💻 Digital Services</div>
-            <div class="category-chip" onclick="switchTab('stories-feed')" style="background:var(--accent); color:#fff;">📖 Hadithi Zetu</div>
+            <div class="category-chip active" data-cat="All" onclick="filterByCategory('All', this)">🌟 Zote</div>
+            <div class="category-chip" data-cat="Magari" onclick="filterByCategory('Magari', this)">🚗 Magari</div>
+            <div class="category-chip" data-cat="Simu" onclick="filterByCategory('Simu', this)">📱 Simu</div>
+            <div class="category-chip" data-cat="Nyumba" onclick="filterByCategory('Nyumba', this)">🏠 Nyumba</div>
+            <div class="category-chip" data-cat="Mitindo" onclick="filterByCategory('Mitindo', this)">👕 Mitindo</div>
+            <div class="category-chip" data-cat="Digital" onclick="filterByCategory('Digital', this)">💻 Digital</div>
+            <div class="category-chip" onclick="switchTab('stories-feed')" style="background:linear-gradient(135deg,var(--accent),#d97706); color:#fff;">📖 Hadithi</div>
         </div>
     </div>
 
     <div class="container">
 
         <div class="security-banner">
-            ⚠️ ONYO LA KIUSALAMA: SokoSmart TZ inalindwa chini ya mifumo ya kisasa ya Cyber Security. Vitendo vyote vya udanganyifu au utapeli vinafuatiliwa na akaunti yako itafutwa mara moja!
+            <span>🛡️</span>
+            <span>ONYO LA KIUSALAMA: SokoSmart TZ inalindwa na mifumo ya kisasa ya Cyber Security. Vitendo vyote vya udanganyifu vinafuatiliwa!</span>
         </div>
 
-        <!-- MARKETPLACE SECTION -->
+        <!-- ============ MARKETPLACE ============ -->
         <div id="market" class="section">
             <div id="market-auth-warning" class="auth-banner" style="display:none;">
-                Tafadhali fanya <a href="#" onclick="switchTab('signin')" style="color:var(--accent);">Sign In</a> au <a href="#" onclick="switchTab('signup')" style="color:var(--accent);">Sign Up</a> kwanza ili uweze kuona na kununua bidhaa zote zilizopo kwenye SokoSmart!
+                Tafadhali fanya <a href="#" onclick="switchTab('signin')" style="color:var(--primary); font-weight:700;">Sign In</a> au <a href="#" onclick="switchTab('signup')" style="color:var(--primary); font-weight:700;">Sign Up</a> kwanza ili uone bidhaa!
             </div>
             <div id="market-content-area">
                 <div class="grid" id="designs-grid">
-                    <p style="text-align:center; grid-column: 1/-1;">Inapakia bidhaa...</p>
+                    <p style="text-align:center; grid-column: 1/-1; padding:40px; color:var(--text-tertiary);">⏳ Inapakia bidhaa...</p>
                 </div>
             </div>
         </div>
 
-        <!-- STORIES FEED SECTION -->
+        <!-- ============ STORIES FEED ============ -->
         <div id="stories-feed" class="section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="flex-between mb-4" style="flex-wrap:wrap; gap:12px;">
                 <div>
-                    <h2 style="color: var(--primary); margin: 0;">Hadithi na Makala za SokoSmart</h2>
-                    <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9em;">Chagua hadithi usome kwa urahisi.</p>
+                    <h2 style="color: var(--text-primary); margin: 0; font-family:'Poppins'; font-weight:700; letter-spacing:-0.5px;">📖 Hadithi za SokoSmart</h2>
+                    <p style="margin: 6px 0 0 0; color: var(--text-tertiary); font-size: 0.9em;">Chagua hadithi usome kwa urahisi</p>
                 </div>
-                <button class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85em; background: var(--primary);" onclick="switchTab('market')">← Rudi Sokoni</button>
+                <button class="btn btn-primary" style="width:auto; padding:8px 16px; font-size:0.85em;" onclick="switchTab('market')">← Rudi Sokoni</button>
             </div>
             <div id="stories-list-container" class="stories-grid">
-                <p style="text-align:center; grid-column: 1/-1;">Inapakia hadithi...</p>
+                <p style="text-align:center; grid-column: 1/-1; padding:40px; color:var(--text-tertiary);">⏳ Inapakia hadithi...</p>
             </div>
         </div>
 
-        <!-- READER VIEW MODAL FOR FULL STORY -->
+        <!-- ============ STORY READER MODAL ============ -->
         <div id="story-reader-modal" class="modal">
-            <div class="modal-content story-reader-content" style="max-width: 700px;">
+            <div class="modal-content story-reader-content" style="max-width: 720px;">
                 <span class="close-modal" onclick="closeStoryModal()">&times;</span>
-                <div id="modal-story-cover-box" style="width: 100%; height: 260px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 15px; display: none;">
+                <div id="modal-story-cover-box" style="width: 100%; height: 280px; background: var(--bg-tertiary); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; display: none;">
                     <img id="modal-story-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>
                 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h2 id="modal-story-title" style="color: var(--primary); margin: 0; font-size: 1.3em;"></h2>
-                    <div id="modal-story-price-badge" style="display: none; align-items: center; gap: 6px; font-size: 0.85em; background: #fff3cd; padding: 4px 10px; border-radius: 20px; border: 1px solid #ffeeba; font-weight: bold; color: #856404;">
+                <div class="flex-between" style="margin-bottom: 12px; flex-wrap:wrap; gap:8px;">
+                    <h2 id="modal-story-title" style="color: var(--primary); margin: 0; font-family:'Poppins'; font-size: 1.4em; font-weight:700; letter-spacing:-0.5px;"></h2>
+                    <div id="modal-story-price-badge" style="display: none; align-items: center; gap: 6px; font-size: 0.85em; background: linear-gradient(135deg, var(--accent), #d97706); padding: 6px 14px; border-radius: var(--radius-full); font-weight: 700; color: white;">
                         💰 <span id="modal-story-price-text">Kulipia</span>
                     </div>
                 </div>
 
-                <div style="font-size: 0.8em; color: #718096; margin-bottom: 15px; border-bottom: 1px solid #dcd6c1; padding-bottom: 8px;">
-                    ✍️ Mwandishi: <strong id="modal-story-author"></strong> | 📅 <span id="modal-story-date"></span>
+                <div style="font-size: 0.85em; color: var(--text-tertiary); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border);">
+                    ✍️ Mwandishi: <strong id="modal-story-author" style="color: var(--text-primary);"></strong> &nbsp;|&nbsp; 📅 <span id="modal-story-date"></span>
                 </div>
 
-                <div id="modal-story-content-container">
-                    <div id="modal-story-content" style="font-size: 1em; color: #2c2c2c; line-height: 1.85; white-space: pre-wrap; max-height: 50vh; overflow-y: auto; padding-right: 5px; margin-bottom: 20px;"></div>
-                </div>
+                <div id="modal-story-content" style="font-size: 1.05em; color: var(--text-primary); line-height: 1.9; white-space: pre-wrap; max-height: 50vh; overflow-y: auto; padding-right: 8px; margin-bottom: 24px; font-family: 'Inter';"></div>
                 
-                <div id="story-payment-section" style="background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #e2d9c2;">
-                    <h4 style="margin: 0 0 8px 0; color: var(--primary);">Wasiliana na Mwandishi / Nunua Hati hii</h4>
-                    <p style="font-size: 0.85em; color: #666; margin-bottom: 10px;">Simu ya Mwandishi:</p>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <a id="modal-story-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 07XXXXXXXX</a>
+                <div id="story-payment-section" style="background: var(--bg-secondary); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border);">
+                    <h4 style="margin: 0 0 12px 0; color: var(--primary); font-weight: 700;">📞 Wasiliana / Nunua Hati hii</h4>
+                    <p style="font-size: 0.85em; color: var(--text-tertiary); margin-bottom: 12px;">Simu ya Mwandishi:</p>
+                    <div style="display: flex; gap: 10px; margin-bottom: 16px;">
+                        <a id="modal-story-phone-btn" href="#" class="btn" style="background: linear-gradient(135deg, var(--success), var(--success-dark)); text-align: center; text-decoration: none; font-size: 0.9em;">📞 07XXXXXXXX</a>
                     </div>
-                    <div class="payment-box" style="border-radius: 6px;">
-                        <p style="margin:0 0 5px 0; font-size:0.85em;"><strong>Weka namba yako ya simu ya malipo ili kununua huduma hii:</strong></p>
-                        <input type="text" id="story-pay-phone" placeholder="Namba yako ya simu ya malipo" style="margin-bottom:8px;">
-                        <button class="btn" onclick="submitStoryPayment()">Nimemaliza Kulipa Hadithi</button>
-                        <p id="payment-status-notice" style="font-size: 0.8em; margin-top: 8px; color: var(--primary); font-weight: bold;"></p>
+                    <div class="payment-box">
+                        <p style="margin:0 0 8px 0; font-size:0.85em; font-weight:600; color: var(--text-primary);">💳 Weka namba yako ya simu ya malipo:</p>
+                        <input type="text" id="story-pay-phone" placeholder="Namba yako ya simu ya malipo" style="margin-bottom:10px;">
+                        <button class="btn btn-accent" onclick="submitStoryPayment()">✅ Nimemaliza Kulipa</button>
+                        <p id="payment-status-notice" style="font-size: 0.85em; margin-top: 10px; color: var(--primary); font-weight: 600; text-align:center;"></p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- PRODUCT DETAILS SECTION -->
+        <!-- ============ PRODUCT DETAILS ============ -->
         <div id="product-details" class="section">
-            <div class="form-card" style="max-width: 650px; padding: 20px;">
-                <button onclick="switchTab('market')" style="background: none; border: none; color: var(--primary); font-weight: bold; cursor: pointer; margin-bottom: 15px; font-size: 1em;">← Rudi kwenye Orodha</button>
+            <div class="form-card" style="max-width: 700px; padding: 24px;">
+                <button onclick="switchTab('market')" style="background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; margin-bottom: 20px; font-size: 0.95em; display:inline-flex; align-items:center; gap:6px;">← Rudi kwenye Orodha</button>
 
-                <div id="detail-image-box" style="position: relative; width: 100%; max-width: 100%; height: 280px; background: #000; border-radius: 6px; overflow: hidden; margin-bottom: 8px; display: flex; align-items: center; justify-content: center;">
+                <div id="detail-image-box" style="position: relative; width: 100%; height: 320px; background: var(--bg-tertiary); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;">
                     <img id="detail-img" src="" alt="" style="width: 100%; height: 100%; object-fit: contain; cursor: pointer;" onclick="openMarketImageModal(this.src)">
                 </div>
 
-                <div id="detail-thumbs-row" style="display: flex; gap: 6px; margin-bottom: 15px; overflow-x: auto;"></div>
+                <div id="detail-thumbs-row" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto;"></div>
 
-                <div id="detail-video-box" style="margin-bottom: 15px; display: none;">
-                    <video id="detail-video" controls style="width: 100%; max-height: 250px; background: #000; border-radius: 6px;"></video>
+                <div id="detail-video-box" style="margin-bottom: 20px; display: none;">
+                    <video id="detail-video" controls style="width: 100%; max-height: 280px; background: #000; border-radius: var(--radius-lg);"></video>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                <div class="flex-between" style="align-items: flex-start; margin-bottom: 12px; gap:12px; flex-wrap:wrap;">
                     <div>
-                        <span id="detail-category" style="font-size: 0.75em; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #4a5568;"></span>
-                        <h2 id="detail-title" style="margin: 5px 0 0 0; color: var(--primary); font-size: 1.3em;"></h2>
+                        <span id="detail-category" style="font-size: 0.75em; background: var(--bg-tertiary); padding: 4px 10px; border-radius: var(--radius-full); color: var(--text-secondary); font-weight:600; display:inline-block;"></span>
+                        <h2 id="detail-title" style="margin: 8px 0 0 0; color: var(--text-primary); font-size: 1.4em; font-family:'Poppins'; font-weight:700; letter-spacing:-0.5px;"></h2>
                     </div>
                     <div style="text-align: right;">
-                        <span id="detail-price" style="color: var(--success); font-weight: bold; font-size: 1.2em; display: block;"></span>
-                        <span style="font-size: 0.75em; color: #888;">Negotiable</span>
+                        <span id="detail-price" style="color: var(--success); font-weight: 800; font-size: 1.5em; display: block; font-family:'Poppins';"></span>
+                        <span style="font-size: 0.75em; color: var(--text-tertiary);">💬 Negotiable</span>
                     </div>
                 </div>
 
-                <p style="font-size: 0.85em; color: #666; margin: 5px 0;">📍 <span id="detail-location"></span></p>
-                <p style="font-size: 0.8em; color: #888; margin: 0 0 15px 0;">Muuzaji: <strong id="detail-designer"></strong></p>
+                <p style="font-size: 0.9em; color: var(--text-secondary); margin: 8px 0;">📍 <span id="detail-location"></span></p>
+                <p style="font-size: 0.85em; color: var(--text-tertiary); margin: 0 0 20px 0;">👤 Muuzaji: <strong id="detail-designer" style="color: var(--text-primary);"></strong></p>
 
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <button class="btn" style="background: #fff; color: var(--primary); border: 1px solid var(--primary); font-size: 0.9em;" onclick="requestCallback()">Request call back</button>
-                    <a id="detail-phone-btn" href="#" class="btn" style="background: var(--success); text-align: center; text-decoration: none; font-size: 0.9em; display: flex; align-items: center; justify-content: center;">📞 07XXXXXXXX</a>
+                <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+                    <button class="btn btn-primary" style="font-size: 0.9em;" onclick="requestCallback()">📞 Omba Kupigiwa</button>
+                    <a id="detail-phone-btn" href="#" class="btn" style="background: linear-gradient(135deg, var(--success), var(--success-dark)); text-align: center; text-decoration: none; font-size: 0.9em;">📱 07XXXXXXXX</a>
                 </div>
 
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px;">
-                    <h4 style="margin: 0 0 10px 0; color: var(--primary);">Chat with the seller</h4>
-                    <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
-                        <button type="button" onclick="setQuickMsg('Make an offer')" style="background: #fff; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; font-size: 0.8em; cursor: pointer;">Make an offer</button>
-                        <button type="button" onclick="setQuickMsg('Is this available')" style="background: #fff; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; font-size: 0.8em; cursor: pointer;">Is this available</button>
-                        <button type="button" onclick="setQuickMsg('Last price')" style="background: #fff; border: 1px solid #ccc; padding: 5px 10px; border-radius: 15px; font-size: 0.8em; cursor: pointer;">Last price</button>
+                <div style="background: var(--bg-secondary); padding: 18px; border-radius: var(--radius-lg); border: 1px solid var(--border); margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 12px 0; color: var(--primary); font-weight:700;">💬 Chat na Muuzaji</h4>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
+                        <button type="button" onclick="setQuickMsg('Make an offer')" style="background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: var(--radius-full); font-size: 0.8em; cursor: pointer; color: var(--text-secondary); font-family:inherit; font-weight:500;">💰 Make an offer</button>
+                        <button type="button" onclick="setQuickMsg('Is this available')" style="background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: var(--radius-full); font-size: 0.8em; cursor: pointer; color: var(--text-secondary); font-family:inherit; font-weight:500;">✅ Is this available</button>
+                        <button type="button" onclick="setQuickMsg('Last price')" style="background: var(--bg-card); border: 1px solid var(--border); padding: 6px 12px; border-radius: var(--radius-full); font-size: 0.8em; cursor: pointer; color: var(--text-secondary); font-family:inherit; font-weight:500;">🏷️ Last price</button>
                     </div>
-                    <textarea id="chat-msg-input" placeholder="Type a message..." rows="2" style="margin-bottom: 8px;"></textarea>
-                    <button class="btn" style="background: var(--accent);" onclick="sendSellerMessage()">Start chat</button>
+                    <textarea id="chat-msg-input" placeholder="Andika ujumbe wako..." rows="2" style="margin-bottom: 10px;"></textarea>
+                    <button class="btn btn-accent" onclick="sendSellerMessage()">📤 Tuma Ujumbe</button>
                 </div>
 
-                <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin-bottom: 20px;">
-                    <strong style="display: block; margin-bottom: 5px; color: var(--primary);">Maelezo Kamili (Description):</strong>
-                    <p id="detail-desc" style="margin: 0; white-space: pre-wrap; font-size: 0.9em; color: #444;"></p>
+                <div style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-lg); border: 1px solid var(--border);">
+                    <strong style="display: block; margin-bottom: 8px; color: var(--primary); font-weight:700;">📝 Maelezo Kamili:</strong>
+                    <p id="detail-desc" style="margin: 0; white-space: pre-wrap; font-size: 0.95em; color: var(--text-secondary); line-height: 1.7;"></p>
                 </div>
             </div>
         </div>
 
-        <!-- SIGN UP SECTION -->
+        <!-- ============ SIGN UP ============ -->
         <div id="signup" class="section">
             <div class="form-card">
-                <h2 style="margin-top:0; color: var(--primary); text-align: center;">Fungua Akaunti (Sign Up)</h2>
+                <h2 style="margin-top:0; color: var(--text-primary); text-align: center; font-size:1.6em; margin-bottom: 8px;">🚀 Karibu SokoSmart</h2>
+                <p style="text-align:center; color: var(--text-tertiary); font-size:0.9em; margin-bottom: 24px;">Fungua akaunti yako bure leo</p>
 
-                <label style="font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px;">Chagua Aina ya Akaunti:</label>
+                <label>Chagua Aina ya Akaunti:</label>
                 <div class="role-selector-container">
-                    <button type="button" class="role-btn active" id="role-buyer-btn" onclick="setAccountRole('buyer')">Mnunuzi</button>
-                    <button type="button" class="role-btn" id="role-seller-btn" onclick="setAccountRole('seller')">Muuzaji</button>
-                    <button type="button" class="role-btn" id="role-storyteller-btn" onclick="setAccountRole('storyteller')">Mwandishi</button>
+                    <button type="button" class="role-btn active" id="role-buyer-btn" onclick="setAccountRole('buyer')">🛒 Mnunuzi</button>
+                    <button type="button" class="role-btn" id="role-seller-btn" onclick="setAccountRole('seller')">🏪 Muuzaji</button>
+                    <button type="button" class="role-btn" id="role-storyteller-btn" onclick="setAccountRole('storyteller')">✍️ Mwandishi</button>
                 </div>
 
                 <form id="signup-form" onsubmit="handleSignup(event)">
@@ -322,47 +1384,49 @@
                     <input type="text" id="su-username" placeholder="Weka jina lako kamili" required minlength="3">
 
                     <div id="seller-fields" style="display: none;">
-                        <label id="id-label-text">Namba ya Kitambulisho / NIDA</label>
-                        <input type="text" id="su-nida" placeholder="Weka namba yako ya NIDA/Kitambulisho">
+                        <label>Namba ya Kitambulisho / NIDA</label>
+                        <input type="text" id="su-nida" placeholder="Weka namba yako ya NIDA">
 
                         <label>Ambatisha Picha ya Kitambulisho</label>
-                        <input type="file" id="su-id-file" accept="image/*" style="background: #fff; padding: 8px;">
-                        <small style="color: #666; display: block; margin-bottom: 8px;">NIDA, Kadi ya Mpiga Kura, Leseni ya Udereva, au Kitambulisho cha Taifa.</small>
+                        <input type="file" id="su-id-file" accept="image/*">
+                        <small style="color: var(--text-tertiary); display: block; margin-bottom: 8px; font-size:0.75em;">NIDA, Kadi ya Mpiga Kura, au Kitambulisho cha Taifa</small>
                     </div>
 
                     <label>Nenosiri (Password)</label>
-                    <input type="password" id="su-password" placeholder="Weka nenosiri salama (angalau herufi 6)" required minlength="6">
+                    <input type="password" id="su-password" placeholder="Weka nenosiri salama (angalau 6)" required minlength="6">
 
-                    <label>Thibitisha Nenosiri (Confirm Password)</label>
+                    <label>Thibitisha Nenosiri</label>
                     <input type="password" id="su-confirm-password" placeholder="Rudia nenosiri lako" required minlength="6">
 
-                    <button type="submit" class="btn" style="margin-top: 15px;">Jisajili Sasa</button>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 20px;">🎉 Jisajili Sasa</button>
                 </form>
-                <p style="text-align: center; margin-top: 15px; font-size: 0.9em;">Una akaunti tayari? <a href="#" onclick="switchTab('signin')" style="color:var(--accent);">Sign In hapa</a></p>
+                <p style="text-align: center; margin-top: 20px; font-size: 0.9em; color: var(--text-tertiary);">Una akaunti tayari? <a href="#" onclick="switchTab('signin')" style="color:var(--primary); font-weight:700; text-decoration:none;">Sign In →</a></p>
             </div>
         </div>
 
-        <!-- SIGN IN SECTION -->
+        <!-- ============ SIGN IN ============ -->
         <div id="signin" class="section">
             <div class="form-card">
-                <h2 style="margin-top:0; color: var(--primary); text-align: center;">Ingia Kwenye Akaunti (Sign In)</h2>
+                <h2 style="margin-top:0; color: var(--text-primary); text-align: center; font-size:1.6em; margin-bottom: 8px;">👋 Karibu Tena</h2>
+                <p style="text-align:center; color: var(--text-tertiary); font-size:0.9em; margin-bottom: 24px;">Ingia kwenye akaunti yako</p>
                 <form id="signin-form" onsubmit="handleSignin(event)">
-                    <label>Jina la Mtumiaji (Username)</label>
+                    <label>Jina la Mtumiaji</label>
                     <input type="text" id="si-username" placeholder="Jina lako la usajili" required>
 
-                    <label>Nenosiri (Password)</label>
+                    <label>Nenosiri</label>
                     <input type="password" id="si-password" placeholder="Nenosiri lako" required>
 
-                    <button type="submit" class="btn" style="margin-top: 15px;">Ingia</button>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 20px;">🔓 Ingia</button>
                 </form>
-                <p style="text-align: center; margin-top: 15px; font-size: 0.9em;">Huna akaunti? <a href="#" onclick="switchTab('signup')" style="color:var(--accent);">Jisajili hapa</a></p>
+                <p style="text-align: center; margin-top: 20px; font-size: 0.9em; color: var(--text-tertiary);">Huna akaunti? <a href="#" onclick="switchTab('signup')" style="color:var(--primary); font-weight:700; text-decoration:none;">Jisajili →</a></p>
             </div>
         </div>
 
-        <!-- VENDOR UPLOAD SECTION -->
+        <!-- ============ VENDOR UPLOAD ============ -->
         <div id="designer" class="section">
-            <div class="form-card" style="max-width: 600px;">
-                <h2 style="margin-top:0; color: var(--primary);">Weka Bidhaa Yako Bure</h2>
+            <div class="form-card" style="max-width: 640px;">
+                <h2 style="margin-top:0; color: var(--text-primary); font-family:'Poppins'; font-weight:700; letter-spacing:-0.5px;">🏪 Weka Bidhaa Yako</h2>
+                <p style="color: var(--text-tertiary); font-size:0.9em; margin-bottom: 20px;">Weka bidhaa yako bure na uanze kuuza leo</p>
                 <form id="upload-form" onsubmit="handleUploadOptimized(event)">
                     <label>Jina la Bidhaa / Huduma</label>
                     <input type="text" id="up-title" placeholder="Mf. Toyota IST, Tecno Spark, Viwanja" required>
@@ -373,59 +1437,59 @@
                     <label>Bei (TZS)</label>
                     <input type="number" step="0.01" min="0" id="up-price" placeholder="10000" required>
 
-                    <label>Eneo Lipo (Location / Mkoa)</label>
-                    <input type="text" id="up-location" placeholder="Mf. Morogoro, Dar es Salaam, Arusha" required>
+                    <label>Eneo Lipo</label>
+                    <input type="text" id="up-location" placeholder="Mf. Morogoro, Dar es Salaam" required>
 
-                    <label>Namba ya Simu ya Muuzaji (Vendor Phone)</label>
+                    <label>Namba ya Simu ya Muuzaji</label>
                     <input type="text" id="up-vendor-phone" placeholder="Mf. 0712345678" pattern="0[67]\d{8}" required>
 
                     <label>Picha ya 1 (Lazima)</label>
-                    <input type="file" id="up-image-file-1" accept="image/*" required style="background: #fff; padding: 8px;">
+                    <input type="file" id="up-image-file-1" accept="image/*" required>
 
                     <label>Picha ya 2 (Hiari)</label>
-                    <input type="file" id="up-image-file-2" accept="image/*" style="background: #fff; padding: 8px;">
+                    <input type="file" id="up-image-file-2" accept="image/*">
 
                     <label>Picha ya 3 (Hiari)</label>
-                    <input type="file" id="up-image-file-3" accept="image/*" style="background: #fff; padding: 8px;">
+                    <input type="file" id="up-image-file-3" accept="image/*">
 
                     <label>Picha ya 4 (Hiari)</label>
-                    <input type="file" id="up-image-file-4" accept="image/*" style="background: #fff; padding: 8px;">
+                    <input type="file" id="up-image-file-4" accept="image/*">
 
-                    <label>Pakia Video Fupi (Hiari)</label>
-                    <input type="file" id="up-video-file" accept="video/*" style="background: #fff; padding: 8px;">
+                    <label>Video Fupi (Hiari)</label>
+                    <input type="file" id="up-video-file" accept="video/*">
 
-                    <label>Kategoria ya Biashara</label>
+                    <label>Kategoria</label>
                     <select id="up-cat" required>
-                        <option value="Magari">Magari & Vyombo</option>
-                        <option value="Simu">Simu & Electronics</option>
-                        <option value="Nyumba">Nyumba & Viwanja</option>
-                        <option value="Mitindo">Mitindo & Viatu</option>
-                        <option value="Digital">Digital Services</option>
+                        <option value="Magari">🚗 Magari & Vyombo</option>
+                        <option value="Simu">📱 Simu & Electronics</option>
+                        <option value="Nyumba">🏠 Nyumba & Viwanja</option>
+                        <option value="Mitindo">👕 Mitindo & Viatu</option>
+                        <option value="Digital">💻 Digital Services</option>
                     </select>
 
-                    <label>Jina la Muuzaji / Biashara</label>
+                    <label>Jina la Muuzaji</label>
                     <input type="text" id="designer-name-input" required readonly>
 
-                    <button type="submit" class="btn" style="margin-top: 15px;">Wasilisha kwa Ukaguzi</button>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 20px;">📤 Wasilisha Bidhaa</button>
                 </form>
             </div>
         </div>
 
-        <!-- STORYTELLER UPLOAD SECTION -->
+        <!-- ============ STORYTELLER UPLOAD ============ -->
         <div id="storyteller-upload-section" class="section">
-            <div class="form-card" style="max-width: 600px;">
-                <h2 style="margin-top:0; color: var(--primary);">Andika na Chapisha Hadithi Yako</h2>
-                <div style="background: #e8f8f5; border-left: 4px solid var(--success); padding: 10px; margin-bottom: 15px; font-size: 0.85em; color: #0e6655;">
-                    ✍️ Weka picha ya cover, kichwa cha habari, namba yako ya simu ya kupokea malipo, na maudhui ya hadithi.
+            <div class="form-card" style="max-width: 640px;">
+                <h2 style="margin-top:0; color: var(--text-primary); font-family:'Poppins'; font-weight:700; letter-spacing:-0.5px;">✍️ Andika Hadithi Yako</h2>
+                <div style="background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.08)); border-left: 4px solid var(--success); padding: 14px; margin-bottom: 20px; font-size: 0.85em; color: var(--success-dark); border-radius: var(--radius); font-weight: 500;">
+                    ✍️ Weka picha ya cover, kichwa cha habari, na maudhui ya hadithi yako.
                 </div>
                 <form id="story-upload-form" onsubmit="handleStoryUpload(event)">
-                    <label>Kichwa cha Habari / Kichwa cha Hadithi *</label>
-                    <input type="text" id="story-title" placeholder="Mf. Siri ya Mafanikio ya Biashara..." required>
+                    <label>Kichwa cha Hadithi *</label>
+                    <input type="text" id="story-title" placeholder="Mf. Siri ya Mafanikio..." required>
 
                     <label>Aina ya Hadithi *</label>
                     <select id="story-type" onchange="toggleStoryPriceField()" required>
-                        <option value="free">Hadithi ya Bure</option>
-                        <option value="paid">Hadithi ya Kulipia</option>
+                        <option value="free">🆓 Hadithi ya Bure</option>
+                        <option value="paid">💰 Hadithi ya Kulipia</option>
                     </select>
 
                     <div id="story-price-container" style="display: none;">
@@ -433,144 +1497,145 @@
                         <input type="number" min="0" id="story-price" placeholder="Mf. 1000">
                     </div>
 
-                    <label id="story-phone-label">Namba ya Simu ya Mwandishi (Hiari kwa hadithi ya bure)</label>
+                    <label id="story-phone-label">Namba ya Simu (Hiari kwa hadithi ya bure)</label>
                     <input type="text" id="story-phone" placeholder="Mf. 0712345678" pattern="0[67]\d{8}">
 
-                    <label>Picha ya Cover ya Hadithi *</label>
-                    <input type="file" id="story-image-file" accept="image/*" style="background: #fff; padding: 8px;" required>
-                    <small style="color: #666; display: block; margin-bottom: 8px;">Picha isizidi 5MB. Itabanishwa kiotomatiki.</small>
+                    <label>Picha ya Cover *</label>
+                    <input type="file" id="story-image-file" accept="image/*" required>
+                    <small style="color: var(--text-tertiary); display: block; margin-bottom: 8px; font-size:0.75em;">Picha isizidi 5MB</small>
 
-                    <label>Ujumbe / Maudhui ya Hadithi (Andika hapa) *</label>
-                    <textarea id="story-content" placeholder="Andika hadithi yako kwa ufasaha..." rows="7" required></textarea>
+                    <label>Maudhui ya Hadithi *</label>
+                    <textarea id="story-content" placeholder="Andika hadithi yako kwa ufasaha..." rows="8" required></textarea>
 
-                    <button type="submit" class="btn" style="margin-top: 15px; background: var(--accent);">Chapisha Hadithi</button>
+                    <button type="submit" class="btn btn-accent" style="margin-top: 20px;">📖 Chapisha Hadithi</button>
                 </form>
             </div>
         </div>
 
-        <!-- MY PRODUCTS & PROFILE SECTION -->
+        <!-- ============ MY PRODUCTS / PROFILE ============ -->
         <div id="my-products" class="section">
-            <div class="form-card" style="max-width: 900px;">
+            <div class="form-card" style="max-width: 960px;">
                 <div class="profile-header-card" id="profile-card-area">
                     <div class="profile-avatar" id="profile-avatar-initial">K</div>
-                    <h2 id="profile-username-display" style="margin: 0 0 5px 0;">Mtumiaji</h2>
-                    <p style="margin: 0; font-size: 0.9em; color: #dcdde1;" id="profile-role-display">Mwanachama rasmi wa SokoSmart TZ</p>
+                    <h2 id="profile-username-display" style="margin: 0 0 6px 0; font-family:'Poppins'; font-weight:700; letter-spacing:-0.5px;">Mtumiaji</h2>
+                    <p style="margin: 0; font-size: 0.9em; color: rgba(255,255,255,0.9);" id="profile-role-display">Mwanachama wa SokoSmart TZ</p>
                 </div>
 
                 <div id="seller-product-management-section" style="display:none;">
-                    <div id="seller-pending-warning" class="auth-banner" style="background:#fff3cd; color:#856404; display:none;">
-                        ⚠️ Akaunti yako inasubiri ithibati (Pending Verification) kutoka kwa Admin.
+                    <div id="seller-pending-warning" class="auth-banner" style="display:none;">
+                        ⏳ Akaunti yako inasubiri ithibati kutoka kwa Admin
                     </div>
 
                     <div id="seller-active-content" style="display:none;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-bottom: 2px solid #ddd; padding-bottom: 8px;">
-                            <h3 id="profile-section-title" style="margin:0; color: var(--primary);">Bidhaa Zangu</h3>
-                            <button id="profile-action-btn" class="btn" style="width: auto; padding: 6px 12px; font-size: 0.85em; font-weight:bold;">+ Weka Bidhaa</button>
+                        <div class="flex-between" style="margin-top: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); flex-wrap:wrap; gap:10px;">
+                            <h3 id="profile-section-title" style="margin:0; color: var(--text-primary); font-family:'Poppins'; font-weight:700; letter-spacing:-0.5px;">Bidhaa Zangu</h3>
+                            <button id="profile-action-btn" class="btn btn-primary" style="width: auto; padding: 8px 16px; font-size: 0.85em;">+ Weka Bidhaa</button>
                         </div>
 
-                        <div id="storyteller-orders-box" style="display:none; margin-top: 20px; background: #fffdf9; border: 1px solid #e2d9c2; padding: 15px; border-radius: 8px;">
-                            <h4 style="margin: 0 0 10px 0; color: var(--primary);">Oda na Malipo ya Wasomaji (Thibitisha au Kataa)</h4>
+                        <div id="storyteller-orders-box" style="display:none; margin-top: 24px; background: linear-gradient(135deg, rgba(245,158,11,0.05), rgba(249,115,22,0.05)); border: 1px solid rgba(245,158,11,0.3); padding: 20px; border-radius: var(--radius-lg);">
+                            <h4 style="margin: 0 0 12px 0; color: var(--text-primary); font-weight:700;">📬 Oda za Wasomaji</h4>
                             <div id="storyteller-orders-list">
-                                <p style="font-size: 0.85em; color: #666;">Hakuna oda mpya za malipo kwa sasa.</p>
+                                <p style="font-size: 0.85em; color: var(--text-tertiary);">Hakuna oda mpya kwa sasa.</p>
                             </div>
                         </div>
 
-                        <div id="my-products-list" style="margin-top: 15px;">
-                            <p>Inapakia data zako...</p>
+                        <div id="my-products-list" style="margin-top: 20px;">
+                            <p style="color: var(--text-tertiary);">⏳ Inapakia...</p>
                         </div>
                     </div>
                 </div>
 
-                <div id="buyer-profile-info-section" style="display:none; text-align:center; padding: 20px;">
-                    <p style="font-size: 1.1em; color: var(--primary);">Akaunti yako imesajiliwa kama <strong>Mnunuzi (Buyer)</strong>.</p>
+                <div id="buyer-profile-info-section" style="display:none; text-align:center; padding: 30px;">
+                    <p style="font-size: 1.1em; color: var(--primary); font-weight:600;">🛒 Akaunti yako imesajiliwa kama <strong>Mnunuzi</strong></p>
                 </div>
             </div>
         </div>
 
-        <!-- ADMIN PANEL SECTION -->
+        <!-- ============ ADMIN PANEL ============ -->
         <div id="admin" class="section">
-            <div class="form-card" style="max-width: 1000px;">
+            <div class="form-card" style="max-width: 1100px;">
                 <div class="admin-panel-header">
                     <div>
-                        <h2 style="margin:0; color: var(--primary);">SokoSmart Admin Portal</h2>
-                        <small style="color: #666;">Udhibiti wa Watumiaji, Ithibati, Bidhaa na Hadithi Zote</small>
-                        <div style="margin-top:6px;"><span id="admin-level-badge" class="badge-super">Super Admin</span></div>
+                        <h2 style="margin:0; color: var(--text-primary); font-family:'Poppins'; font-weight:700; letter-spacing:-0.5px;">⚙️ Admin Portal</h2>
+                        <small style="color: var(--text-tertiary);">Udhibiti wa Watumiaji, Bidhaa na Hadithi</small>
+                        <div style="margin-top:8px;"><span id="admin-level-badge" class="badge-super">Super Admin</span></div>
                     </div>
-                    <button onclick="logoutAdmin()" style="background:var(--danger); color:#fff; border:none; padding:8px 15px; border-radius:4px; font-weight:bold;">Toka (Logout)</button>
+                    <button onclick="logoutAdmin()" style="background: linear-gradient(135deg, var(--danger), var(--danger-dark)); color:#fff; border:none; padding:10px 18px; border-radius: var(--radius); font-weight:700; cursor:pointer; font-family:inherit;">🚪 Toka</button>
                 </div>
 
                 <div class="admin-stats-bar" id="admin-stats-bar">
-                    <div class="stat-card"><span class="stat-num" id="stat-designs-count">0</span><span class="stat-label">Bidhaa Zote</span></div>
-                    <div class="stat-card"><span class="stat-num" id="stat-pending-sellers-count">0</span><span class="stat-label">Wauzaji Wanaosubiri</span></div>
-                    <div class="stat-card"><span class="stat-num" id="stat-pending-storytellers-count">0</span><span class="stat-label">Waandishi Wanaosubiri</span></div>
+                    <div class="stat-card"><span class="stat-num" id="stat-designs-count">0</span><span class="stat-label">Bidhaa</span></div>
+                    <div class="stat-card"><span class="stat-num" id="stat-pending-sellers-count">0</span><span class="stat-label">Wauzaji</span></div>
+                    <div class="stat-card"><span class="stat-num" id="stat-pending-storytellers-count">0</span><span class="stat-label">Waandishi</span></div>
                     <div class="stat-card"><span class="stat-num" id="stat-buyers-count">0</span><span class="stat-label">Wanunuzi</span></div>
-                    <div class="stat-card"><span class="stat-num" id="stat-stories-count">0</span><span class="stat-label">Hadithi Zote</span></div>
+                    <div class="stat-card"><span class="stat-num" id="stat-stories-count">0</span><span class="stat-label">Hadithi</span></div>
                 </div>
 
                 <div class="admin-mgmt-card" id="admin-management-section" style="display:none;">
-                    <h3 style="color: var(--primary); margin-bottom: 10px;">🛠️ Usimamizi wa Maadmin (Admin Management)</h3>
-                    <p style="font-size:0.85em; color:#856404; margin-top:0;">Kama Super Admin, unaweza kuongeza Maadmin Wasaidizi (Sub-Admin) wenye ruhusa finyu, au kufuta admin yeyote isipokuwa Super Admin mkuu.</p>
+                    <h3 style="color: var(--text-primary); margin-bottom: 12px; font-weight:700;">🛠️ Usimamizi wa Maadmin</h3>
+                    <p style="font-size:0.85em; color: var(--text-secondary); margin-top:0;">Ongeza au futa maadmin wasaidizi.</p>
                     <form class="admin-add-form" onsubmit="handleAddAdmin(event)">
                         <input type="text" id="new-admin-username" placeholder="Jina la Admin Mpya" required>
-                        <input type="password" id="new-admin-password" placeholder="Nenosiri (angalau 6)" required minlength="6">
+                        <input type="password" id="new-admin-password" placeholder="Nenosiri (6+)" required minlength="6">
                         <select id="new-admin-level">
-                            <option value="sub">Sub-Admin (Msaidizi)</option>
+                            <option value="sub">Sub-Admin</option>
                             <option value="super">Super Admin</option>
                         </select>
-                        <button type="submit" class="btn" style="background: var(--primary);">+ Ongeza Admin</button>
+                        <button type="submit" class="btn btn-primary" style="padding: 12px;">+ Ongeza</button>
                     </form>
-                    <div id="admin-management-list" style="margin-top:15px;">
-                        <p style="font-size:0.85em; color:#666;">Inapakia orodha ya maadmin...</p>
+                    <div id="admin-management-list" style="margin-top:20px;">
+                        <p style="font-size:0.85em; color:var(--text-tertiary);">Inapakia...</p>
                     </div>
                 </div>
 
-                <div style="background: #ffffff; padding: 20px; border-radius: 8px; margin-top: 20px; color: #333;">
-                    <h3>Usimamizi wa Malipo ya Mwezi (Sellers & Storytellers)</h3>
-                    <table border="1" cellpadding="8" cellspacing="0" style="width:100%; margin-top:10px; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background: #f4f4f4;">
-                                <th>Jina la Mtumiaji</th>
-                                <th>Aina (Role)</th>
-                                <th>Hali ya Malipo</th>
-                                <th>Mwisho wa Siku za Bure / Zilizobaki</th>
-                                <th>Taarifa za Tigo Lipa (Simu & Jina)</th>
-                                <th>Kitendo</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminSubscriptionsBody">
-                        </tbody>
-                    </table>
+                <div style="background: var(--bg-secondary); padding: 20px; border-radius: var(--radius-lg); margin-top: 24px; border: 1px solid var(--border);">
+                    <h3 style="color: var(--text-primary); font-weight:700; margin-bottom: 12px;">💳 Usimamizi wa Malipo ya Mwezi</h3>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mtumiaji</th>
+                                    <th>Aina</th>
+                                    <th>Hali</th>
+                                    <th>Trial Ends</th>
+                                    <th>Malipo</th>
+                                    <th>Kitendo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminSubscriptionsBody"></tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 15px;">Hadithi Zote za Watumiaji (All Stories Management)</h3>
-                <div id="admin-stories-list" class="admin-card-grid" style="margin-bottom:30px;">
-                    <p>Inapakia hadithi...</p>
+                <h3 style="color: var(--text-primary); padding-bottom: 8px; margin-top: 32px; font-weight:700; border-bottom: 1px solid var(--border);">📖 Hadithi Zote</h3>
+                <div id="admin-stories-list" class="admin-card-grid" style="margin-top:16px; margin-bottom:32px;">
+                    <p style="color: var(--text-tertiary);">Inapakia...</p>
                 </div>
 
-                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 25px;">Wauzaji Wanaosubiri Ithibati (Pending Sellers)</h3>
-                <div id="admin-sellers-list" class="admin-card-grid" style="margin-bottom:20px;">
-                    <p>Inapakia wauzaji...</p>
+                <h3 style="color: var(--text-primary); padding-bottom: 8px; margin-top: 24px; font-weight:700; border-bottom: 1px solid var(--border);">🏪 Wauzaji Wanaosubiri</h3>
+                <div id="admin-sellers-list" class="admin-card-grid" style="margin-top:16px; margin-bottom:24px;">
+                    <p style="color: var(--text-tertiary);">Inapakia...</p>
                 </div>
 
-                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 25px;">Waandishi wa Hadithi Wanaosubiri (Pending Storytellers)</h3>
-                <div id="admin-storytellers-list" class="admin-card-grid" style="margin-bottom:20px;">
-                    <p>Inapakia waandishi...</p>
+                <h3 style="color: var(--text-primary); padding-bottom: 8px; margin-top: 24px; font-weight:700; border-bottom: 1px solid var(--border);">✍️ Waandishi Wanaosubiri</h3>
+                <div id="admin-storytellers-list" class="admin-card-grid" style="margin-top:16px; margin-bottom:24px;">
+                    <p style="color: var(--text-tertiary);">Inapakia...</p>
                 </div>
 
-                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px; margin-top: 15px;">Wateja Waliojisajili (Approved Buyers)</h3>
-                <div id="admin-buyers-list" class="admin-card-grid" style="margin-bottom:30px;">
-                    <p>Inapakia wateja...</p>
+                <h3 style="color: var(--text-primary); padding-bottom: 8px; margin-top: 24px; font-weight:700; border-bottom: 1px solid var(--border);">🛒 Wanunuzi</h3>
+                <div id="admin-buyers-list" class="admin-card-grid" style="margin-top:16px; margin-bottom:32px;">
+                    <p style="color: var(--text-tertiary);">Inapakia...</p>
                 </div>
 
-                <h3 style="color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 5px;">Ukaguzi na Udhibiti wa Bidhaa (Admin Actions)</h3>
-                <div id="admin-designs-list" class="admin-card-grid">
-                    <p>Inapakia bidhaa...</p>
+                <h3 style="color: var(--text-primary); padding-bottom: 8px; margin-top: 24px; font-weight:700; border-bottom: 1px solid var(--border);">📦 Bidhaa Zote</h3>
+                <div id="admin-designs-list" class="admin-card-grid" style="margin-top:16px;">
+                    <p style="color: var(--text-tertiary);">Inapakia...</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- BOTTOM NAVIGATION BAR -->
+    <!-- ============ BOTTOM NAVIGATION ============ -->
     <nav class="bottom-nav" id="bottom-nav-bar" style="display:none;">
         <button class="bottom-nav-item active" id="nav-btn-market" onclick="switchTab('market')">
             <span class="icon">🏠</span>
@@ -582,7 +1647,7 @@
         </button>
         <button class="bottom-nav-item" id="nav-btn-designer" onclick="checkSellerAccessAndSwitch()" style="display:none;">
             <span class="icon">➕</span>
-            <span>Weka Ad</span>
+            <span>Weka</span>
         </button>
         <button class="bottom-nav-item" id="nav-btn-profile" onclick="switchTab('my-products')">
             <span class="icon">👤</span>
@@ -590,83 +1655,82 @@
         </button>
     </nav>
 
-    <!-- ADMIN LOGIN MODAL -->
+    <!-- ============ ADMIN LOGIN MODAL ============ -->
     <div id="admin-login-modal" class="modal">
-        <div class="modal-content" style="max-width: 420px;">
+        <div class="modal-content" style="max-width: 440px;">
             <span class="close-modal" onclick="closeAdminLoginModal()">&times;</span>
-            <div style="text-align: center; margin-bottom: 15px;">
-                <div style="width: 70px; height: 70px; background: #6c5ce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px auto; box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);">
-                    <span style="font-size: 2em;">🔑</span>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #8b5cf6, #6d28d9); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);">
+                    <span style="font-size: 2.2em;">🔑</span>
                 </div>
-                <h2 style="color: var(--primary); margin: 0;">Admin Login</h2>
-                <p style="text-align: center; color: #666; font-size: 0.85em; margin-top: 5px;">Weka taarifa zako za Admin ili kuendelea</p>
+                <h2 style="color: var(--text-primary); margin: 0; font-family:'Poppins'; font-weight:700;">Admin Login</h2>
+                <p style="text-align: center; color: var(--text-tertiary); font-size: 0.85em; margin-top: 6px;">Weka taarifa zako za Admin</p>
             </div>
 
             <form onsubmit="submitAdminLogin(event)">
-                <label>Jina la Admin (Username)</label>
+                <label>Jina la Admin</label>
                 <input type="text" id="admin-login-username" placeholder="Mf. khalid" required autocomplete="username">
 
                 <label>Password</label>
                 <input type="password" id="admin-login-password" placeholder="Weka password yako" required autocomplete="current-password">
 
-                <button type="submit" class="btn" id="admin-login-btn" style="background: #6c5ce7; margin-top: 15px;">Ingia Kama Admin</button>
+                <button type="submit" class="btn" id="admin-login-btn" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); margin-top: 20px;">🔓 Ingia Kama Admin</button>
             </form>
 
-            <p id="admin-login-error" style="color: var(--danger); font-size: 0.85em; text-align: center; margin-top: 10px; font-weight: bold;"></p>
-
-            <p style="text-align: center; font-size: 0.75em; color: #999; margin-top: 15px;">
-                ⚠️ Ukurasa huu ni wa Admin wa SokoSmart pekee.
-            </p>
+            <p id="admin-login-error" style="color: var(--danger); font-size: 0.85em; text-align: center; margin-top: 12px; font-weight: 600;"></p>
         </div>
     </div>
 
-    <!-- ADMIN DETAILS MODAL -->
+    <!-- ============ ADMIN PRODUCT DETAIL MODAL ============ -->
     <div id="admin-detail-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAdminModal()">&times;</span>
-            <h2 style="color: var(--primary); margin-top: 0;">Ukaguzi wa Kina wa Bidhaa</h2>
-            <div style="text-align: center; margin-bottom: 15px;">
+            <h2 style="color: var(--text-primary); margin-top: 0; font-family:'Poppins'; font-weight:700;">🔍 Ukaguzi wa Bidhaa</h2>
+            <div style="text-align: center; margin-bottom: 20px;">
                 <div id="modal-image-container" style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;"></div>
-                <div id="modal-video-container" style="margin-top: 10px;"></div>
+                <div id="modal-video-container" style="margin-top: 12px;"></div>
             </div>
-            <p><strong>Jina la Bidhaa:</strong> <span id="modal-prod-title"></span></p>
-            <p><strong>Bei:</strong> <span id="modal-prod-price" style="color: var(--accent); font-weight: bold;"></span></p>
+            <p><strong>Jina:</strong> <span id="modal-prod-title"></span></p>
+            <p><strong>Bei:</strong> <span id="modal-prod-price" style="color: var(--accent); font-weight: 700;"></span></p>
             <p><strong>Eneo:</strong> <span id="modal-prod-location"></span></p>
             <p><strong>Simu:</strong> <span id="modal-prod-vendor-phone"></span></p>
             <p><strong>Kategoria:</strong> <span id="modal-prod-cat"></span></p>
             <p><strong>Muuzaji:</strong> <span id="modal-prod-designer"></span></p>
             <p><strong>Hali:</strong> <span id="modal-prod-status" class="badge"></span></p>
-            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid #ddd; margin: 15px 0;">
-                <strong style="display: block; margin-bottom: 5px; color: var(--primary);">Maelezo Kamili:</strong>
-                <p id="modal-prod-desc" style="margin: 0; white-space: pre-wrap; font-size: 0.95em; color: #444;"></p>
+            <div style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius); margin: 20px 0; border: 1px solid var(--border);">
+                <strong style="display: block; margin-bottom: 8px; color: var(--primary);">Maelezo:</strong>
+                <p id="modal-prod-desc" style="margin: 0; white-space: pre-wrap; font-size: 0.95em; color: var(--text-secondary);"></p>
             </div>
         </div>
     </div>
 
-    <!-- ADMIN SELLER DETAILS MODAL -->
+    <!-- ============ ADMIN SELLER DETAIL MODAL ============ -->
     <div id="admin-seller-detail-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAdminSellerModal()">&times;</span>
-            <h2 style="color: var(--primary); margin-top: 0;">Taarifa na Kitambulisho cha Muuzaji/Mwandishi</h2>
-            <div style="text-align: center; margin-bottom: 15px;">
-                <div id="modal-seller-id-container" style="display: flex; justify-content: center; margin-top: 10px;"></div>
+            <h2 style="color: var(--text-primary); margin-top: 0; font-family:'Poppins'; font-weight:700;">🆔 Kitambulisho cha Mtumiaji</h2>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div id="modal-seller-id-container" style="display: flex; justify-content: center; margin-top: 12px;"></div>
             </div>
-            <p><strong>Jina la Mtumiaji:</strong> <span id="modal-seller-username"></span></p>
-            <p><strong>Namba ya NIDA:</strong> <span id="modal-seller-nida" style="color: var(--primary); font-weight: bold;"></span></p>
-            <p><strong>Hali ya Ithibati:</strong> <span id="modal-seller-status" class="badge"></span></p>
-            <p><strong>Tarehe ya Usajili:</strong> <span id="modal-seller-date"></span></p>
+            <p><strong>Jina:</strong> <span id="modal-seller-username"></span></p>
+            <p><strong>NIDA:</strong> <span id="modal-seller-nida" style="color: var(--primary); font-weight: 700;"></span></p>
+            <p><strong>Hali:</strong> <span id="modal-seller-status" class="badge"></span></p>
+            <p><strong>Tarehe:</strong> <span id="modal-seller-date"></span></p>
         </div>
     </div>
 
-    <!-- LIGHTBOX MODAL -->
+    <!-- ============ LIGHTBOX ============ -->
     <div id="market-image-modal" onclick="closeMarketImageModal()">
         <span class="close-market-modal">&times;</span>
         <img id="market-modal-img" alt="Picha kubwa">
     </div>
 
+    <!-- ============ FOOTER ============ -->
     <footer>
-        <p><strong>SokoSmart TZ</strong> - Soko Salama la Kidijitali na Hadithi Tanzania</p>
-        <p>Msaada na Huduma kwa Wateja (Admin Support): <strong>0623630553</strong></p>
+        <p style="font-family:'Poppins'; font-weight:700; font-size:1.1em; color: var(--text-primary);">🛒 SokoSmart <span style="background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">TZ</span></p>
+        <p>Soko Salama la Kidijitali na Hadithi Tanzania</p>
+        <p style="margin-top: 12px;">📞 Msaada: <strong>0623630553</strong></p>
+        <p style="font-size: 0.8em; color: var(--text-muted); margin-top: 12px;">© 2026 SokoSmart TZ. Haki zote zimehifadhiwa.</p>
     </footer>
 
     <script>
@@ -684,11 +1748,50 @@
         let activeCategory = 'All';
         let activeSearch = '';
 
+        // ================== THEME ==================
+        const savedTheme = localStorage.getItem('sokosmart_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('sokosmart_theme', newTheme);
+            showToast(newTheme === 'dark' ? '🌙 Dark mode imewashwa' : '☀️ Light mode imewashwa', 'success');
+        }
+
+        // ================== TOAST ==================
+        function showToast(message, type = 'success', duration = 3500) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            toast.innerHTML = `<span style="font-size:1.2em;">${icons[type] || 'ℹ️'}</span><span>${message}</span>`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(120%)';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // Override alert() with toast for better UX
+        const originalAlert = window.alert;
+        window.alert = function(msg) {
+            const lowerMsg = String(msg).toLowerCase();
+            let type = 'info';
+            if (lowerMsg.includes('✅') || lowerMsg.includes('kikamilifu') || lowerMsg.includes('mafanikio') || lowerMsg.includes('hongera')) type = 'success';
+            else if (lowerMsg.includes('❌') || lowerMsg.includes('kosa') || lowerMsg.includes('si sahihi') || lowerMsg.includes('imeshindikana')) type = 'error';
+            else if (lowerMsg.includes('⚠️') || lowerMsg.includes('subiri') || lowerMsg.includes('onyo')) type = 'warning';
+            showToast(msg, type, 4000);
+        };
+
         // ================== ADMIN FETCH HELPER ==================
         function adminFetch(url, options = {}) {
             const token = localStorage.getItem('sokosmart_admin_token');
             if (!token) {
-                alert('Muda wa kuingia umekwisha. Tafadhali ingia tena.');
+                showToast('Muda wa kuingia umekwisha. Tafadhali ingia tena.', 'error');
                 localStorage.removeItem('sokosmart_admin_token');
                 localStorage.removeItem('sokosmart_admin_level');
                 localStorage.removeItem('sokosmart_admin_username');
@@ -705,7 +1808,7 @@
 
             return fetch(url, options).then(res => {
                 if (res.status === 401) {
-                    alert('Muda wa kuingia umekwisha. Tafadhali ingia tena.');
+                    showToast('Muda wa kuingia umekwisha. Tafadhali ingia tena.', 'error');
                     localStorage.removeItem('sokosmart_admin_token');
                     localStorage.removeItem('sokosmart_admin_level');
                     localStorage.removeItem('sokosmart_admin_username');
@@ -737,7 +1840,7 @@
                 document.getElementById('story-price').value = '';
                 storyPhoneInput.required = false;
                 storyPhoneLabel.innerText = 'Namba ya Simu ya Mwandishi (Hiari kwa hadithi ya bure)';
-                storyPhoneInput.placeholder = 'Unaweza kuiacha wazi kama unataka';
+                storyPhoneInput.placeholder = 'Unaweza kuiacha wazi';
             }
         }
 
@@ -750,20 +1853,21 @@
             if (currentUser) {
                 let actionNavBtn = '';
                 if (currentUserRole === 'seller' && currentUserStatus === 'approved') {
-                    actionNavBtn = `<button onclick="switchTab('designer')">Weka Bidhaa</button>`;
+                    actionNavBtn = `<button onclick="switchTab('designer')">🏪 Weka Bidhaa</button>`;
                 } else if (currentUserRole === 'storyteller' && currentUserStatus === 'approved') {
-                    actionNavBtn = `<button onclick="switchTab('storyteller-upload-section')" style="background:var(--accent);">Weka Hadithi</button>`;
+                    actionNavBtn = `<button onclick="switchTab('storyteller-upload-section')" style="background:linear-gradient(135deg,var(--accent),#d97706); color:white; border:none;">✍️ Weka Hadithi</button>`;
                 }
 
                 let statusSymbol = (currentUserStatus === 'approved') ? ' ✅' : ' ⏳';
 
                 navContainer.innerHTML = `
-                    <button onclick="switchTab('market')">Soko Kuu</button>
-                    <button onclick="switchTab('stories-feed')">Hadithi</button>
+                    <button onclick="switchTab('market')">🏠 Soko</button>
+                    <button onclick="switchTab('stories-feed')">📖 Hadithi</button>
                     ${actionNavBtn}
-                    <button onclick="switchTab('my-products')">Profile</button>
-                    <span style="color:#2ecc71; font-weight:bold; font-size:0.85em;">👤 ${currentUser} (${currentUserRole})${statusSymbol}</span>
-                    <button onclick="handleLogout()" style="background:#c0392b; border:none;">Toka</button>
+                    <button onclick="switchTab('my-products')">👤 Profile</button>
+                    <button onclick="toggleTheme()" class="btn-theme">${savedTheme === 'dark' ? '☀️' : '🌙'}</button>
+                    <span style="color: var(--success); font-weight:700; font-size:0.8em; padding:6px 10px; background: var(--bg-tertiary); border-radius: var(--radius-full);">👤 ${currentUser}${statusSymbol}</span>
+                    <button onclick="handleLogout()" style="background:linear-gradient(135deg,var(--danger),var(--danger-dark)); color:white; border:none;">🚪 Toka</button>
                     <button onclick="openAdminLogin()" class="btn-admin-nav">🔑 Admin</button>
                 `;
                 if (bottomNavBar) bottomNavBar.style.display = 'flex';
@@ -772,9 +1876,10 @@
                 }
             } else {
                 navContainer.innerHTML = `
-                    <button onclick="switchTab('stories-feed')">Hadithi</button>
-                    <button onclick="switchTab('signin')">Sign In</button>
-                    <button onclick="switchTab('signup')" style="background:var(--accent);">Sign Up</button>
+                    <button onclick="switchTab('stories-feed')">📖 Hadithi</button>
+                    <button onclick="toggleTheme()" class="btn-theme">${savedTheme === 'dark' ? '☀️' : '🌙'}</button>
+                    <button onclick="switchTab('signin')">🔓 Sign In</button>
+                    <button onclick="switchTab('signup')" style="background:linear-gradient(135deg,var(--accent),#d97706); color:white; border:none;">🚀 Sign Up</button>
                     <button onclick="openAdminLogin()" class="btn-admin-nav">🔑 Admin</button>
                 `;
                 if (bottomNavBar) bottomNavBar.style.display = 'none';
@@ -804,10 +1909,10 @@
 
         function checkSellerAccessAndSwitch() {
             if (currentUserRole === 'storyteller') {
-                if (currentUserStatus !== 'approved') { alert('Subiri idhini ya Admin.'); return; }
+                if (currentUserStatus !== 'approved') { showToast('Subiri idhini ya Admin.', 'warning'); return; }
                 switchTab('storyteller-upload-section');
             } else if (currentUserRole === 'seller') {
-                if (currentUserStatus !== 'approved') { alert('Subiri idhini ya Admin.'); return; }
+                if (currentUserStatus !== 'approved') { showToast('Subiri idhini ya Admin.', 'warning'); return; }
                 switchTab('designer');
             }
         }
@@ -847,6 +1952,11 @@
                 searchBarContainer.style.display = 'none';
             }
 
+            // Bottom nav active state
+            document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
+            if (tabId === 'market' && document.getElementById('nav-btn-market')) document.getElementById('nav-btn-market').classList.add('active');
+            if (tabId === 'my-products' && document.getElementById('nav-btn-profile')) document.getElementById('nav-btn-profile').classList.add('active');
+
             if (tabId === 'designer' && currentUser) {
                 document.getElementById('designer-name-input').value = currentUser;
             }
@@ -865,21 +1975,21 @@
 
                     if (currentUserRole === 'seller' || currentUserRole === 'storyteller') {
                         if (currentUserStatus === 'approved') {
-                            roleDisplay.innerHTML = `${currentUserRole === 'seller' ? 'Muuzaji Rasmi' : 'Mwandishi Rasmi'} ✅`;
+                            roleDisplay.innerHTML = `${currentUserRole === 'seller' ? '🏪 Muuzaji Rasmi' : '✍️ Mwandishi Rasmi'} ✅`;
                             document.getElementById('seller-pending-warning').style.display = 'none';
                             document.getElementById('seller-active-content').style.display = 'block';
 
                             if (currentUserRole === 'storyteller') {
-                                if (secTitle) secTitle.innerText = "Hadithi Zangu Zilizochapishwa (Storyteller Dashboard)";
+                                if (secTitle) secTitle.innerText = "📖 Hadithi Zangu";
                                 if (secBtn) {
-                                    secBtn.innerText = "+ Weka Hadithi Mpya";
+                                    secBtn.innerText = "+ Weka Hadithi";
                                     secBtn.onclick = () => switchTab('storyteller-upload-section');
                                 }
                                 if (storytellerOrdersBox) storytellerOrdersBox.style.display = 'block';
                                 loadMyStories();
                                 loadStorytellerOrders();
                             } else {
-                                if (secTitle) secTitle.innerText = "Bidhaa Zangu";
+                                if (secTitle) secTitle.innerText = "🏪 Bidhaa Zangu";
                                 if (secBtn) {
                                     secBtn.innerText = "+ Weka Bidhaa";
                                     secBtn.onclick = () => switchTab('designer');
@@ -888,14 +1998,14 @@
                                 loadMyProducts();
                             }
                         } else {
-                            roleDisplay.innerHTML = `Inasubiri Ithibati ⏳`;
+                            roleDisplay.innerHTML = `⏳ Inasubiri Ithibati`;
                             document.getElementById('seller-pending-warning').style.display = 'block';
                             document.getElementById('seller-active-content').style.display = 'none';
                         }
                         sellerSection.style.display = 'block';
                         buyerSection.style.display = 'none';
                     } else {
-                        roleDisplay.innerText = "Mnunuzi Rasmi (Verified Buyer)";
+                        roleDisplay.innerText = "🛒 Mnunuzi Rasmi";
                         sellerSection.style.display = 'none';
                         buyerSection.style.display = 'block';
                     }
@@ -913,12 +2023,7 @@
         function filterByCategory(cat, element) {
             activeCategory = cat;
             document.querySelectorAll('.category-chip').forEach(c => c.classList.remove('active'));
-            if (element) {
-                element.classList.add('active');
-            } else {
-                const chip = document.querySelector(`.category-chip[data-cat="${cat}"]`);
-                if (chip) chip.classList.add('active');
-            }
+            if (element) element.classList.add('active');
             const loc = document.getElementById('location-filter').value;
             applyFilters(activeCategory, activeSearch, loc);
         }
@@ -937,7 +2042,7 @@
 
         // ================== PRODUCT DETAILS ==================
         function requestCallback() {
-            alert('Ombi la kupigiwa simu limetumwa kwa muuzaji!');
+            showToast('Ombi la kupigiwa simu limetumwa kwa muuzaji!', 'success');
         }
 
         function setQuickMsg(msg) {
@@ -946,8 +2051,8 @@
 
         function sendSellerMessage() {
             const msg = document.getElementById('chat-msg-input').value.trim();
-            if (!msg) { alert('Andika ujumbe kwanza.'); return; }
-            alert('Ujumbe wako umetumwa kwa muuzaji!');
+            if (!msg) { showToast('Andika ujumbe kwanza.', 'warning'); return; }
+            showToast('Ujumbe wako umetumwa kwa muuzaji!', 'success');
             document.getElementById('chat-msg-input').value = '';
         }
 
@@ -959,26 +2064,24 @@
                     allApprovedStories = data || [];
                     const container = document.getElementById('stories-list-container');
                     if (!allApprovedStories || allApprovedStories.length === 0) {
-                        container.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:20px; background:#fff; border-radius:8px;">Hakuna hadithi zilizochapishwa kwa sasa.</p>';
+                        container.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:40px; background:var(--bg-card); border-radius:var(--radius-lg); color:var(--text-tertiary); border:1px solid var(--border);">📭 Hakuna hadithi kwa sasa</p>';
                         return;
                     }
                     container.innerHTML = allApprovedStories.map(s => `
-                        <div class="story-grid-card">
-                            <div>
-                                <div class="story-grid-img">
-                                    <img src="${s.cover_image || 'https://via.placeholder.com/300'}" alt="${escapeHtml(s.title)}">
-                                </div>
-                                <div class="story-grid-body">
-                                    <h3 class="story-grid-title">${escapeHtml(s.title)}</h3>
-                                    <div class="story-grid-meta">
-                                        ✍️ <strong>${escapeHtml(s.storyteller_name)}</strong><br>
-                                        📅 ${s.created_at ? s.created_at.substring(0, 10) : ''}
-                                        ${s.is_paid ? ' • 💰 Kulipia' : ' • 🆓 Bure'}
-                                    </div>
+                        <div class="story-grid-card" onclick="openStoryModal(${s.id})" style="cursor:pointer;">
+                            <div class="story-grid-img">
+                                <img src="${s.cover_image || 'https://via.placeholder.com/300'}" alt="${escapeHtml(s.title)}">
+                                <div class="story-badge ${s.is_paid ? 'paid' : 'free'}">
+                                    ${s.is_paid ? '💰 Tsh ' + Number(s.price || 0).toLocaleString() : '🆓 Bure'}
                                 </div>
                             </div>
-                            <div style="padding: 10px; background: #f8f9fa; border-top: 1px solid #eee;">
-                                <button class="btn" style="background: var(--primary); font-size: 0.85em; padding: 8px;" onclick="openStoryModal(${s.id})">Soma Hadithi</button>
+                            <div class="story-grid-body">
+                                <h3 class="story-grid-title">${escapeHtml(s.title)}</h3>
+                                <div class="story-grid-meta">
+                                    <span>✍️ <strong>${escapeHtml(s.storyteller_name)}</strong></span>
+                                    <span>📅 ${s.created_at ? s.created_at.substring(0, 10) : ''}</span>
+                                </div>
+                                <button class="btn btn-primary" style="font-size: 0.85em; padding: 8px; margin-top:auto;">📖 Soma Hadithi</button>
                             </div>
                         </div>
                     `).join('');
@@ -993,7 +2096,6 @@
             return div.innerHTML;
         }
 
-        // ✅ IMErekebishwa: Sasa inakagua is_paid kwanza
         function openStoryModal(id) {
             const s = allApprovedStories.find(item => item.id === id);
             if (!s) return;
@@ -1007,41 +2109,38 @@
             let priceBadge = document.getElementById('modal-story-price-badge');
             let priceText = document.getElementById('modal-story-price-text');
 
-            // ✅ HAPA NDIO MAREKEBISHO: KAGUA KAMA NI YA BURE AU YA KULIPIA
             if (!s.is_paid) {
-                // 🆓 HADITHI YA BURE — Onyesha maudhui moja kwa moja!
                 contentDiv.innerText = s.content;
                 document.getElementById('payment-status-notice').innerText = "";
                 if (paymentSection) paymentSection.style.display = 'none';
                 if (priceBadge) priceBadge.style.display = 'none';
             } else {
-                // 💰 HADITHI YA KULIPIA — Onyesha boksi la malipo
                 if (paymentSection) paymentSection.style.display = 'block';
                 if (priceBadge) {
                     priceBadge.style.display = 'flex';
-                    priceText.innerText = 'Kulipia: Tsh ' + Number(s.price || 0).toLocaleString();
+                    priceText.innerText = 'Tsh ' + Number(s.price || 0).toLocaleString();
                 }
 
                 let existingOrder = storyPaymentOrders.find(o => o.storyId === id && o.username === currentUser);
 
                 if (existingOrder && existingOrder.status === 'confirmed') {
                     contentDiv.innerText = s.content;
-                    document.getElementById('payment-status-notice').innerText = "✅ Malipo yako yamethibitishwa na mwandishi. Furahia kusoma!";
+                    document.getElementById('payment-status-notice').innerText = "✅ Malipo yamethibitishwa. Furahia kusoma!";
                 } else if (existingOrder && existingOrder.status === 'rejected') {
-                    contentDiv.innerText = "[Hadithi imefungwa: Mwandishi amekataa au hakujiridhisha na malipo yako.]";
-                    document.getElementById('payment-status-notice').innerText = "❌ Malipo yako yamekataliwa na mwandishi.";
+                    contentDiv.innerText = "[Hadithi imefungwa: Malipo yamekataliwa.]";
+                    document.getElementById('payment-status-notice').innerText = "❌ Malipo yamekataliwa.";
                 } else if (existingOrder && existingOrder.status === 'pending') {
-                    contentDiv.innerText = "[Hadithi imefungwa: Subiri mwandishi akague malipo yako na kuyathibitisha...]";
-                    document.getElementById('payment-status-notice').innerText = "⏳ Ombi lako la malipo limeshawasilishwa. Subiri uthibitisho.";
+                    contentDiv.innerText = "[Subiri mwandishi akague malipo yako...]";
+                    document.getElementById('payment-status-notice').innerText = "⏳ Subiri uthibitisho.";
                 } else {
-                    contentDiv.innerText = "[Hadithi imefungwa. Weka namba yako ya simu hapa chini na bonyeza 'Nimemaliza Kulipa Hadithi' ili kusubiri uthibitisho...]";
+                    contentDiv.innerText = "[Hadithi imefungwa. Weka namba yako ya simu hapa chini...]";
                     document.getElementById('payment-status-notice').innerText = "";
                 }
             }
 
             const phoneBtn = document.getElementById('modal-story-phone-btn');
             let phoneNum = s.story_phone || '0623630553';
-            phoneBtn.innerText = `📞 Wasiliana na ${s.storyteller_name} (${phoneNum})`;
+            phoneBtn.innerText = `📞 ${phoneNum}`;
             phoneBtn.href = `tel:${phoneNum}`;
 
             const coverBox = document.getElementById('modal-story-cover-box');
@@ -1061,10 +2160,10 @@
         }
 
         function submitStoryPayment() {
-            if (!currentUser) { alert('Tafadhali ingia kwanza!'); switchTab('signin'); return; }
+            if (!currentUser) { showToast('Ingia kwanza!', 'warning'); switchTab('signin'); return; }
             let payPhone = document.getElementById('story-pay-phone').value.trim();
-            if (!payPhone) { alert('Weka namba yako ya simu ya malipo!'); return; }
-            if (!/^0[67]\d{8}$/.test(payPhone)) { alert('Namba ya simu si sahihi! Tumia muundo 07XXXXXXXX.'); return; }
+            if (!payPhone) { showToast('Weka namba yako ya simu!', 'warning'); return; }
+            if (!/^0[67]\d{8}$/.test(payPhone)) { showToast('Namba ya simu si sahihi!', 'error'); return; }
 
             let titleText = document.getElementById('modal-story-title').innerText;
             let s = allApprovedStories.find(item => item.title === titleText);
@@ -1088,9 +2187,9 @@
             }
 
             localStorage.setItem('sokosmart_story_orders', JSON.stringify(storyPaymentOrders));
-            alert('Ombi lako la malipo limetumwa kwa mwandishi ' + s.storyteller_name + '!');
-            document.getElementById('payment-status-notice').innerText = "⏳ Ombi limetumwa. Subiri mwandishi adhibitishe.";
-            document.getElementById('modal-story-content').innerText = "[Ombi lako la malipo limeshawasilishwa kwa mwandishi. Subiri akague...]";
+            showToast('Ombi limetumwa kwa mwandishi!', 'success');
+            document.getElementById('payment-status-notice').innerText = "⏳ Subiri uthibitisho.";
+            document.getElementById('modal-story-content').innerText = "[Ombi limeshawasilishwa. Subiri mwandishi...]";
         }
 
         function loadStorytellerOrders() {
@@ -1099,19 +2198,19 @@
             let myOrders = storyPaymentOrders.filter(o => o.storyteller === currentUser);
 
             if (!myOrders || myOrders.length === 0) {
-                container.innerHTML = '<p style="font-size: 0.85em; color: #666;">Hakuna oda mpya za malipo kutoka kwa wasomaji.</p>';
+                container.innerHTML = '<p style="font-size: 0.85em; color: var(--text-tertiary);">📭 Hakuna oda mpya kwa sasa.</p>';
                 return;
             }
 
             container.innerHTML = myOrders.map(o => `
-                <div style="border-bottom: 1px solid #eee; padding: 8px 0; font-size: 0.85em; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px;">
+                <div style="border-bottom: 1px solid var(--border); padding: 12px 0; font-size: 0.85em; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                     <div>
-                        📖 <strong>${escapeHtml(o.storyTitle)}</strong><br>
-                        👤 Msomaji: <strong>${escapeHtml(o.username)}</strong> | Simu: ${escapeHtml(o.phone)} | Hali: <span class="badge">${o.status}</span>
+                        📖 <strong style="color:var(--text-primary);">${escapeHtml(o.storyTitle)}</strong><br>
+                        👤 ${escapeHtml(o.username)} | 📱 ${escapeHtml(o.phone)} | Hali: <span class="badge ${o.status === 'confirmed' ? 'badge-success' : ''}">${o.status}</span>
                     </div>
-                    <div style="display: flex; gap: 5px;">
-                        <button onclick="confirmStoryPayment(${o.id})" style="background:var(--success); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em; font-weight:bold;">Confirm ✅</button>
-                        <button onclick="rejectStoryPayment(${o.id})" style="background:var(--danger); color:#fff; border:none; padding:5px 8px; border-radius:4px; cursor:pointer; font-size:0.75em; font-weight:bold;">Kataa ❌</button>
+                    <div style="display: flex; gap: 6px;">
+                        <button onclick="confirmStoryPayment(${o.id})" style="background: var(--success); color:#fff; border:none; padding:6px 12px; border-radius: var(--radius-sm); cursor:pointer; font-size:0.8em; font-weight:700; font-family:inherit;">✅ Thibitisha</button>
+                        <button onclick="rejectStoryPayment(${o.id})" style="background: var(--danger); color:#fff; border:none; padding:6px 12px; border-radius: var(--radius-sm); cursor:pointer; font-size:0.8em; font-weight:700; font-family:inherit;">❌ Kataa</button>
                     </div>
                 </div>
             `).join('');
@@ -1122,7 +2221,7 @@
             if (order) {
                 order.status = 'confirmed';
                 localStorage.setItem('sokosmart_story_orders', JSON.stringify(storyPaymentOrders));
-                alert('Umemdhibitishia (Confirm) msomaji huyu!');
+                showToast('Umethibitisha malipo!', 'success');
                 loadStorytellerOrders();
             }
         }
@@ -1132,7 +2231,7 @@
             if (order) {
                 order.status = 'rejected';
                 localStorage.setItem('sokosmart_story_orders', JSON.stringify(storyPaymentOrders));
-                alert('Umerekodi kama Umekataa malipo haya!');
+                showToast('Umekataa malipo.', 'warning');
                 loadStorytellerOrders();
             }
         }
@@ -1145,33 +2244,31 @@
                 .then(data => {
                     const list = document.getElementById('my-products-list');
                     if (!data || data.length === 0) {
-                        list.innerHTML = '<p style="text-align:center; color:#666; padding:15px;">Huna hadithi yoyote uliyoweka bado.</p>';
+                        list.innerHTML = '<p style="text-align:center; color:var(--text-tertiary); padding:20px;">📭 Huna hadithi bado.</p>';
                         return;
                     }
                     list.innerHTML = data.map(s => `
-                        <div style="border-bottom:1px solid #eee; padding:12px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                        <div style="border-bottom:1px solid var(--border); padding:14px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                ${s.cover_image ? `<img src="${s.cover_image}" style="width: 55px; height: 55px; object-fit: cover; border-radius: 6px;">` : ''}
+                                ${s.cover_image ? `<img src="${s.cover_image}" style="width: 60px; height: 60px; object-fit: cover; border-radius: var(--radius);">` : ''}
                                 <div>
-                                    <strong style="font-size:1em; color:var(--primary);">${escapeHtml(s.title)}</strong><br>
-                                    <small style="color:#666;">${s.is_paid ? '💰 Kulipia: Tsh ' + Number(s.price || 0).toLocaleString() : '🆓 Bure'} | Hali: <span class="badge">${s.status}</span></small>
+                                    <strong style="font-size:1em; color:var(--text-primary);">${escapeHtml(s.title)}</strong><br>
+                                    <small style="color:var(--text-tertiary);">${s.is_paid ? '💰 Tsh ' + Number(s.price || 0).toLocaleString() : '🆓 Bure'}</small>
                                 </div>
                             </div>
-                            <div>
-                                <button onclick="deleteMyStory(${s.id})" style="background:var(--danger); color:#fff; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size:0.8em;">Futa Hadithi</button>
-                            </div>
+                            <button onclick="deleteMyStory(${s.id})" style="background: var(--danger); color:#fff; border:none; padding:8px 14px; border-radius: var(--radius); cursor:pointer; font-weight:600; font-size:0.85em; font-family:inherit;">🗑️ Futa</button>
                         </div>
                     `).join('');
                 })
-                .catch(err => console.error('Kosa la kupakia hadithi zangu:', err));
+                .catch(err => console.error('Kosa:', err));
         }
 
         function deleteMyStory(id) {
-            if (!confirm("Una uhakika unataka kufuta hadithi hii?")) return;
+            if (!confirm("Una uhakika unataka kufuta?")) return;
             fetch('/api/delete-story?id=' + id, { method: 'POST' })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.message || 'Hadithi imefutwa!');
+                    showToast(data.message || 'Imefutwa!', 'success');
                     loadMyStories();
                 });
         }
@@ -1186,107 +2283,62 @@
             const storyPhone = document.getElementById('story-phone').value.trim();
             const price = isPaid ? parseFloat(document.getElementById('story-price').value || 0) : 0;
 
-            // ✅ VALIDATION
-            if (!title) {
-                alert('Weka kichwa cha hadithi!');
-                return;
-            }
-            if (!content) {
-                alert('Weka maudhui ya hadithi!');
-                return;
-            }
+            if (!title) { showToast('Weka kichwa cha hadithi!', 'warning'); return; }
+            if (!content) { showToast('Weka maudhui!', 'warning'); return; }
             if (isPaid) {
-                if (!storyPhone) {
-                    alert('Weka namba yako ya simu ya kupokea malipo!');
-                    return;
-                }
-                if (!/^0[67]\d{8}$/.test(storyPhone)) {
-                    alert('Namba ya simu si sahihi! Tumia muundo 07XXXXXXXX.');
-                    return;
-                }
-                if (price <= 0) {
-                    alert('Weka bei ya hadithi (zaidi ya 0)!');
-                    return;
-                }
-            } else {
-                if (storyPhone && !/^0[67]\d{8}$/.test(storyPhone)) {
-                    alert('Namba ya simu si sahihi! Tumia muundo 07XXXXXXXX au iacha wazi.');
-                    return;
-                }
+                if (!storyPhone) { showToast('Weka namba ya simu!', 'warning'); return; }
+                if (!/^0[67]\d{8}$/.test(storyPhone)) { showToast('Namba si sahihi!', 'error'); return; }
+                if (price <= 0) { showToast('Weka bei!', 'warning'); return; }
             }
 
-            // ✅ PICHA
             const imgFile = document.getElementById('story-image-file').files[0];
-            if (!imgFile) {
-                alert('Chagua picha ya cover ya hadithi!');
-                return;
-            }
-
-            if (imgFile.size > 10 * 1024 * 1024) {
-                alert('Picha ni kubwa mno! Tumia picha isiyozidi 10MB.');
-                return;
-            }
+            if (!imgFile) { showToast('Chagua picha!', 'warning'); return; }
+            if (imgFile.size > 10 * 1024 * 1024) { showToast('Picha ni kubwa mno!', 'error'); return; }
 
             let imgBase64 = "";
             try {
                 imgBase64 = await compressImage(imgFile, 800, 800, 0.7);
-                console.log('📸 Picha imebanishwa. Ukubwa mpya:', imgBase64.length, 'chars');
             } catch (err) {
-                console.error('Kosa la kubanisha picha:', err);
-                alert('Imeshindikana kuchakata picha. Jaribu picha nyingine.');
+                showToast('Imeshindikana kuchakata picha.', 'error');
                 return;
             }
 
             const payload = {
-                title: title,
-                content: content,
+                title, content,
                 cover_image: imgBase64,
                 storyteller_name: currentUser,
                 is_paid: isPaid,
-                price: price
+                price
             };
-
-            console.log('📤 Kutuma hadithi:', {
-                title: title,
-                is_paid: isPaid,
-                price: price,
-                storyteller_name: currentUser,
-                cover_image_size: imgBase64.length
-            });
 
             const submitBtn = e.target.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerText;
             submitBtn.disabled = true;
-            submitBtn.innerText = 'Inatuma... Subiri...';
+            submitBtn.innerText = '⏳ Inatuma...';
 
             fetch('/api/storyteller/upload', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
-                .then(res => {
-                    console.log('📥 Response status:', res.status);
-                    return res.json();
-                })
+                .then(res => res.json())
                 .then(data => {
-                    console.log('📥 Response data:', data);
                     submitBtn.disabled = false;
                     submitBtn.innerText = originalText;
 
                     if (data.success) {
-                        alert('✅ ' + (data.message || 'Hadithi yako imechapishwa kikamilifu!'));
+                        showToast(data.message || 'Imefanikiwa!', 'success');
                         document.getElementById('story-upload-form').reset();
                         document.getElementById('story-price-container').style.display = 'none';
                         switchTab('stories-feed');
                     } else {
-                        alert('❌ ' + (data.message || 'Imeshindikana kuchapisha hadithi. Jaribu tena.'));
+                        showToast(data.message || 'Imeshindikana.', 'error');
                     }
                 })
                 .catch(err => {
-                    console.error('❌ Kosa la mtandao:', err);
                     submitBtn.disabled = false;
                     submitBtn.innerText = originalText;
-                    alert('Hitilafu ya mtandao. Angalia connection yako na ujaribu tena.');
+                    showToast('Hitilafu ya mtandao!', 'error');
                 });
         }
 
@@ -1299,8 +2351,8 @@
             let p = document.getElementById('su-password').value;
             let cp = document.getElementById('su-confirm-password').value;
 
-            if (p !== cp) { alert('Nenosiri halilingani!'); return; }
-            if (p.length < 6) { alert('Nenosiri liwe na angalau herufi 6!'); return; }
+            if (p !== cp) { showToast('Nenosiri halilingani!', 'error'); return; }
+            if (p.length < 6) { showToast('Nenosiri liwe 6+!', 'warning'); return; }
 
             const idFileInput = document.getElementById('su-id-file');
             let idCardBase64 = (role !== 'buyer' && idFileInput.files && idFileInput.files[0])
@@ -1314,13 +2366,10 @@
             })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.message);
+                    showToast(data.message, data.success ? 'success' : 'error');
                     if (data.success) { switchTab('signin'); }
                 })
-                .catch(err => {
-                    console.error(err);
-                    alert('Hitilafu ya mtandao. Jaribu tena.');
-                });
+                .catch(err => showToast('Hitilafu ya mtandao!', 'error'));
         }
 
         function handleSignin(e) {
@@ -1335,7 +2384,7 @@
             })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.message);
+                    showToast(data.message, data.success ? 'success' : 'error');
                     if (data.success) {
                         currentUser = u;
                         currentUserRole = data.role || 'buyer';
@@ -1347,10 +2396,7 @@
                         switchTab('market');
                     }
                 })
-                .catch(err => {
-                    console.error(err);
-                    alert('Hitilafu ya mtandao. Jaribu tena.');
-                });
+                .catch(err => showToast('Hitilafu ya mtandao!', 'error'));
         }
 
         function handleLogout() {
@@ -1367,7 +2413,7 @@
             document.getElementById('admin-login-username').value = '';
             document.getElementById('admin-login-password').value = '';
             document.getElementById('admin-login-error').innerText = '';
-            document.getElementById('admin-login-btn').innerText = 'Ingia Kama Admin';
+            document.getElementById('admin-login-btn').innerText = '🔓 Ingia Kama Admin';
             document.getElementById('admin-login-btn').disabled = false;
             document.getElementById('admin-login-modal').style.display = 'flex';
         }
@@ -1389,9 +2435,9 @@
                 return;
             }
 
-            errorEl.innerText = 'Inaingia...';
+            errorEl.innerText = '⏳ Inaingia...';
             loginBtn.disabled = true;
-            loginBtn.innerText = 'Inaingia...';
+            loginBtn.innerText = '⏳ Inaingia...';
 
             fetch('/api/admin/login', {
                 method: 'POST',
@@ -1409,6 +2455,7 @@
                         currentAdminUsername = data.username;
 
                         closeAdminLoginModal();
+                        showToast('Umeingia kama Admin!', 'success');
 
                         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
                         document.getElementById('admin').classList.add('active');
@@ -1417,14 +2464,13 @@
                     } else {
                         errorEl.innerText = data.message || 'Jina au Password si sahihi!';
                         loginBtn.disabled = false;
-                        loginBtn.innerText = 'Ingia Kama Admin';
+                        loginBtn.innerText = '🔓 Ingia Kama Admin';
                     }
                 })
                 .catch(err => {
-                    console.error(err);
-                    errorEl.innerText = 'Hitilafu ya mtandao. Jaribu tena.';
+                    errorEl.innerText = 'Hitilafu ya mtandao.';
                     loginBtn.disabled = false;
-                    loginBtn.innerText = 'Ingia Kama Admin';
+                    loginBtn.innerText = '🔓 Ingia Kama Admin';
                 });
         }
 
@@ -1437,7 +2483,7 @@
                 badge.className = 'badge-super';
                 if (mgmtSection) mgmtSection.style.display = 'block';
             } else {
-                badge.innerText = '🛡️ Sub-Admin (Msaidizi)' + (currentAdminUsername ? ' — ' + currentAdminUsername : '');
+                badge.innerText = '🛡️ Sub-Admin' + (currentAdminUsername ? ' — ' + currentAdminUsername : '');
                 badge.className = 'badge-sub';
                 if (mgmtSection) mgmtSection.style.display = 'none';
             }
@@ -1461,25 +2507,22 @@
                     window.adminAllAdmins = data || [];
                     const container = document.getElementById('admin-management-list');
                     if (!data || data.length === 0) {
-                        container.innerHTML = '<p style="font-size:0.85em; color:#666;">Hakuna maadmin wengine bado.</p>';
+                        container.innerHTML = '<p style="font-size:0.85em; color:var(--text-tertiary);">Hakuna maadmin bado.</p>';
                         return;
                     }
                     container.innerHTML = `<div class="admin-card-grid">${data.map(a => `
                         <div class="admin-item-card">
                             <div class="admin-item-top">
                                 <strong>${escapeHtml(a.username)}</strong>
-                                <span class="${a.admin_level === 'super' ? 'badge-super' : 'badge-sub'}">${a.admin_level === 'super' ? 'Super Admin' : 'Sub-Admin'}</span>
+                                <span class="${a.admin_level === 'super' ? 'badge-super' : 'badge-sub'}">${a.admin_level === 'super' ? '👑 Super' : '🛡️ Sub'}</span>
                             </div>
                             <div class="admin-item-actions">
-                                <button onclick="deleteAdminAccount(${a.id}, '${escapeHtml(a.username)}')" style="background:var(--danger);">🗑️ Futa Admin</button>
+                                <button onclick="deleteAdminAccount(${a.id}, '${escapeHtml(a.username)}')" style="background:var(--danger);">🗑️ Futa</button>
                             </div>
                         </div>
                     `).join('')}</div>`;
                 })
-                .catch(err => {
-                    console.error(err);
-                    document.getElementById('admin-management-list').innerHTML = '<p style="font-size:0.85em; color:#666;">Huduma ya usimamizi wa maadmin haipo bado kwenye seva.</p>';
-                });
+                .catch(err => console.error(err));
         }
 
         function handleAddAdmin(e) {
@@ -1495,7 +2538,7 @@
             })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.message || 'Admin mpya ameongezwa!');
+                    showToast(data.message || 'Amefanikiwa!', data.success ? 'success' : 'error');
                     if (data.success) {
                         document.getElementById('new-admin-username').value = '';
                         document.getElementById('new-admin-password').value = '';
@@ -1506,11 +2549,11 @@
         }
 
         function deleteAdminAccount(id, username) {
-            if (!confirm(`Una uhakika unataka kufuta admin "${username}"?`)) return;
+            if (!confirm(`Futa admin "${username}"?`)) return;
             adminFetch('/api/admin/delete-admin?id=' + id, { method: 'POST' })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.message || 'Admin amefutwa.');
+                    showToast(data.message || 'Amefutwa.', 'success');
                     loadAdminManagementList();
                 })
                 .catch(err => console.error(err));
@@ -1543,9 +2586,7 @@
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
-                reader.onload = function (event) {
-                    resolve(event.target.result);
-                };
+                reader.onload = function (event) { resolve(event.target.result); };
             });
         }
 
@@ -1570,10 +2611,7 @@
                 price: parseFloat(document.getElementById('up-price').value),
                 location: document.getElementById('up-location').value,
                 vendor_phone: document.getElementById('up-vendor-phone').value,
-                image_url: img1,
-                image_url2: img2,
-                image_url3: img3,
-                image_url4: img4,
+                image_url: img1, image_url2: img2, image_url3: img3, image_url4: img4,
                 video_url: vid,
                 category: document.getElementById('up-cat').value,
                 designer_name: currentUser
@@ -1586,13 +2624,10 @@
             })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.message || 'Bidhaa imewasilishwa!');
+                    showToast(data.message || 'Imewasilishwa!', data.success ? 'success' : 'error');
                     if (data.success) { switchTab('my-products'); }
                 })
-                .catch(err => {
-                    console.error(err);
-                    alert('Hitilafu ya mtandao. Jaribu tena.');
-                });
+                .catch(err => showToast('Hitilafu ya mtandao!', 'error'));
         }
 
         // ================== LOAD DESIGNS ==================
@@ -1604,18 +2639,18 @@
                     allApprovedDesigns = data || [];
                     filterDesigns();
                 })
-                .catch(err => console.error('Kosa la kupakia bidhaa:', err));
+                .catch(err => console.error(err));
         }
 
         function renderDesignsGrid(data) {
             const grid = document.getElementById('designs-grid');
             if (!data || data.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1; padding:20px;">Hakuna bidhaa zilizopatikana.</p>';
+                grid.innerHTML = '<p style="text-align:center; grid-column: 1/-1; padding:40px; color: var(--text-tertiary);">📭 Hakuna bidhaa zilizopatikana.</p>';
                 return;
             }
             grid.innerHTML = data.map(d => `
                 <div class="card" onclick="openProductDetails(${d.id})">
-                    <div class="card-img-wrapper"><img src="${d.image_url || 'https://via.placeholder.com/300'}"></div>
+                    <div class="card-img-wrapper"><img src="${d.image_url || 'https://via.placeholder.com/300'}" loading="lazy"></div>
                     <div class="card-content">
                         <h3>${escapeHtml(d.title)}</h3>
                         <span class="price">Tsh ${Number(d.price || 0).toLocaleString()}</span>
@@ -1637,7 +2672,7 @@
 
             const phoneBtn = document.getElementById('detail-phone-btn');
             let phoneNum = d.vendor_phone || '0623630553';
-            phoneBtn.innerText = `📞 ${phoneNum}`;
+            phoneBtn.innerText = `📱 ${phoneNum}`;
             phoneBtn.href = `tel:${phoneNum}`;
 
             const mainImg = document.getElementById('detail-img');
@@ -1649,7 +2684,7 @@
             if (imgs.length > 1) {
                 thumbsRow.style.display = 'flex';
                 thumbsRow.innerHTML = imgs.map((imgSrc, idx) => `
-                    <img src="${imgSrc}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer; border: 2px solid ${idx === 0 ? 'var(--primary)' : '#ddd'};" onclick="changeMainImage('${imgSrc}', this)">
+                    <img src="${imgSrc}" style="width: 65px; height: 65px; object-fit: cover; border-radius: var(--radius-sm); cursor: pointer; border: 2px solid ${idx === 0 ? 'var(--primary)' : 'var(--border)'}; transition: all 0.2s;" onclick="changeMainImage('${imgSrc}', this)">
                 `).join('');
             } else {
                 thumbsRow.style.display = 'none';
@@ -1671,7 +2706,7 @@
         function changeMainImage(src, thumbElement) {
             document.getElementById('detail-img').src = src;
             document.querySelectorAll('#detail-thumbs-row img').forEach(img => {
-                img.style.borderColor = '#ddd';
+                img.style.borderColor = 'var(--border)';
             });
             thumbElement.style.borderColor = 'var(--primary)';
         }
@@ -1683,13 +2718,13 @@
                 .then(data => {
                     const list = document.getElementById('my-products-list');
                     if (!data || data.length === 0) {
-                        list.innerHTML = '<p style="text-align:center; color:#666;">Huna bidhaa zozote.</p>';
+                        list.innerHTML = '<p style="text-align:center; color:var(--text-tertiary); padding:20px;">📭 Huna bidhaa bado.</p>';
                         return;
                     }
                     list.innerHTML = data.map(d => `
-                        <div style="border-bottom:1px solid #eee; padding:10px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                            <div><strong>${escapeHtml(d.title)}</strong> - Tsh ${Number(d.price || 0).toLocaleString()} <br><small>Hali: <span class="badge">${d.status}</span></small></div>
-                            <button onclick="deleteMyProduct(${d.id})" style="background:var(--danger); color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Futa</button>
+                        <div style="border-bottom:1px solid var(--border); padding:14px 0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                            <div><strong style="color:var(--text-primary);">${escapeHtml(d.title)}</strong><br><small style="color:var(--text-tertiary);">Tsh ${Number(d.price || 0).toLocaleString()}</small></div>
+                            <button onclick="deleteMyProduct(${d.id})" style="background:var(--danger); color:#fff; border:none; padding:8px 14px; border-radius:var(--radius); cursor:pointer; font-weight:600; font-size:0.85em; font-family:inherit;">🗑️ Futa</button>
                         </div>
                     `).join('');
                 });
@@ -1729,21 +2764,21 @@
                     const statEl = document.getElementById('stat-stories-count');
                     if (statEl) statEl.innerText = data ? data.length : 0;
                     if (!data || data.length === 0) {
-                        storiesList.innerHTML = '<p>Hakuna hadithi zozote zilizopostiwa kwenye mfumo.</p>';
+                        storiesList.innerHTML = '<p style="color:var(--text-tertiary);">Hakuna hadithi.</p>';
                         return;
                     }
                     storiesList.innerHTML = data.map(s => `
                         <div class="admin-item-card">
                             <div class="admin-item-top">
-                                ${s.cover_image ? `<img src="${s.cover_image}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px;">` : ''}
+                                ${s.cover_image ? `<img src="${s.cover_image}" style="width: 50px; height: 50px; object-fit: cover; border-radius: var(--radius-sm);">` : ''}
                                 <div>
-                                    📖 <strong>${escapeHtml(s.title)}</strong> <br>
-                                    <small style="color:#666;">Mwandishi: <strong>${escapeHtml(s.storyteller_name)}</strong></small>
-                                    <br><small>${s.is_paid ? '💰 Kulipia: Tsh ' + Number(s.price || 0).toLocaleString() : '🆓 Bure'}</small>
+                                    📖 <strong style="color:var(--text-primary);">${escapeHtml(s.title)}</strong><br>
+                                    <small style="color:var(--text-tertiary);">✍️ ${escapeHtml(s.storyteller_name)}</small>
+                                    <br><small>${s.is_paid ? '💰 Tsh ' + Number(s.price || 0).toLocaleString() : '🆓 Bure'}</small>
                                 </div>
                             </div>
                             <div class="admin-item-actions">
-                                <button onclick="adminDeleteStory(${s.id})" style="background:var(--danger);">🗑️ Futa Hadithi</button>
+                                <button onclick="adminDeleteStory(${s.id})" style="background:var(--danger);">🗑️ Futa</button>
                             </div>
                         </div>
                     `).join('');
@@ -1759,21 +2794,19 @@
                     const statEl = document.getElementById('stat-pending-sellers-count');
                     if (statEl) statEl.innerText = pendingCount;
                     if (!data || data.length === 0) {
-                        sellersList.innerHTML = '<p>Hakuna wauzaji wapya.</p>';
+                        sellersList.innerHTML = '<p style="color:var(--text-tertiary);">Hakuna wauzaji.</p>';
                         return;
                     }
                     sellersList.innerHTML = data.map(u => {
                         let statusBadge = u.verification_status === 'approved'
-                            ? `<span class="badge-success"> ✅ Imethibitishwa</span>`
+                            ? `<span class="badge-success">✅ Imethibitishwa</span>`
                             : `<span class="badge">⏳ Inasubiri</span>`;
                         return `
                         <div class="admin-item-card">
-                            <div class="admin-item-top">
-                                👤 <strong>${escapeHtml(u.username)}</strong>
-                            </div>
-                            <div style="font-size:0.85em; color:#666;">NIDA: ${escapeHtml(u.id_number || 'N/A')} — Hali: ${statusBadge}</div>
+                            <div class="admin-item-top">🏪 <strong style="color:var(--text-primary);">${escapeHtml(u.username)}</strong></div>
+                            <div style="font-size:0.85em; color:var(--text-tertiary);">NIDA: ${escapeHtml(u.id_number || 'N/A')} — ${statusBadge}</div>
                             <div class="admin-item-actions">
-                                <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary);">🔍 Kitambulisho</button>
+                                <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary);">🔍 Angalia</button>
                                 <button onclick="approveUser(${u.id})" style="background:var(--success);">✅ Idhinisha</button>
                                 <button onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--danger);">🗑️ Futa</button>
                             </div>
@@ -1791,21 +2824,19 @@
                     const statEl = document.getElementById('stat-pending-storytellers-count');
                     if (statEl) statEl.innerText = pendingCount;
                     if (!data || data.length === 0) {
-                        storyList.innerHTML = '<p>Hakuna waandishi.</p>';
+                        storyList.innerHTML = '<p style="color:var(--text-tertiary);">Hakuna waandishi.</p>';
                         return;
                     }
                     storyList.innerHTML = data.map(u => {
                         let statusBadge = u.verification_status === 'approved'
-                            ? `<span class="badge-success"> ✅ Imethibitishwa</span>`
+                            ? `<span class="badge-success">✅ Imethibitishwa</span>`
                             : `<span class="badge">⏳ Inasubiri</span>`;
                         return `
                         <div class="admin-item-card">
-                            <div class="admin-item-top">
-                                ✍️ <strong>${escapeHtml(u.username)}</strong>
-                            </div>
-                            <div style="font-size:0.85em; color:#666;">ID: ${escapeHtml(u.id_number || 'N/A')} — Hali: ${statusBadge}</div>
+                            <div class="admin-item-top">✍️ <strong style="color:var(--text-primary);">${escapeHtml(u.username)}</strong></div>
+                            <div style="font-size:0.85em; color:var(--text-tertiary);">ID: ${escapeHtml(u.id_number || 'N/A')} — ${statusBadge}</div>
                             <div class="admin-item-actions">
-                                <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary);">🔍 Kitambulisho</button>
+                                <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary);">🔍 Angalia</button>
                                 <button onclick="approveUser(${u.id})" style="background:var(--success);">✅ Idhinisha</button>
                                 <button onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--danger);">🗑️ Futa</button>
                             </div>
@@ -1821,15 +2852,15 @@
                     const statEl = document.getElementById('stat-buyers-count');
                     if (statEl) statEl.innerText = data ? data.length : 0;
                     if (!data || data.length === 0) {
-                        buyersList.innerHTML = '<p>Hakuna wanunuzi.</p>';
+                        buyersList.innerHTML = '<p style="color:var(--text-tertiary);">Hakuna wanunuzi.</p>';
                         return;
                     }
                     buyersList.innerHTML = data.map(u => `
                         <div class="admin-item-card">
-                            <div class="admin-item-top">🛒 <strong>${escapeHtml(u.username)}</strong></div>
-                            <div><span class="badge-success">Approved Buyer</span></div>
+                            <div class="admin-item-top">🛒 <strong style="color:var(--text-primary);">${escapeHtml(u.username)}</strong></div>
+                            <div><span class="badge-success">✅ Verified Buyer</span></div>
                             <div class="admin-item-actions">
-                                <button onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--danger);">Futa</button>
+                                <button onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--danger);">🗑️ Futa</button>
                             </div>
                         </div>
                     `).join('');
@@ -1844,20 +2875,18 @@
                     const statEl = document.getElementById('stat-designs-count');
                     if (statEl) statEl.innerText = data ? data.length : 0;
                     if (!data || data.length === 0) {
-                        list.innerHTML = '<p>Hakuna bidhaa.</p>';
+                        list.innerHTML = '<p style="color:var(--text-tertiary);">Hakuna bidhaa.</p>';
                         return;
                     }
                     list.innerHTML = data.map(d => `
                         <div class="admin-item-card">
-                            <div class="admin-item-top">
-                                <strong>${escapeHtml(d.title)}</strong>
-                            </div>
-                            <div style="font-size:0.85em; color:#666;">Tsh ${Number(d.price || 0).toLocaleString()} — Muuzaji: ${escapeHtml(d.designer_name)} — Hali: <span class="badge">${d.status}</span></div>
+                            <div class="admin-item-top"><strong style="color:var(--text-primary);">${escapeHtml(d.title)}</strong></div>
+                            <div style="font-size:0.85em; color:var(--text-tertiary);">Tsh ${Number(d.price || 0).toLocaleString()} — ${escapeHtml(d.designer_name)} — <span class="badge">${d.status}</span></div>
                             <div class="admin-item-actions">
-                                <button onclick="openAdminModal(${d.id})" style="background:var(--primary);">Soma</button>
-                                <button onclick="approveDesign(${d.id})" style="background:var(--success);">Idhinisha</button>
-                                <button onclick="rejectDesign(${d.id})" style="background:var(--accent);">Kataa</button>
-                                <button onclick="deleteDesign(${d.id})" style="background:var(--danger);">Futa</button>
+                                <button onclick="openAdminModal(${d.id})" style="background:var(--primary);">👁️ Angalia</button>
+                                <button onclick="approveDesign(${d.id})" style="background:var(--success);">✅ Idhinisha</button>
+                                <button onclick="rejectDesign(${d.id})" style="background:var(--accent);">❌ Kataa</button>
+                                <button onclick="deleteDesign(${d.id})" style="background:var(--danger);">🗑️ Futa</button>
                             </div>
                         </div>
                     `).join('');
@@ -1877,25 +2906,25 @@
                     const paidUsers = (users || []).filter(u => u.role === 'seller' || u.role === 'storyteller');
 
                     if (paidUsers.length === 0) {
-                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Hakuna wauzaji au waandishi waliopo kwa sasa.</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-tertiary);">Hakuna wauzaji au waandishi.</td></tr>`;
                         return;
                     }
 
                     paidUsers.forEach(user => {
-                        let statusColor = user.subscription_status === 'active' ? 'green'
-                            : (user.subscription_status === 'pending_payment' ? 'orange' : 'red');
+                        let statusColor = user.subscription_status === 'active' ? 'var(--success)'
+                            : (user.subscription_status === 'pending_payment' ? 'var(--accent)' : 'var(--danger)');
 
                         let row = `<tr>
-                            <td><b>${escapeHtml(user.username)}</b></td>
+                            <td><b style="color:var(--text-primary);">${escapeHtml(user.username)}</b></td>
                             <td>${user.role}</td>
-                            <td><span style="color: ${statusColor}; font-weight: bold;">${user.subscription_status}</span></td>
+                            <td><span style="color: ${statusColor}; font-weight: 700;">${user.subscription_status}</span></td>
                             <td>${escapeHtml(user.trial_ends_at || 'Haipo')}</td>
                             <td>
-                                <b>Simu:</b> ${escapeHtml(user.payment_phone || 'Hajatuma')}<br>
-                                <b>Jina:</b> ${escapeHtml(user.payment_name || 'Hajatuma')}
+                                <b>📱</b> ${escapeHtml(user.payment_phone || 'Hajatuma')}<br>
+                                <b>👤</b> ${escapeHtml(user.payment_name || 'Hajatuma')}
                             </td>
                             <td>
-                                <button onclick="approveSub(${user.id})" style="background: #28a745; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px;">Ongeza Siku 30</button>
+                                <button onclick="approveSub(${user.id})" style="background: var(--success); color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: var(--radius-sm); font-weight: 600; font-family: inherit; font-size: 0.8em;">✅ Ongeza 30d</button>
                             </td>
                         </tr>`;
                         tbody.innerHTML += row;
@@ -1905,16 +2934,12 @@
         }
 
         function approveSub(userId) {
-            if (confirm("Una hakika unataka kuidhinisha malipo na kumuongezea mwezi 1 mtumiaji huyu?")) {
-                adminFetch('/api/admin/approve-subscription?id=' + userId, {
-                    method: 'POST'
-                })
+            if (confirm("Ongeza mwezi 1 kwa mtumiaji huyu?")) {
+                adminFetch('/api/admin/approve-subscription?id=' + userId, { method: 'POST' })
                     .then(res => res.json())
                     .then(data => {
-                        alert(data.message);
-                        if (data.success) {
-                            loadAdminSubscriptions();
-                        }
+                        showToast(data.message, 'success');
+                        if (data.success) loadAdminSubscriptions();
                     })
                     .catch(err => console.error(err));
             }
@@ -1922,11 +2947,11 @@
 
         // ================== ADMIN ACTIONS ==================
         function adminDeleteStory(id) {
-            if (!confirm("Una uhakika unataka kufuta hadithi hii kama Admin?")) return;
+            if (!confirm("Futa hadithi hii?")) return;
             adminFetch('/api/admin/delete-story?id=' + id, { method: 'POST' })
                 .then(res => res.json())
                 .then(data => {
-                    alert(data.message || 'Hadithi imefutwa!');
+                    showToast(data.message || 'Imefutwa!', 'success');
                     loadAdminData();
                 })
                 .catch(err => console.error(err));
@@ -1935,7 +2960,7 @@
         function approveUser(id) {
             adminFetch('/api/admin/approve-user?id=' + id, { method: 'POST' })
                 .then(res => res.json())
-                .then(() => loadAdminData())
+                .then(() => { showToast('Mtumiaji ameidhinishwa!', 'success'); loadAdminData(); })
                 .catch(err => console.error(err));
         }
 
@@ -1943,7 +2968,7 @@
             if (!confirm(`Futa mtumiaji "${username}"?`)) return;
             adminFetch('/api/admin/delete-user?id=' + id, { method: 'POST' })
                 .then(res => res.json())
-                .then(() => loadAdminData())
+                .then(() => { showToast('Amefutwa!', 'success'); loadAdminData(); })
                 .catch(err => console.error(err));
         }
 
@@ -1953,9 +2978,9 @@
             if (!u) return;
             let container = document.getElementById('modal-seller-id-container');
             if (u.id_image_url) {
-                container.innerHTML = `<img src="${u.id_image_url}" style="max-width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; cursor: pointer;" onclick="openMarketImageModal('${u.id_image_url}')">`;
+                container.innerHTML = `<img src="${u.id_image_url}" style="max-width: 100%; max-height: 280px; object-fit: contain; border-radius: var(--radius); cursor: pointer; box-shadow: var(--shadow-md);" onclick="openMarketImageModal('${u.id_image_url}')">`;
             } else {
-                container.innerHTML = `<small style="color:var(--danger);">Hakuna picha ya kitambulisho.</small>`;
+                container.innerHTML = `<small style="color:var(--danger);">Hakuna picha.</small>`;
             }
             document.getElementById('modal-seller-username').innerText = u.username;
             document.getElementById('modal-seller-nida').innerText = u.id_number || 'N/A';
@@ -1974,12 +2999,12 @@
 
             let imgs = [d.image_url, d.image_url2, d.image_url3, d.image_url4].filter(x => x && x.trim() !== '');
             document.getElementById('modal-image-container').innerHTML = imgs.map(img =>
-                `<img src="${img}" style="width: 100px; height: 100px; object-fit: contain; border-radius: 4px; cursor: pointer;" onclick="openMarketImageModal('${img}')">`
+                `<img src="${img}" style="width: 100px; height: 100px; object-fit: contain; border-radius: var(--radius-sm); cursor: pointer; border: 1px solid var(--border);" onclick="openMarketImageModal('${img}')">`
             ).join('');
 
             const videoContainer = document.getElementById('modal-video-container');
             if (d.video_url && d.video_url.trim() !== '') {
-                videoContainer.innerHTML = `<video src="${d.video_url}" controls style="max-width: 100%; max-height: 250px; border-radius: 6px;"></video>`;
+                videoContainer.innerHTML = `<video src="${d.video_url}" controls style="max-width: 100%; max-height: 250px; border-radius: var(--radius);"></video>`;
             } else {
                 videoContainer.innerHTML = '';
             }
@@ -2002,12 +3027,12 @@
         function approveDesign(id) {
             adminFetch('/api/admin/approve?id=' + id, { method: 'POST' })
                 .then(res => res.json())
-                .then(() => loadAdminData())
+                .then(() => { showToast('Imeidhinishwa!', 'success'); loadAdminData(); })
                 .catch(err => console.error(err));
         }
 
         function rejectDesign(id) {
-            let reason = prompt("Sababu ya kukataa bidhaa:");
+            let reason = prompt("Sababu ya kukataa:");
             if (reason === null) return;
             adminFetch('/api/admin/reject?id=' + id, {
                 method: 'POST',
@@ -2015,7 +3040,7 @@
                 body: `reason=${encodeURIComponent(reason)}`
             })
                 .then(res => res.json())
-                .then(() => loadAdminData())
+                .then(() => { showToast('Imekataliwa.', 'warning'); loadAdminData(); })
                 .catch(err => console.error(err));
         }
 
@@ -2023,7 +3048,7 @@
             if (!confirm("Futa bidhaa hii?")) return;
             adminFetch('/api/admin/delete-design?id=' + id, { method: 'POST' })
                 .then(res => res.json())
-                .then(() => loadAdminData())
+                .then(() => { showToast('Imefutwa!', 'success'); loadAdminData(); })
                 .catch(err => console.error(err));
         }
 
@@ -2033,6 +3058,11 @@
             switchTab('signin');
         } else {
             refreshUserProfile().then(() => switchTab('market'));
+        }
+
+        // Initialize Lucide icons if needed
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
         }
     </script>
 </body>
