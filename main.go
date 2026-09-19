@@ -90,10 +90,11 @@ type User struct {
 func main() {
 	var err error
 
-	// JWT Secret
+	// ✅ JWT Secret na Default
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
-		log.Fatal("❌ JWT_SECRET haijawekwa! Weka kwenye environment variables.")
+		secret = "sokosmart-tz-super-secret-key-2026-khalid-secure-fixed"
+		log.Println("⚠️  JWT_SECRET haijawekwa. Inatumia default.")
 	}
 	jwtSecret = []byte(secret)
 
@@ -127,7 +128,7 @@ func main() {
 	http.HandleFunc("/api/profile", profileHandler)
 	http.HandleFunc("/api/submit-subscription-payment", submitSubscriptionPaymentHandler)
 
-	// ============ SELLER ROUTES (Zinahitaji Login) ============
+	// ============ SELLER ROUTES ============
 	http.HandleFunc("/api/designs", getDesignsHandler)
 	http.HandleFunc("/api/my-designs", getMyDesignsHandler)
 	http.HandleFunc("/api/upload", uploadDesignJSONHandler)
@@ -141,7 +142,7 @@ func main() {
 	http.HandleFunc("/api/storyteller/upload", uploadStoryJSONHandler)
 	http.HandleFunc("/api/delete-story", deleteMyStoryHandler)
 
-	// ============ ADMIN ROUTES (Zote Zinahitaji JWT!) ============
+	// ============ ADMIN ROUTES ============
 	http.HandleFunc("/api/admin/login", adminLoginHandler)
 
 	// Design management
@@ -167,7 +168,7 @@ func main() {
 	http.HandleFunc("/api/admin/delete-user", adminAuthMiddleware(adminDeleteUserHandler))
 	http.HandleFunc("/api/admin/approve-subscription", adminAuthMiddleware(adminApproveSubscriptionHandler))
 
-	// Admin management (Super Admin pekee — angalia handler yenyewe)
+	// Admin management
 	http.HandleFunc("/api/admin/add-admin", adminAuthMiddleware(superAdminOnly(adminAddAdminHandler)))
 	http.HandleFunc("/api/admin/list-admins", adminAuthMiddleware(superAdminOnly(adminListAdminsHandler)))
 	http.HandleFunc("/api/admin/delete-admin", adminAuthMiddleware(superAdminOnly(adminDeleteAdminHandler)))
@@ -186,7 +187,9 @@ func main() {
 		IdleTimeout:       90 * time.Second,
 	}
 
-	fmt.Printf("✅ Seva inaanza kusikiliza kwenye bandari %s...\n", port)
+	log.Println("═══════════════════════════════════════════════")
+	fmt.Printf("✅ Seva inaanza kwenye bandari %s\n", port)
+	log.Println("═══════════════════════════════════════════════")
 	log.Fatal(srv.ListenAndServe())
 }
 
@@ -269,7 +272,6 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la orders: %v", err)
 	}
 
-	// ✅ JEDWALI JIPYA LA ADMINS
 	queryAdmins := `
 	CREATE TABLE IF NOT EXISTS admins (
 		id SERIAL PRIMARY KEY,
@@ -292,44 +294,86 @@ func initDB() {
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS payment_name TEXT DEFAULT '';")
 }
 
-// seedSuperAdmin — inaunda Super Admin wa kwanza kutoka environment variables
+// ================== SEED SUPER ADMIN (IMErekebishwa) ==================
+// ✅ Username: khalid
+// ✅ Password: khalid_secret_2026@
+// ✅ Inaunda admin kila server inapowaka kama haipo
+// ✅ Inasasisha password kama username ipo lakini password imebadilika
 func seedSuperAdmin() {
+	// ✅ Chagua username na password
 	username := os.Getenv("ADMIN_USERNAME")
 	password := os.Getenv("ADMIN_PASSWORD")
 
-	if username == "" || password == "" {
-		log.Println("⚠️  ADMIN_USERNAME/ADMIN_PASSWORD hazijawekwa. Super Admin haitaundwa.")
+	// Default kama env vars hazipo
+	if username == "" {
+		username = "khalid"
+	}
+	if password == "" {
+		password = "khalid_secret_2026@"
+	}
+
+	log.Println("═══════════════════════════════════════════════")
+	log.Println("🔧 SEEDING SUPER ADMIN...")
+	log.Printf("   👤 Username: %s", username)
+	log.Printf("   🔑 Password: %s", password)
+	log.Println("═══════════════════════════════════════════════")
+
+	// ✅ Angalia kama admin mwenye username hii tayari yupo
+	var existingID int
+	var existingHash string
+	err := db.QueryRow("SELECT id, password FROM admins WHERE username = $1", username).Scan(&existingID, &existingHash)
+
+	if err == nil {
+		// Admin yupo - angalia kama password imebadilika
+		if bcrypt.CompareHashAndPassword([]byte(existingHash), []byte(password)) == nil {
+			log.Printf("ℹ️  Admin '%s' tayari yupo na password ni sahihi. Hakuna kubadilisha.", username)
+			log.Println("═══════════════════════════════════════════════")
+			return
+		}
+		// Password imebadilika - sasisha
+		newHash, hashErr := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if hashErr != nil {
+			log.Printf("❌ Imeshindikana ku-hash password mpya: %v", hashErr)
+			return
+		}
+		_, updateErr := db.Exec("UPDATE admins SET password = $1, admin_level = 'super' WHERE username = $2", string(newHash), username)
+		if updateErr != nil {
+			log.Printf("❌ Imeshindikana kusasisha password: %v", updateErr)
+			return
+		}
+		log.Printf("✅ Password ya admin '%s' imesasishwa kikamilifu!", username)
+		log.Println("═══════════════════════════════════════════════")
 		return
 	}
 
-	var count int
-	db.QueryRow("SELECT COUNT(*) FROM admins").Scan(&count)
-	if count > 0 {
-		return // Admin tayari yupo
-	}
-
-	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		log.Printf("❌ Imeshindikana ku-hash nenosiri la admin: %v", err)
+	// Admin hayupo - tengeneza mpya
+	hashed, hashErr := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if hashErr != nil {
+		log.Printf("❌ Imeshindikana ku-hash nenosiri la admin: %v", hashErr)
 		return
 	}
 
-	_, err = db.Exec("INSERT INTO admins (username, password, admin_level) VALUES ($1, $2, 'super')",
+	_, insertErr := db.Exec("INSERT INTO admins (username, password, admin_level) VALUES ($1, $2, 'super')",
 		username, string(hashed))
-	if err != nil {
-		log.Printf("❌ Imeshindikana kuunda Super Admin: %v", err)
+	if insertErr != nil {
+		log.Printf("❌ Imeshindikana kuunda Super Admin: %v", insertErr)
 		return
 	}
 
-	log.Printf("✅ Super Admin '%s' ameundwa kwa mafanikio!", username)
+	log.Println("═══════════════════════════════════════════════")
+	log.Println("✅ SUPER ADMIN AMEUNDWA KWA MAFANIKIO!")
+	log.Println("═══════════════════════════════════════════════")
+	log.Printf("   👤 Username: %s", username)
+	log.Printf("   🔑 Password: %s", password)
+	log.Println("═══════════════════════════════════════════════")
+	log.Println("⚠️  TAFADHALI BADILISHA PASSWORD BAADA YA KUINGIA!")
+	log.Println("═══════════════════════════════════════════════")
 }
 
 // ================== MIDDLEWARE ==================
 
-// corsMiddleware — inaruhusu frontend kuwasiliana na API
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// ⚠️ Badilisha hii na domain yako halisi baadaye!
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -342,7 +386,6 @@ func corsMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// loggingMiddleware — kurekodi maombi yote
 func loggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -351,7 +394,6 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// adminAuthMiddleware — inathibitisha JWT token ya admin
 func adminAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -390,7 +432,6 @@ func adminAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// Weka taarifa za admin kwenye context (kupitia headers za mda mfupi)
 		level, _ := claims["level"].(string)
 		username, _ := claims["username"].(string)
 		r.Header.Set("X-Admin-Level", level)
@@ -400,7 +441,6 @@ func adminAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// superAdminOnly — inaruhusu tu Super Admin kufikia route
 func superAdminOnly(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		level := r.Header.Get("X-Admin-Level")
@@ -443,7 +483,6 @@ func saveBase64Media(dataURL string) (string, error) {
 		return "", err
 	}
 
-	// Kikomo cha ukubwa: 10MB
 	if len(decoded) > 10<<20 {
 		return "", fmt.Errorf("faili ni kubwa mno (kikomo ni 10MB)")
 	}
@@ -458,17 +497,14 @@ func saveBase64Media(dataURL string) (string, error) {
 	return "/uploads/" + filename, nil
 }
 
-// sanitize — inasafisha maandishi ya mtumiaji dhidi ya XSS
 func sanitize(s string) string {
 	return strings.TrimSpace(html.EscapeString(s))
 }
 
-// validPhone — inathibitisha muundo wa simu ya Tanzania
 func validPhone(phone string) bool {
 	return phoneRegex.MatchString(strings.TrimSpace(phone))
 }
 
-// validNIDA — inathibitisha muundo wa NIDA (tarakimu 20)
 func validNIDA(nida string) bool {
 	return nida == "" || nidaRegex.MatchString(strings.TrimSpace(nida))
 }
@@ -553,7 +589,6 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validation ya NIDA kwa sellers na storytellers
 	if role == "seller" || role == "storyteller" {
 		if idNumber != "" && !validNIDA(idNumber) {
 			json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Namba ya NIDA iwe na tarakimu 20!"})
@@ -573,7 +608,6 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// ✅ HASH NENOSIRI KWA BCRYPT
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("❌ Kosa la bcrypt: %v", err)
@@ -650,7 +684,6 @@ func signinHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ✅ THIBITISHA NENOSIRI KWA BCRYPT
 	if err := bcrypt.CompareHashAndPassword([]byte(storedPass), []byte(password)); err != nil {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina la mtumiaji au nenosiri si sahihi!"})
 		return
@@ -691,7 +724,6 @@ func profileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ✅ Rekebisha trial_ends_at — usionyeshe 0001-01-01
 	if trialEnds.Valid {
 		u.TrialEndsAt = trialEnds.Time.Format("2006-01-02 15:04:05")
 	} else {
@@ -926,7 +958,6 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		img4 = r.FormValue("image_url4")
 	}
 
-	// ✅ VALIDATION
 	if strings.TrimSpace(title) == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina la bidhaa linahitajika!"})
 		return
@@ -950,7 +981,6 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Save media
 	for _, img := range []*string{&img1, &img2, &img3, &img4} {
 		if strings.HasPrefix(*img, "data:") {
 			if url, saveErr := saveBase64Media(*img); saveErr == nil {
@@ -1183,7 +1213,6 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// ✅ VALIDATION
 	if strings.TrimSpace(title) == "" || strings.TrimSpace(content) == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Kichwa na maudhui ya hadithi vinahitajika!"})
 		return
@@ -1238,7 +1267,7 @@ func deleteMyStoryHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi imefutwa!"})
 }
 
-// ================== ADMIN LOGIN (JWT) ==================
+// ================== ADMIN LOGIN (JWT) — IMErekebishwa na Logging ==================
 
 func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -1270,7 +1299,11 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	username = strings.TrimSpace(username)
 
+	// ✅ LOGGING
+	log.Printf("🔍 [ADMIN LOGIN] Attempt: username=%q, password_length=%d", username, len(password))
+
 	if username == "" || password == "" {
+		log.Println("❌ [ADMIN LOGIN] Username au password tupu")
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jaza jina na nenosiri!"})
 		return
 	}
@@ -1280,16 +1313,21 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 		Scan(&storedPass, &adminLevel)
 
 	if err != nil {
+		log.Printf("❌ [ADMIN LOGIN] Admin '%s' hajapatikana kwenye database: %v", username, err)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina au nenosiri si sahihi!"})
 		return
 	}
+
+	log.Printf("✅ [ADMIN LOGIN] Admin '%s' amepatikana, akikagua password...", username)
 
 	if err := bcrypt.CompareHashAndPassword([]byte(storedPass), []byte(password)); err != nil {
+		log.Printf("❌ [ADMIN LOGIN] Password si sahihi kwa admin '%s': %v", username, err)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina au nenosiri si sahihi!"})
 		return
 	}
 
-	// ✅ TENGEZA JWT TOKEN
+	log.Printf("✅ [ADMIN LOGIN] Password ni sahihi! Kutengeneza token...")
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": username,
 		"level":    adminLevel,
@@ -1299,10 +1337,12 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	tokenStr, err := token.SignedString(jwtSecret)
 	if err != nil {
-		log.Printf("❌ Kosa la kutengeneza token: %v", err)
+		log.Printf("❌ [ADMIN LOGIN] Kosa la kutengeneza token: %v", err)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Hitilafu ya mfumo"})
 		return
 	}
+
+	log.Printf("✅ [ADMIN LOGIN] Token imetengenezwa kwa admin '%s'!", username)
 
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success":     true,
@@ -1339,7 +1379,6 @@ func adminAddAdminHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// ✅ BACKEND SASA INAKUBALI FORM DATA (kulingana na frontend yako)
 	if username == "" {
 		r.ParseForm()
 		username = r.FormValue("username")
@@ -1426,7 +1465,6 @@ func adminDeleteAdminHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Kinga: Usifute Super Admin wa mwisho
 	var superCount int
 	db.QueryRow("SELECT COUNT(*) FROM admins WHERE admin_level = 'super'").Scan(&superCount)
 
@@ -1719,7 +1757,6 @@ func adminUsersHandler(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&u.ID, &u.Username, &u.Role, &u.VerificationStatus, &u.IDType, &u.IDNumber, &u.IDImageURL, &u.RejectionReason, &u.SubscriptionStatus, &trialEnds, &u.PaymentPhone, &u.PaymentName, &u.CreatedAt); err != nil {
 			continue
 		}
-		// ✅ Rekebisha tarehe
 		if trialEnds.Valid {
 			u.TrialEndsAt = trialEnds.Time.Format("2006-01-02 15:04:05")
 		} else {
