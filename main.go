@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"html"
@@ -177,7 +176,6 @@ func main() {
 		port = "8080"
 	}
 
-	// ✅ Weka CORS na Logging middleware
 	handler := corsMiddleware(loggingMiddleware(http.DefaultServeMux))
 
 	srv := &http.Server{
