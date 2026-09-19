@@ -8,10 +8,8 @@ import (
 	"fmt"
 	"html"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -121,9 +119,6 @@ func main() {
 	initDB()
 	seedSuperAdmin()
 
-	// Static files (kwa picha za local, lakini Cloudinary inashughulikia hii sasa)
-	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
-
 	// ============ PUBLIC ROUTES ============
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/api/signup", signupHandler)
@@ -187,7 +182,7 @@ func main() {
 
 	srv := &http.Server{
 		Addr:              ":" + port,
-		Handler:           handler, // ✅ Ongeza hii
+		Handler:           handler,
 		ReadHeaderTimeout: 15 * time.Second,
 		ReadTimeout:       60 * time.Second,
 		WriteTimeout:      60 * time.Second,
@@ -200,10 +195,6 @@ func main() {
 
 // ================== DB INIT ==================
 func initDB() {
-	if err := os.MkdirAll("./uploads", 0755); err != nil {
-		log.Fatalf("Imeshindikana kutengeneza folder la uploads: %v", err)
-	}
-
 	queryUsers := `
 	CREATE TABLE IF NOT EXISTS app_accounts (
 		id SERIAL PRIMARY KEY,
@@ -452,9 +443,8 @@ func superAdminOnly(next http.HandlerFunc) http.HandlerFunc {
 
 // ================== UTILITIES ==================
 
-// ✅ IMErekebishwa: Inatuma picha Cloudinary kwa kutumia CLOUDINARY_URL
+// ✅ Inatuma picha Cloudinary kwa kutumia CLOUDINARY_URL
 func saveBase64Media(dataURL string) (string, error) {
-	// ✅ Tumia CLOUDINARY_URL moja kwa moja
 	cloudinaryURL := os.Getenv("CLOUDINARY_URL")
 	if cloudinaryURL == "" {
 		return "", fmt.Errorf("CLOUDINARY_URL haijawekwa kwenye environment variables")
@@ -465,7 +455,6 @@ func saveBase64Media(dataURL string) (string, error) {
 		return "", fmt.Errorf("cloudinary config error: %v", err)
 	}
 
-	// Upload kutoka base64
 	ctx := context.Background()
 	resp, err := cld.Upload.Upload(ctx, dataURL, uploader.UploadParams{
 		Folder: "sokosmart",
@@ -474,7 +463,6 @@ func saveBase64Media(dataURL string) (string, error) {
 		return "", fmt.Errorf("cloudinary upload error: %v", err)
 	}
 
-	// Rudisha URL ya Cloudinary
 	return resp.SecureURL, nil
 }
 
