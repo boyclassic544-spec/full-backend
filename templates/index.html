@@ -1734,6 +1734,10 @@
     </footer>
 
     <script>
+        // ================== API CONFIG ==================
+        // Badilisha URL hii iwe ya Render yako
+        const API_BASE_URL = 'https://full-backend-y8xi.onrender.com';
+
         // ================== STATE ==================
         let currentUser = localStorage.getItem('sokosmart_user') || null;
         let currentUserRole = localStorage.getItem('sokosmart_role') || 'buyer';
@@ -1806,7 +1810,7 @@
                 'Authorization': 'Bearer ' + token
             };
 
-            return fetch(url, options).then(res => {
+            return fetch(API_BASE_URL + url, options).then(res => {
                 if (res.status === 401) {
                     showToast('Muda wa kuingia umekwisha. Tafadhali ingia tena.', 'error');
                     localStorage.removeItem('sokosmart_admin_token');
@@ -1889,7 +1893,7 @@
         async function refreshUserProfile() {
             if (!currentUser) return;
             try {
-                const res = await fetch('/api/profile?username=' + encodeURIComponent(currentUser));
+                const res = await fetch(API_BASE_URL + '/api/profile?username=' + encodeURIComponent(currentUser));
                 const data = await res.json();
                 if (data.success) {
                     currentUserRole = data.role;
@@ -2058,7 +2062,7 @@
 
         // ================== STORIES ==================
         function loadStoriesFeed() {
-            fetch('/api/stories')
+            fetch(API_BASE_URL + '/api/stories')
                 .then(res => res.json())
                 .then(data => {
                     allApprovedStories = data || [];
@@ -2239,7 +2243,7 @@
         function loadMyStories() {
             if (!currentUser || currentUserRole !== 'storyteller') return;
 
-            fetch('/api/my-stories?storyteller=' + encodeURIComponent(currentUser))
+            fetch(API_BASE_URL + '/api/my-stories?storyteller=' + encodeURIComponent(currentUser))
                 .then(res => res.json())
                 .then(data => {
                     const list = document.getElementById('my-products-list');
@@ -2265,7 +2269,7 @@
 
         function deleteMyStory(id) {
             if (!confirm("Una uhakika unataka kufuta?")) return;
-            fetch('/api/delete-story?id=' + id, { method: 'POST' })
+            fetch(API_BASE_URL + '/api/delete-story?id=' + id, { method: 'POST' })
                 .then(res => res.json())
                 .then(data => {
                     showToast(data.message || 'Imefutwa!', 'success');
@@ -2316,7 +2320,7 @@
             submitBtn.disabled = true;
             submitBtn.innerText = '⏳ Inatuma...';
 
-            fetch('/api/storyteller/upload', {
+            fetch(API_BASE_URL + '/api/storyteller/upload', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -2359,7 +2363,7 @@
                 ? await compressImage(idFileInput.files[0])
                 : "";
 
-            fetch('/api/signup', {
+            fetch(API_BASE_URL + '/api/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `username=${encodeURIComponent(u)}&role=${encodeURIComponent(role)}&nida=${encodeURIComponent(nida)}&id_card=${encodeURIComponent(idCardBase64)}&password=${encodeURIComponent(p)}`
@@ -2377,7 +2381,7 @@
             let u = document.getElementById('si-username').value.trim();
             let p = document.getElementById('si-password').value;
 
-            fetch('/api/signin', {
+            fetch(API_BASE_URL + '/api/signin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}`
@@ -2439,7 +2443,7 @@
             loginBtn.disabled = true;
             loginBtn.innerText = '⏳ Inaingia...';
 
-            fetch('/api/admin/login', {
+            fetch(API_BASE_URL + '/api/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `username=${encodeURIComponent(uname)}&password=${encodeURIComponent(pwd)}`
@@ -2617,7 +2621,7 @@
                 designer_name: currentUser
             };
 
-            fetch('/api/upload', {
+            fetch(API_BASE_URL + '/api/upload', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -2633,7 +2637,7 @@
         // ================== LOAD DESIGNS ==================
         function loadDesigns() {
             if (!currentUser) return;
-            fetch('/api/designs')
+            fetch(API_BASE_URL + '/api/designs')
                 .then(res => res.json())
                 .then(data => {
                     allApprovedDesigns = data || [];
@@ -2713,7 +2717,7 @@
 
         function loadMyProducts() {
             if (!currentUser || currentUserRole !== 'seller') return;
-            fetch('/api/my-designs?designer=' + encodeURIComponent(currentUser))
+            fetch(API_BASE_URL + '/api/my-designs?designer=' + encodeURIComponent(currentUser))
                 .then(res => res.json())
                 .then(data => {
                     const list = document.getElementById('my-products-list');
@@ -2732,7 +2736,7 @@
 
         function deleteMyProduct(id) {
             if (!confirm("Futa bidhaa hii?")) return;
-            fetch('/api/delete-design?id=' + id, { method: 'POST' })
+            fetch(API_BASE_URL + '/api/delete-design?id=' + id, { method: 'POST' })
                 .then(() => loadMyProducts())
                 .catch(err => console.error(err));
         }

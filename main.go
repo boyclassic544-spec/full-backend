@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
@@ -15,6 +16,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/golang-jwt/jwt/v5"
 	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -118,7 +121,7 @@ func main() {
 	initDB()
 	seedSuperAdmin()
 
-	// Static files
+	// Static files (kwa picha za local, lakini Cloudinary inashughulikia hii sasa)
 	http.Handle("/uploads/", http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))))
 
 	// ============ PUBLIC ROUTES ============
@@ -179,8 +182,12 @@ func main() {
 		port = "8080"
 	}
 
+	// ✅ Weka CORS na Logging middleware
+	handler := corsMiddleware(loggingMiddleware(http.DefaultServeMux))
+
 	srv := &http.Server{
 		Addr:              ":" + port,
+		Handler:           handler, // ✅ Ongeza hii
 		ReadHeaderTimeout: 15 * time.Second,
 		ReadTimeout:       60 * time.Second,
 		WriteTimeout:      60 * time.Second,
@@ -293,8 +300,6 @@ func initDB() {
 }
 
 // ================== SEED SUPER ADMIN ==================
-// ✅ Username: khalid
-// ✅ Password: khalid_secret_2026@
 func seedSuperAdmin() {
 	username := os.Getenv("ADMIN_USERNAME")
 	password := os.Getenv("ADMIN_PASSWORD")
@@ -309,7 +314,7 @@ func seedSuperAdmin() {
 	log.Println("═══════════════════════════════════════════════")
 	log.Println("🔧 SEEDING SUPER ADMIN...")
 	log.Printf("   👤 Username: %s", username)
-	log.Printf("   🔑 Password: %s", password)
+	log.Println("   🔑 Password: [imefichwa kwa usalama]")
 	log.Println("═══════════════════════════════════════════════")
 
 	var existingID int
@@ -354,7 +359,7 @@ func seedSuperAdmin() {
 	log.Println("✅ SUPER ADMIN AMEUNDWA KWA MAFANIKIO!")
 	log.Println("═══════════════════════════════════════════════")
 	log.Printf("   👤 Username: %s", username)
-	log.Printf("   🔑 Password: %s", password)
+	log.Println("   🔑 Password: [imefichwa kwa usalama]")
 	log.Println("═══════════════════════════════════════════════")
 }
 
@@ -447,52 +452,30 @@ func superAdminOnly(next http.HandlerFunc) http.HandlerFunc {
 
 // ================== UTILITIES ==================
 
-// ✅ IMErekebishwa: Inasafisha base64 data vizuri na kikomo 15MB
+// ✅ IMErekebishwa: Inatuma picha Cloudinary kwa kutumia CLOUDINARY_URL
 func saveBase64Media(dataURL string) (string, error) {
-	parts := strings.SplitN(dataURL, ",", 2)
-	if len(parts) != 2 {
-		return "", fmt.Errorf("muundo wa media si sahihi")
+	// ✅ Tumia CLOUDINARY_URL moja kwa moja
+	cloudinaryURL := os.Getenv("CLOUDINARY_URL")
+	if cloudinaryURL == "" {
+		return "", fmt.Errorf("CLOUDINARY_URL haijawekwa kwenye environment variables")
 	}
 
-	meta := parts[0]
-	ext := ".jpg"
-
-	if strings.Contains(meta, "image/png") {
-		ext = ".png"
-	} else if strings.Contains(meta, "image/webp") {
-		ext = ".webp"
-	} else if strings.Contains(meta, "image/gif") {
-		ext = ".gif"
-	} else if strings.Contains(meta, "video/mp4") {
-		ext = ".mp4"
-	} else if strings.Contains(meta, "image/jpeg") || strings.Contains(meta, "image/jpg") {
-		ext = ".jpg"
-	}
-
-	// ✅ Safisha data — ondoa newlines na spaces
-	base64Data := strings.TrimSpace(parts[1])
-	base64Data = strings.ReplaceAll(base64Data, "\n", "")
-	base64Data = strings.ReplaceAll(base64Data, "\r", "")
-	base64Data = strings.ReplaceAll(base64Data, " ", "")
-
-	decoded, err := base64.StdEncoding.DecodeString(base64Data)
+	cld, err := cloudinary.NewFromURL(cloudinaryURL)
 	if err != nil {
-		return "", fmt.Errorf("kosa la kusoma base64: %v", err)
+		return "", fmt.Errorf("cloudinary config error: %v", err)
 	}
 
-	// Kikomo cha ukubwa: 15MB
-	if len(decoded) > 15<<20 {
-		return "", fmt.Errorf("faili ni kubwa mno (kikomo ni 15MB)")
+	// Upload kutoka base64
+	ctx := context.Background()
+	resp, err := cld.Upload.Upload(ctx, dataURL, uploader.UploadParams{
+		Folder: "sokosmart",
+	})
+	if err != nil {
+		return "", fmt.Errorf("cloudinary upload error: %v", err)
 	}
 
-	filename := fmt.Sprintf("%d_%d%s", time.Now().UnixNano(), rand.Intn(100000), ext)
-	filePath := filepath.Join("./uploads", filename)
-
-	if err := os.WriteFile(filePath, decoded, 0644); err != nil {
-		return "", err
-	}
-
-	return "/uploads/" + filename, nil
+	// Rudisha URL ya Cloudinary
+	return resp.SecureURL, nil
 }
 
 func sanitize(s string) string {
@@ -603,6 +586,8 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 	if rawIDImage != "" && strings.HasPrefix(rawIDImage, "data:") {
 		if savedURL, saveErr := saveBase64Media(rawIDImage); saveErr == nil {
 			idImageURL = savedURL
+		} else {
+			log.Printf("⚠️  Kosa la kuhifadhi picha ya kitambulisho: %v", saveErr)
 		}
 	}
 
@@ -983,6 +968,8 @@ func uploadDesignJSONHandler(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(*img, "data:") {
 			if url, saveErr := saveBase64Media(*img); saveErr == nil {
 				*img = url
+			} else {
+				log.Printf("⚠️  Kosa la kuhifadhi picha: %v", saveErr)
 			}
 		}
 	}
@@ -1158,7 +1145,6 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(stories)
 }
 
-// ✅ IMErekebishwa: Kikomo 60MB + logging + validation ya picha
 func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
@@ -1171,7 +1157,6 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 	var price float64
 	var isPaid bool
 
-	// ✅ Ongeza kikomo cha ukubwa — 60MB
 	r.Body = http.MaxBytesReader(w, r.Body, 60<<20)
 
 	contentType := r.Header.Get("Content-Type")
@@ -1205,7 +1190,6 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 			title, isPaid, price, len(coverImage), storytellerName)
 	}
 
-	// ✅ VALIDATION
 	if strings.TrimSpace(title) == "" || strings.TrimSpace(content) == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Kichwa na maudhui ya hadithi vinahitajika!"})
 		return
@@ -1215,7 +1199,6 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ✅ Kwa hadithi ya kulipia, hakikisha bei ni zaidi ya 0
 	if isPaid && price <= 0 {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Kwa hadithi ya kulipia, bei lazima iwe zaidi ya 0!"})
 		return
@@ -1226,7 +1209,6 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ✅ Angalia subscription na verification
 	if ok, errMsg := checkSubscriptionAndVerification(storytellerName); !ok {
 		log.Printf("❌ [STORY UPLOAD] Verification failed kwa %q: %s", storytellerName, errMsg)
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -1236,7 +1218,6 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ✅ Hifadhi picha ya cover
 	if coverImage != "" {
 		if strings.HasPrefix(coverImage, "data:") {
 			savedURL, saveErr := saveBase64Media(coverImage)
@@ -1259,7 +1240,6 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ✅ Ingiza kwenye database
 	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, status, price, is_paid) VALUES ($1, $2, $3, $4, 'approved', $5, $6)",
 		sanitize(title), content, coverImage, sanitize(storytellerName), price, isPaid)
 
