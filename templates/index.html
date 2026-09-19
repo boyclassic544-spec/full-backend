@@ -135,7 +135,6 @@
         footer { background: var(--primary); color: #fff; text-align: center; padding: 15px; margin-top: auto; font-size: 0.85em; border-top: 3px solid var(--accent); margin-bottom: 50px; }
         footer p { margin: 4px 0; }
 
-        /* ✅ KITUFE CHA ADMIN NAVBAR */
         .btn-admin-nav { background: #6c5ce7 !important; border-color: #6c5ce7 !important; font-weight: bold; }
         .btn-admin-nav:hover { background: #5b4bc4 !important; }
     </style>
@@ -413,7 +412,7 @@
             </div>
         </div>
 
-        <!-- STORYTELLER UPLOAD SECTION -->
+        <!-- STORYTELLER UPLOAD SECTION (IMErekebishwa) -->
         <div id="storyteller-upload-section" class="section">
             <div class="form-card" style="max-width: 600px;">
                 <h2 style="margin-top:0; color: var(--primary);">Andika na Chapisha Hadithi Yako</h2>
@@ -421,27 +420,29 @@
                     ✍️ Weka picha ya cover, kichwa cha habari, namba yako ya simu ya kupokea malipo, na maudhui ya hadithi.
                 </div>
                 <form id="story-upload-form" onsubmit="handleStoryUpload(event)">
-                    <label>Kichwa cha Habari / Kichwa cha Hadithi</label>
+                    <label>Kichwa cha Habari / Kichwa cha Hadithi *</label>
                     <input type="text" id="story-title" placeholder="Mf. Siri ya Mafanikio ya Biashara..." required>
 
-                    <label>Aina ya Hadithi</label>
+                    <label>Aina ya Hadithi *</label>
                     <select id="story-type" onchange="toggleStoryPriceField()" required>
                         <option value="free">Hadithi ya Bure</option>
                         <option value="paid">Hadithi ya Kulipia</option>
                     </select>
 
                     <div id="story-price-container" style="display: none;">
-                        <label>Bei ya Hadithi (TZS)</label>
+                        <label>Bei ya Hadithi (TZS) *</label>
                         <input type="number" min="0" id="story-price" placeholder="Mf. 1000">
                     </div>
 
-                    <label>Namba ya Simu ya Mwandishi (Ya Kupokea Malipo/Mawasiliano)</label>
-                    <input type="text" id="story-phone" placeholder="Mf. 0712345678" pattern="0[67]\d{8}" required>
+                    <!-- Namba ya simu — required tu kwa hadithi ya kulipia -->
+                    <label id="story-phone-label">Namba ya Simu ya Mwandishi (Hiari kwa hadithi ya bure)</label>
+                    <input type="text" id="story-phone" placeholder="Mf. 0712345678" pattern="0[67]\d{8}">
 
-                    <label>Picha ya Cover ya Hadithi (Lazima)</label>
+                    <label>Picha ya Cover ya Hadithi *</label>
                     <input type="file" id="story-image-file" accept="image/*" style="background: #fff; padding: 8px;" required>
+                    <small style="color: #666; display: block; margin-bottom: 8px;">Picha isizidi 5MB. Itabanishwa kiotomatiki.</small>
 
-                    <label>Ujumbe / Maudhui ya Hadithi (Andika hapa)</label>
+                    <label>Ujumbe / Maudhui ya Hadithi (Andika hapa) *</label>
                     <textarea id="story-content" placeholder="Andika hadithi yako kwa ufasaha..." rows="7" required></textarea>
 
                     <button type="submit" class="btn" style="margin-top: 15px; background: var(--accent);">Chapisha Hadithi</button>
@@ -591,7 +592,7 @@
         </button>
     </nav>
 
-    <!-- ✅ ADMIN LOGIN MODAL (MPYA!) -->
+    <!-- ADMIN LOGIN MODAL -->
     <div id="admin-login-modal" class="modal">
         <div class="modal-content" style="max-width: 420px;">
             <span class="close-modal" onclick="closeAdminLoginModal()">&times;</span>
@@ -682,7 +683,6 @@
         let currentAdminLevel = localStorage.getItem('sokosmart_admin_level') || '';
         let currentAdminUsername = localStorage.getItem('sokosmart_admin_username') || '';
 
-        // Filter state
         let activeCategory = 'All';
         let activeSearch = '';
 
@@ -720,16 +720,28 @@
             });
         }
 
-        // ================== STORY HELPERS ==================
+        // ================== STORY HELPERS (IMErekebishwa) ==================
         function toggleStoryPriceField() {
             let storyType = document.getElementById('story-type').value;
             let priceContainer = document.getElementById('story-price-container');
+            let storyPhoneInput = document.getElementById('story-phone');
+            let storyPhoneLabel = document.getElementById('story-phone-label');
+
             if (storyType === 'paid') {
+                // Hadithi ya kulipia — bei na simu ni LAZIMA
                 priceContainer.style.display = 'block';
                 document.getElementById('story-price').required = true;
+                storyPhoneInput.required = true;
+                storyPhoneLabel.innerText = 'Namba ya Simu ya Mwandishi (Ya Kupokea Malipo) *';
+                storyPhoneInput.placeholder = 'Mf. 0712345678';
             } else {
+                // Hadithi ya bure — bei na simu SI lazima
                 priceContainer.style.display = 'none';
                 document.getElementById('story-price').required = false;
+                document.getElementById('story-price').value = '';
+                storyPhoneInput.required = false;
+                storyPhoneLabel.innerText = 'Namba ya Simu ya Mwandishi (Hiari kwa hadithi ya bure)';
+                storyPhoneInput.placeholder = 'Unaweza kuiacha wazi kama unataka';
             }
         }
 
@@ -1145,42 +1157,118 @@
                 });
         }
 
+        // ✅ IMErekebishwa: handleStoryUpload yenye validation kamili
         async function handleStoryUpload(e) {
             e.preventDefault();
-            const imgFile = document.getElementById('story-image-file').files[0];
-            let imgBase64 = imgFile ? await compressImage(imgFile) : "";
 
             const storyType = document.getElementById('story-type').value;
             const isPaid = storyType === 'paid';
+            const title = document.getElementById('story-title').value.trim();
+            const content = document.getElementById('story-content').value.trim();
+            const storyPhone = document.getElementById('story-phone').value.trim();
+            const price = isPaid ? parseFloat(document.getElementById('story-price').value || 0) : 0;
+
+            // ✅ VALIDATION
+            if (!title) {
+                alert('Weka kichwa cha hadithi!');
+                return;
+            }
+            if (!content) {
+                alert('Weka maudhui ya hadithi!');
+                return;
+            }
+            if (isPaid) {
+                if (!storyPhone) {
+                    alert('Weka namba yako ya simu ya kupokea malipo!');
+                    return;
+                }
+                if (!/^0[67]\d{8}$/.test(storyPhone)) {
+                    alert('Namba ya simu si sahihi! Tumia muundo 07XXXXXXXX.');
+                    return;
+                }
+                if (price <= 0) {
+                    alert('Weka bei ya hadithi (zaidi ya 0)!');
+                    return;
+                }
+            } else {
+                if (storyPhone && !/^0[67]\d{8}$/.test(storyPhone)) {
+                    alert('Namba ya simu si sahihi! Tumia muundo 07XXXXXXXX au iacha wazi.');
+                    return;
+                }
+            }
+
+            // ✅ PICHA — compress kabla ya kutuma
+            const imgFile = document.getElementById('story-image-file').files[0];
+            if (!imgFile) {
+                alert('Chagua picha ya cover ya hadithi!');
+                return;
+            }
+
+            if (imgFile.size > 10 * 1024 * 1024) {
+                alert('Picha ni kubwa mno! Tumia picha isiyozidi 10MB.');
+                return;
+            }
+
+            let imgBase64 = "";
+            try {
+                imgBase64 = await compressImage(imgFile, 800, 800, 0.7);
+                console.log('📸 Picha imebanishwa. Ukubwa mpya:', imgBase64.length, 'chars');
+            } catch (err) {
+                console.error('Kosa la kubanisha picha:', err);
+                alert('Imeshindikana kuchakata picha. Jaribu picha nyingine.');
+                return;
+            }
 
             const payload = {
-                title: document.getElementById('story-title').value,
-                story_type: storyType,
-                story_price: document.getElementById('story-price').value || 0,
-                story_phone: document.getElementById('story-phone').value,
-                content: document.getElementById('story-content').value,
+                title: title,
+                content: content,
                 cover_image: imgBase64,
                 storyteller_name: currentUser,
                 is_paid: isPaid,
-                price: isPaid ? parseFloat(document.getElementById('story-price').value || 0) : 0
+                price: price
             };
+
+            console.log('📤 Kutuma hadithi:', {
+                title: title,
+                is_paid: isPaid,
+                price: price,
+                storyteller_name: currentUser,
+                cover_image_size: imgBase64.length
+            });
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerText;
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Inatuma... Subiri...';
 
             fetch('/api/storyteller/upload', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             })
-                .then(res => res.json())
+                .then(res => {
+                    console.log('📥 Response status:', res.status);
+                    return res.json();
+                })
                 .then(data => {
-                    alert(data.message || 'Hadithi imewasilishwa!');
+                    console.log('📥 Response data:', data);
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = originalText;
+
                     if (data.success) {
+                        alert('✅ ' + (data.message || 'Hadithi yako imechapishwa kikamilifu!'));
                         document.getElementById('story-upload-form').reset();
+                        document.getElementById('story-price-container').style.display = 'none';
                         switchTab('stories-feed');
+                    } else {
+                        alert('❌ ' + (data.message || 'Imeshindikana kuchapisha hadithi. Jaribu tena.'));
                     }
                 })
                 .catch(err => {
-                    console.error(err);
-                    alert('Hitilafu ya mtandao. Jaribu tena.');
+                    console.error('❌ Kosa la mtandao:', err);
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = originalText;
+                    alert('Hitilafu ya mtandao. Angalia connection yako na ujaribu tena.');
                 });
         }
 

@@ -90,7 +90,7 @@ type User struct {
 func main() {
 	var err error
 
-	// ✅ JWT Secret na Default
+	// JWT Secret
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
 		secret = "sokosmart-tz-super-secret-key-2026-khalid-secure-fixed"
@@ -187,9 +187,7 @@ func main() {
 		IdleTimeout:       90 * time.Second,
 	}
 
-	log.Println("═══════════════════════════════════════════════")
-	fmt.Printf("✅ Seva inaanza kwenye bandari %s\n", port)
-	log.Println("═══════════════════════════════════════════════")
+	fmt.Printf("✅ Seva inaanza kusikiliza kwenye bandari %s...\n", port)
 	log.Fatal(srv.ListenAndServe())
 }
 
@@ -294,17 +292,13 @@ func initDB() {
 	db.Exec("ALTER TABLE app_accounts ADD COLUMN IF NOT EXISTS payment_name TEXT DEFAULT '';")
 }
 
-// ================== SEED SUPER ADMIN (IMErekebishwa) ==================
+// ================== SEED SUPER ADMIN ==================
 // ✅ Username: khalid
 // ✅ Password: khalid_secret_2026@
-// ✅ Inaunda admin kila server inapowaka kama haipo
-// ✅ Inasasisha password kama username ipo lakini password imebadilika
 func seedSuperAdmin() {
-	// ✅ Chagua username na password
 	username := os.Getenv("ADMIN_USERNAME")
 	password := os.Getenv("ADMIN_PASSWORD")
 
-	// Default kama env vars hazipo
 	if username == "" {
 		username = "khalid"
 	}
@@ -318,19 +312,16 @@ func seedSuperAdmin() {
 	log.Printf("   🔑 Password: %s", password)
 	log.Println("═══════════════════════════════════════════════")
 
-	// ✅ Angalia kama admin mwenye username hii tayari yupo
 	var existingID int
 	var existingHash string
 	err := db.QueryRow("SELECT id, password FROM admins WHERE username = $1", username).Scan(&existingID, &existingHash)
 
 	if err == nil {
-		// Admin yupo - angalia kama password imebadilika
 		if bcrypt.CompareHashAndPassword([]byte(existingHash), []byte(password)) == nil {
-			log.Printf("ℹ️  Admin '%s' tayari yupo na password ni sahihi. Hakuna kubadilisha.", username)
+			log.Printf("ℹ️  Admin '%s' tayari yupo na password ni sahihi.", username)
 			log.Println("═══════════════════════════════════════════════")
 			return
 		}
-		// Password imebadilika - sasisha
 		newHash, hashErr := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 		if hashErr != nil {
 			log.Printf("❌ Imeshindikana ku-hash password mpya: %v", hashErr)
@@ -341,12 +332,11 @@ func seedSuperAdmin() {
 			log.Printf("❌ Imeshindikana kusasisha password: %v", updateErr)
 			return
 		}
-		log.Printf("✅ Password ya admin '%s' imesasishwa kikamilifu!", username)
+		log.Printf("✅ Password ya admin '%s' imesasishwa!", username)
 		log.Println("═══════════════════════════════════════════════")
 		return
 	}
 
-	// Admin hayupo - tengeneza mpya
 	hashed, hashErr := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if hashErr != nil {
 		log.Printf("❌ Imeshindikana ku-hash nenosiri la admin: %v", hashErr)
@@ -365,8 +355,6 @@ func seedSuperAdmin() {
 	log.Println("═══════════════════════════════════════════════")
 	log.Printf("   👤 Username: %s", username)
 	log.Printf("   🔑 Password: %s", password)
-	log.Println("═══════════════════════════════════════════════")
-	log.Println("⚠️  TAFADHALI BADILISHA PASSWORD BAADA YA KUINGIA!")
 	log.Println("═══════════════════════════════════════════════")
 }
 
@@ -459,8 +447,9 @@ func superAdminOnly(next http.HandlerFunc) http.HandlerFunc {
 
 // ================== UTILITIES ==================
 
+// ✅ IMErekebishwa: Inasafisha base64 data vizuri na kikomo 15MB
 func saveBase64Media(dataURL string) (string, error) {
-	parts := strings.SplitN(dataURL, ";base64,", 2)
+	parts := strings.SplitN(dataURL, ",", 2)
 	if len(parts) != 2 {
 		return "", fmt.Errorf("muundo wa media si sahihi")
 	}
@@ -476,15 +465,24 @@ func saveBase64Media(dataURL string) (string, error) {
 		ext = ".gif"
 	} else if strings.Contains(meta, "video/mp4") {
 		ext = ".mp4"
+	} else if strings.Contains(meta, "image/jpeg") || strings.Contains(meta, "image/jpg") {
+		ext = ".jpg"
 	}
 
-	decoded, err := base64.StdEncoding.DecodeString(parts[1])
+	// ✅ Safisha data — ondoa newlines na spaces
+	base64Data := strings.TrimSpace(parts[1])
+	base64Data = strings.ReplaceAll(base64Data, "\n", "")
+	base64Data = strings.ReplaceAll(base64Data, "\r", "")
+	base64Data = strings.ReplaceAll(base64Data, " ", "")
+
+	decoded, err := base64.StdEncoding.DecodeString(base64Data)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("kosa la kusoma base64: %v", err)
 	}
 
-	if len(decoded) > 10<<20 {
-		return "", fmt.Errorf("faili ni kubwa mno (kikomo ni 10MB)")
+	// Kikomo cha ukubwa: 15MB
+	if len(decoded) > 15<<20 {
+		return "", fmt.Errorf("faili ni kubwa mno (kikomo ni 15MB)")
 	}
 
 	filename := fmt.Sprintf("%d_%d%s", time.Now().UnixNano(), rand.Intn(100000), ext)
@@ -1160,6 +1158,7 @@ func getMyStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(stories)
 }
 
+// ✅ IMErekebishwa: Kikomo 60MB + logging + validation ya picha
 func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
@@ -1172,6 +1171,9 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 	var price float64
 	var isPaid bool
 
+	// ✅ Ongeza kikomo cha ukubwa — 60MB
+	r.Body = http.MaxBytesReader(w, r.Body, 60<<20)
+
 	contentType := r.Header.Get("Content-Type")
 	if strings.Contains(contentType, "application/json") {
 		var payload struct {
@@ -1182,37 +1184,28 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 			Price           float64 `json:"price"`
 			IsPaid          bool    `json:"is_paid"`
 		}
-		r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
-		if err := json.NewDecoder(r.Body).Decode(&payload); err == nil {
-			title = payload.Title
-			content = payload.Content
-			coverImage = payload.CoverImage
-			storytellerName = payload.StorytellerName
-			price = payload.Price
-			isPaid = payload.IsPaid
+
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			log.Printf("❌ Kosa la kusoma JSON: %v", err)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"success": false,
+				"message": "Taarifa zilizotumwa si sahihi. Jaribu tena.",
+			})
+			return
 		}
+
+		title = payload.Title
+		content = payload.Content
+		coverImage = payload.CoverImage
+		storytellerName = payload.StorytellerName
+		price = payload.Price
+		isPaid = payload.IsPaid
+
+		log.Printf("📥 [STORY UPLOAD] title=%q, is_paid=%v, price=%.2f, cover_size=%d chars, storyteller=%q",
+			title, isPaid, price, len(coverImage), storytellerName)
 	}
 
-	if title == "" {
-		r.Body = http.MaxBytesReader(w, r.Body, 50<<20)
-		r.ParseMultipartForm(50 << 20)
-		r.ParseForm()
-		title = r.FormValue("title")
-		content = r.FormValue("content")
-		coverImage = r.FormValue("cover_image")
-		if coverImage == "" {
-			coverImage = r.FormValue("image_url")
-		}
-		storytellerName = r.FormValue("storyteller_name")
-		if storytellerName == "" {
-			storytellerName = r.FormValue("designer_name")
-		}
-		fmt.Sscanf(r.FormValue("price"), "%f", &price)
-		if r.FormValue("is_paid") == "true" || r.FormValue("is_paid") == "1" {
-			isPaid = true
-		}
-	}
-
+	// ✅ VALIDATION
 	if strings.TrimSpace(title) == "" || strings.TrimSpace(content) == "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Kichwa na maudhui ya hadithi vinahitajika!"})
 		return
@@ -1222,31 +1215,74 @@ func uploadStoryJSONHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if storytellerName != "" {
-		if ok, errMsg := checkSubscriptionAndVerification(storytellerName); !ok {
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"success": false,
-				"message": errMsg,
-			})
-			return
-		}
-	}
-
-	if strings.HasPrefix(coverImage, "data:") {
-		if url, saveErr := saveBase64Media(coverImage); saveErr == nil {
-			coverImage = url
-		}
-	}
-
-	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, status, price, is_paid) VALUES ($1, $2, $3, $4, 'approved', $5, $6)",
-		sanitize(title), content, coverImage, sanitize(storytellerName), price, isPaid)
-	if err != nil {
-		log.Printf("❌ Kosa la upload story: %v", err)
-		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Imeshindikana kuhifadhi hadithi"})
+	// ✅ Kwa hadithi ya kulipia, hakikisha bei ni zaidi ya 0
+	if isPaid && price <= 0 {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Kwa hadithi ya kulipia, bei lazima iwe zaidi ya 0!"})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi yako imechapishwa kikamilifu"})
+	if storytellerName == "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina la mwandishi linahitajika!"})
+		return
+	}
+
+	// ✅ Angalia subscription na verification
+	if ok, errMsg := checkSubscriptionAndVerification(storytellerName); !ok {
+		log.Printf("❌ [STORY UPLOAD] Verification failed kwa %q: %s", storytellerName, errMsg)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": errMsg,
+		})
+		return
+	}
+
+	// ✅ Hifadhi picha ya cover
+	if coverImage != "" {
+		if strings.HasPrefix(coverImage, "data:") {
+			savedURL, saveErr := saveBase64Media(coverImage)
+			if saveErr != nil {
+				log.Printf("❌ [STORY UPLOAD] Kosa la kuhifadhi cover: %v", saveErr)
+				json.NewEncoder(w).Encode(map[string]interface{}{
+					"success": false,
+					"message": "Imeshindikana kuhifadhi picha ya cover: " + saveErr.Error(),
+				})
+				return
+			}
+			coverImage = savedURL
+			log.Printf("✅ [STORY UPLOAD] Cover imehifadhiwa: %s", coverImage)
+		}
+	} else {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Picha ya cover inahitajika!",
+		})
+		return
+	}
+
+	// ✅ Ingiza kwenye database
+	_, err := db.Exec("INSERT INTO stories (title, content, cover_image, storyteller_name, status, price, is_paid) VALUES ($1, $2, $3, $4, 'approved', $5, $6)",
+		sanitize(title), content, coverImage, sanitize(storytellerName), price, isPaid)
+
+	if err != nil {
+		log.Printf("❌ [STORY UPLOAD] Kosa la kuhifadhi hadithi: %v", err)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Imeshindikana kuhifadhi hadithi: " + err.Error(),
+		})
+		return
+	}
+
+	log.Printf("✅ [STORY UPLOAD] Hadithi ya %q imechapishwa kwa mafanikio!", title)
+
+	msg := "Hadithi yako imechapishwa kikamilifu!"
+	if isPaid {
+		msg = fmt.Sprintf("Hadithi yako ya kulipia (TZS %.0f) imechapishwa kikamilifu!", price)
+	}
+
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": msg,
+	})
 }
 
 func deleteMyStoryHandler(w http.ResponseWriter, r *http.Request) {
@@ -1267,7 +1303,7 @@ func deleteMyStoryHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Hadithi imefutwa!"})
 }
 
-// ================== ADMIN LOGIN (JWT) — IMErekebishwa na Logging ==================
+// ================== ADMIN LOGIN (JWT) ==================
 
 func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -1299,7 +1335,6 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	username = strings.TrimSpace(username)
 
-	// ✅ LOGGING
 	log.Printf("🔍 [ADMIN LOGIN] Attempt: username=%q, password_length=%d", username, len(password))
 
 	if username == "" || password == "" {
@@ -1313,7 +1348,7 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 		Scan(&storedPass, &adminLevel)
 
 	if err != nil {
-		log.Printf("❌ [ADMIN LOGIN] Admin '%s' hajapatikana kwenye database: %v", username, err)
+		log.Printf("❌ [ADMIN LOGIN] Admin '%s' hajapatikana: %v", username, err)
 		json.NewEncoder(w).Encode(map[string]interface{}{"success": false, "message": "Jina au nenosiri si sahihi!"})
 		return
 	}
