@@ -134,6 +134,10 @@
 
         footer { background: var(--primary); color: #fff; text-align: center; padding: 15px; margin-top: auto; font-size: 0.85em; border-top: 3px solid var(--accent); margin-bottom: 50px; }
         footer p { margin: 4px 0; }
+
+        /* ✅ KITUFE CHA ADMIN NAVBAR */
+        .btn-admin-nav { background: #6c5ce7 !important; border-color: #6c5ce7 !important; font-weight: bold; }
+        .btn-admin-nav:hover { background: #5b4bc4 !important; }
     </style>
 </head>
 <body>
@@ -183,7 +187,7 @@
             ⚠️ ONYO LA KIUSALAMA: SokoSmart TZ inalindwa chini ya mifumo ya kisasa ya Cyber Security. Vitendo vyote vya udanganyifu au utapeli vinafuatiliwa na akaunti yako itafutwa mara moja!
         </div>
 
-        <!-- 1. MARKETPLACE SECTION -->
+        <!-- MARKETPLACE SECTION -->
         <div id="market" class="section">
             <div id="market-auth-warning" class="auth-banner" style="display:none;">
                 Tafadhali fanya <a href="#" onclick="switchTab('signin')" style="color:var(--accent);">Sign In</a> au <a href="#" onclick="switchTab('signup')" style="color:var(--accent);">Sign Up</a> kwanza ili uweze kuona na kununua bidhaa zote zilizopo kwenye SokoSmart!
@@ -587,6 +591,36 @@
         </button>
     </nav>
 
+    <!-- ✅ ADMIN LOGIN MODAL (MPYA!) -->
+    <div id="admin-login-modal" class="modal">
+        <div class="modal-content" style="max-width: 420px;">
+            <span class="close-modal" onclick="closeAdminLoginModal()">&times;</span>
+            <div style="text-align: center; margin-bottom: 15px;">
+                <div style="width: 70px; height: 70px; background: #6c5ce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px auto; box-shadow: 0 4px 10px rgba(108, 92, 231, 0.3);">
+                    <span style="font-size: 2em;">🔑</span>
+                </div>
+                <h2 style="color: var(--primary); margin: 0;">Admin Login</h2>
+                <p style="text-align: center; color: #666; font-size: 0.85em; margin-top: 5px;">Weka taarifa zako za Admin ili kuendelea</p>
+            </div>
+
+            <form onsubmit="submitAdminLogin(event)">
+                <label>Jina la Admin (Username)</label>
+                <input type="text" id="admin-login-username" placeholder="Mf. khalid" required autocomplete="username">
+
+                <label>Password</label>
+                <input type="password" id="admin-login-password" placeholder="Weka password yako" required autocomplete="current-password">
+
+                <button type="submit" class="btn" id="admin-login-btn" style="background: #6c5ce7; margin-top: 15px;">Ingia Kama Admin</button>
+            </form>
+
+            <p id="admin-login-error" style="color: var(--danger); font-size: 0.85em; text-align: center; margin-top: 10px; font-weight: bold;"></p>
+
+            <p style="text-align: center; font-size: 0.75em; color: #999; margin-top: 15px;">
+                ⚠️ Ukurasa huu ni wa Admin wa SokoSmart pekee.
+            </p>
+        </div>
+    </div>
+
     <!-- ADMIN DETAILS MODAL -->
     <div id="admin-detail-modal" class="modal">
         <div class="modal-content">
@@ -653,7 +687,6 @@
         let activeSearch = '';
 
         // ================== ADMIN FETCH HELPER ==================
-        // ✅ Hii inaweka JWT token kwenye kila ombi la admin
         function adminFetch(url, options = {}) {
             const token = localStorage.getItem('sokosmart_admin_token');
             if (!token) {
@@ -723,6 +756,7 @@
                     <button onclick="switchTab('my-products')">Profile</button>
                     <span style="color:#2ecc71; font-weight:bold; font-size:0.85em;">👤 ${currentUser} (${currentUserRole})${statusSymbol}</span>
                     <button onclick="handleLogout()" style="background:#c0392b; border:none;">Toka</button>
+                    <button onclick="openAdminLogin()" class="btn-admin-nav">🔑 Admin</button>
                 `;
                 if (bottomNavBar) bottomNavBar.style.display = 'flex';
                 if (designerBottomBtn) {
@@ -733,6 +767,7 @@
                     <button onclick="switchTab('stories-feed')">Hadithi</button>
                     <button onclick="switchTab('signin')">Sign In</button>
                     <button onclick="switchTab('signup')" style="background:var(--accent);">Sign Up</button>
+                    <button onclick="openAdminLogin()" class="btn-admin-nav">🔑 Admin</button>
                 `;
                 if (bottomNavBar) bottomNavBar.style.display = 'none';
             }
@@ -785,7 +820,8 @@
             }
 
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
+            const targetSection = document.getElementById(tabId);
+            if (targetSection) targetSection.classList.add('active');
 
             const hero = document.getElementById('hero-section');
             const searchBarContainer = document.getElementById('search-bar-container');
@@ -859,7 +895,7 @@
             }
         }
 
-        // ================== FILTERS (ZILIKOSEKANA!) ==================
+        // ================== FILTERS ==================
         function filterDesigns() {
             activeSearch = (document.getElementById('search-input').value || '').toLowerCase();
             const loc = document.getElementById('location-filter').value;
@@ -891,7 +927,7 @@
             renderDesignsGrid(filtered);
         }
 
-        // ================== PRODUCT DETAILS ACTIONS ==================
+        // ================== PRODUCT DETAILS ==================
         function requestCallback() {
             alert('Ombi la kupigiwa simu limetumwa kwa muuzaji!');
         }
@@ -903,12 +939,11 @@
         function sendSellerMessage() {
             const msg = document.getElementById('chat-msg-input').value.trim();
             if (!msg) { alert('Andika ujumbe kwanza.'); return; }
-            // TODO: Baadaye itumwe kwa /api/messages
             alert('Ujumbe wako umetumwa kwa muuzaji!');
             document.getElementById('chat-msg-input').value = '';
         }
 
-        // ================== STORIES FEED ==================
+        // ================== STORIES ==================
         function loadStoriesFeed() {
             fetch('/api/stories')
                 .then(res => res.json())
@@ -1149,7 +1184,7 @@
                 });
         }
 
-        // ================== AUTH HANDLERS ==================
+        // ================== USER AUTH ==================
         async function handleSignup(e) {
             e.preventDefault();
             let role = document.getElementById('su-role').value;
@@ -1221,11 +1256,36 @@
             switchTab('signin');
         }
 
-        // ================== ADMIN LOGIN (JWT) ==================
+        // ================== ADMIN LOGIN (MODAL) ==================
         function openAdminLogin() {
-            let uname = prompt("Weka Jina la Admin (Admin Username):");
-            let pwd = prompt("Weka Password ya Admin:");
-            if (!uname || !pwd) return;
+            document.getElementById('admin-login-username').value = '';
+            document.getElementById('admin-login-password').value = '';
+            document.getElementById('admin-login-error').innerText = '';
+            document.getElementById('admin-login-btn').innerText = 'Ingia Kama Admin';
+            document.getElementById('admin-login-btn').disabled = false;
+            document.getElementById('admin-login-modal').style.display = 'flex';
+        }
+
+        function closeAdminLoginModal() {
+            document.getElementById('admin-login-modal').style.display = 'none';
+        }
+
+        function submitAdminLogin(e) {
+            e.preventDefault();
+
+            const uname = document.getElementById('admin-login-username').value.trim();
+            const pwd = document.getElementById('admin-login-password').value;
+            const errorEl = document.getElementById('admin-login-error');
+            const loginBtn = document.getElementById('admin-login-btn');
+
+            if (!uname || !pwd) {
+                errorEl.innerText = 'Jaza jina na password!';
+                return;
+            }
+
+            errorEl.innerText = 'Inaingia...';
+            loginBtn.disabled = true;
+            loginBtn.innerText = 'Inaingia...';
 
             fetch('/api/admin/login', {
                 method: 'POST',
@@ -1235,7 +1295,6 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        // ✅ HIFADHI JWT TOKEN
                         localStorage.setItem('sokosmart_admin_token', data.token);
                         localStorage.setItem('sokosmart_admin_level', data.admin_level);
                         localStorage.setItem('sokosmart_admin_username', data.username);
@@ -1243,17 +1302,23 @@
                         currentAdminLevel = data.admin_level;
                         currentAdminUsername = data.username;
 
+                        closeAdminLoginModal();
+
                         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
                         document.getElementById('admin').classList.add('active');
                         updateAdminLevelBadge();
                         loadAdminData();
                     } else {
-                        alert(data.message || 'Jina au Password si sahihi!');
+                        errorEl.innerText = data.message || 'Jina au Password si sahihi!';
+                        loginBtn.disabled = false;
+                        loginBtn.innerText = 'Ingia Kama Admin';
                     }
                 })
                 .catch(err => {
                     console.error(err);
-                    alert('Hitilafu ya mtandao. Jaribu tena.');
+                    errorEl.innerText = 'Hitilafu ya mtandao. Jaribu tena.';
+                    loginBtn.disabled = false;
+                    loginBtn.innerText = 'Ingia Kama Admin';
                 });
         }
 
@@ -1281,7 +1346,7 @@
             if (currentUser) { switchTab('market'); } else { switchTab('signin'); }
         }
 
-        // ================== ADMIN MANAGEMENT (Super Admin) ==================
+        // ================== ADMIN MANAGEMENT ==================
         function loadAdminManagementList() {
             if (currentAdminLevel !== 'super') return;
             adminFetch('/api/admin/list-admins')
@@ -1431,7 +1496,6 @@
                 .then(res => res.json())
                 .then(data => {
                     allApprovedDesigns = data || [];
-                    // Rekebisha kichujio baada ya kupakia
                     filterDesigns();
                 })
                 .catch(err => console.error('Kosa la kupakia bidhaa:', err));
@@ -1552,7 +1616,6 @@
             loadAdminManagementList();
             loadAdminSubscriptions();
 
-            // Stories
             adminFetch('/api/admin/stories')
                 .then(res => res.json())
                 .then(data => {
@@ -1580,7 +1643,6 @@
                 })
                 .catch(err => console.error(err));
 
-            // Sellers
             adminFetch('/api/admin/sellers')
                 .then(res => res.json())
                 .then(data => {
@@ -1613,7 +1675,6 @@
                 })
                 .catch(err => console.error(err));
 
-            // Storytellers
             adminFetch('/api/admin/storytellers')
                 .then(res => res.json())
                 .then(data => {
@@ -1646,7 +1707,6 @@
                 })
                 .catch(err => console.error(err));
 
-            // Buyers
             adminFetch('/api/admin/buyers')
                 .then(res => res.json())
                 .then(data => {
@@ -1669,7 +1729,6 @@
                 })
                 .catch(err => console.error(err));
 
-            // Designs
             adminFetch('/api/admin/designs')
                 .then(res => res.json())
                 .then(data => {
@@ -1699,7 +1758,7 @@
                 .catch(err => console.error(err));
         }
 
-        // ================== SUBSCRIPTION MANAGEMENT ==================
+        // ================== SUBSCRIPTIONS ==================
         function loadAdminSubscriptions() {
             adminFetch('/api/admin/users')
                 .then(res => res.json())
@@ -1806,13 +1865,11 @@
             const d = (window.adminAllDesigns || []).find(item => item.id === id);
             if (!d) return;
 
-            // Images
             let imgs = [d.image_url, d.image_url2, d.image_url3, d.image_url4].filter(x => x && x.trim() !== '');
             document.getElementById('modal-image-container').innerHTML = imgs.map(img =>
                 `<img src="${img}" style="width: 100px; height: 100px; object-fit: contain; border-radius: 4px; cursor: pointer;" onclick="openMarketImageModal('${img}')">`
             ).join('');
 
-            // Video
             const videoContainer = document.getElementById('modal-video-container');
             if (d.video_url && d.video_url.trim() !== '') {
                 videoContainer.innerHTML = `<video src="${d.video_url}" controls style="max-width: 100%; max-height: 250px; border-radius: 6px;"></video>`;
