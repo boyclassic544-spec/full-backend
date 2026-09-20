@@ -6,6 +6,17 @@
     <meta name="theme-color" content="#4f46e5">
     <meta name="description" content="SokoSmart TZ - Soko Kuu la Kidijitali Tanzania">
     <title>SokoSmart TZ — Soko la Kisasa la Tanzania</title>
+
+    <!-- ============ GOOGLE ANALYTICS ============ -->
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M0KNDXZH8P"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-M0KNDXZH8P');
+    </script>
+    <!-- ============ MWISHO WA GOOGLE ANALYTICS ============ -->
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1984,7 +1995,6 @@
                             document.getElementById('seller-active-content').style.display = 'none';
                             if (rejectionWarning) rejectionWarning.style.display = 'block';
 
-                            // Pata sababu kutoka profile
                             fetch(API_BASE_URL + '/api/profile?username=' + encodeURIComponent(currentUser))
                                 .then(res => res.json())
                                 .then(data => {
