@@ -7,20 +7,16 @@
     <meta name="description" content="SokoSmart TZ - Soko Kuu la Kidijitali Tanzania">
     <title>SokoSmart TZ — Soko la Kisasa la Tanzania</title>
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        /* ============ RESET & VARIABLES ============ */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         
         :root {
-            /* Light Mode */
             --primary: #4f46e5;
             --primary-light: #6366f1;
             --primary-dark: #4338ca;
@@ -97,13 +93,11 @@
             -moz-osx-font-smoothing: grayscale;
         }
         
-        /* ============ SCROLLBAR ============ */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--border-hover); border-radius: var(--radius-full); }
         ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
         
-        /* ============ HEADER ============ */
         header {
             background: var(--bg-glass);
             backdrop-filter: blur(20px);
@@ -197,7 +191,6 @@
             color: white !important;
         }
         
-        /* ============ HERO ============ */
         .hero {
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
             color: white;
@@ -261,7 +254,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* ============ SEARCH BAR ============ */
         .search-location-bar {
             background: var(--bg-card);
             padding: 16px 20px;
@@ -296,7 +288,6 @@
             box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
         }
         
-        /* ============ CATEGORIES ============ */
         .categories-strip {
             display: flex;
             gap: 10px;
@@ -338,7 +329,6 @@
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
         }
         
-        /* ============ CONTAINER ============ */
         .container {
             max-width: 1280px;
             margin: 0 auto;
@@ -347,7 +337,6 @@
             width: 100%;
         }
         
-        /* ============ SECURITY BANNER ============ */
         .security-banner {
             background: linear-gradient(135deg, #fef3c7, #fde68a);
             color: #92400e;
@@ -370,7 +359,6 @@
             color: #fef3c7;
         }
         
-        /* ============ CARDS GRID ============ */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -455,7 +443,6 @@
             display: block;
         }
         
-        /* ============ STORIES GRID ============ */
         .stories-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -553,7 +540,6 @@
             gap: 4px;
         }
         
-        /* ============ BUTTONS ============ */
         .btn {
             background: linear-gradient(135deg, var(--success), var(--success-dark));
             color: white;
@@ -601,7 +587,6 @@
             box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
         }
         
-        /* ============ SECTIONS ============ */
         .section { display: none; animation: fadeIn 0.3s ease; }
         .section.active { display: block; }
         
@@ -610,7 +595,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* ============ FORM CARD ============ */
         .form-card {
             background: var(--bg-card);
             max-width: 480px;
@@ -631,7 +615,6 @@
             letter-spacing: -0.5px;
         }
         
-        /* ============ INPUTS ============ */
         input, select, textarea {
             width: 100%;
             padding: 12px 14px;
@@ -666,7 +649,6 @@
             letter-spacing: 0.2px;
         }
         
-        /* ============ ROLE SELECTOR ============ */
         .role-selector-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -697,7 +679,6 @@
             box-shadow: var(--shadow-sm);
         }
         
-        /* ============ PROFILE HEADER ============ */
         .profile-header-card {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark), #7c3aed);
             color: white;
@@ -736,7 +717,6 @@
             position: relative;
         }
         
-        /* ============ ADMIN PANEL ============ */
         .admin-panel-header {
             display: flex;
             justify-content: space-between;
@@ -899,7 +879,6 @@
         
         .admin-add-form input, .admin-add-form select { margin: 0; }
         
-        /* ============ AUTH BANNER ============ */
         .auth-banner {
             background: linear-gradient(135deg, #fef3c7, #fde68a);
             color: #92400e;
@@ -917,7 +896,6 @@
             color: #fef3c7;
         }
         
-        /* ============ BOTTOM NAV ============ */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -983,7 +961,6 @@
             color: var(--primary);
         }
         
-        /* ============ MODAL ============ */
         .modal {
             display: none;
             position: fixed;
@@ -1041,7 +1018,6 @@
             transform: rotate(90deg);
         }
         
-        /* ============ STORY READER ============ */
         .story-reader-content {
             background: linear-gradient(180deg, var(--bg-card), var(--bg-secondary)) !important;
             border: 2px solid var(--accent) !important;
@@ -1054,7 +1030,6 @@
             padding: 16px;
         }
         
-        /* ============ LIGHTBOX ============ */
         #market-image-modal {
             display: none;
             position: fixed;
@@ -1108,7 +1083,6 @@
             transform: rotate(90deg);
         }
         
-        /* ============ FOOTER ============ */
         footer {
             background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
             color: var(--text-secondary);
@@ -1123,7 +1097,6 @@
         footer p { margin: 6px 0; }
         footer strong { color: var(--primary); }
         
-        /* ============ TOAST ============ */
         .toast-container {
             position: fixed;
             top: 80px;
@@ -1162,30 +1135,6 @@
             to { transform: translateX(0); opacity: 1; }
         }
         
-        /* ============ LOADING SKELETON ============ */
-        .skeleton {
-            background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--border) 50%, var(--bg-tertiary) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-            border-radius: var(--radius-sm);
-        }
-        
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-        
-        /* ============ UTILITIES ============ */
-        .flex { display: flex; }
-        .flex-center { display: flex; align-items: center; justify-content: center; }
-        .flex-between { display: flex; align-items: center; justify-content: space-between; }
-        .gap-2 { gap: 8px; }
-        .gap-4 { gap: 16px; }
-        .mt-4 { margin-top: 16px; }
-        .mb-4 { margin-bottom: 16px; }
-        .text-center { text-align: center; }
-        
-        /* ============ TABLES ============ */
         table { border-collapse: collapse; width: 100%; border-radius: var(--radius); overflow: hidden; }
         table th { background: var(--bg-tertiary); color: var(--text-primary); font-weight: 600; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px; }
         table td { padding: 12px; border-top: 1px solid var(--border); font-size: 0.85em; color: var(--text-secondary); }
@@ -1194,10 +1143,8 @@
 </head>
 <body>
 
-    <!-- ============ TOAST CONTAINER ============ -->
     <div class="toast-container" id="toast-container"></div>
 
-    <!-- ============ HEADER ============ -->
     <header>
         <a href="#" class="logo" onclick="checkMarketAccess()">
             🛒 SokoSmart <span>TZ</span>
@@ -1205,7 +1152,6 @@
         <div class="nav-links" id="nav-menu-container"></div>
     </header>
 
-    <!-- ============ HERO ============ -->
     <div class="hero" id="hero-section">
         <h1>🇹🇿 Soko Kuu la Kidijitali Tanzania</h1>
         <p>Weka biashara au bidhaa yako bure, nunua na uuze kwa usalama kamili.</p>
@@ -1216,7 +1162,6 @@
         </div>
     </div>
 
-    <!-- ============ SEARCH BAR ============ -->
     <div id="search-bar-container" style="display:none;">
         <div class="search-location-bar">
             <input type="text" id="search-input" placeholder="🔍 Tafuta bidhaa, simu, magari..." oninput="filterDesigns()">
@@ -1254,6 +1199,12 @@
             <div id="market-auth-warning" class="auth-banner" style="display:none;">
                 Tafadhali fanya <a href="#" onclick="switchTab('signin')" style="color:var(--primary); font-weight:700;">Sign In</a> au <a href="#" onclick="switchTab('signup')" style="color:var(--primary); font-weight:700;">Sign Up</a> kwanza ili uone bidhaa!
             </div>
+
+            <!-- ✅ UBAO WA MATANGAZO (KWA WOTE) -->
+            <div id="announcements-section" style="margin-bottom: 24px;">
+                <div id="announcements-container"></div>
+            </div>
+
             <div id="market-content-area">
                 <div class="grid" id="designs-grid">
                     <p style="text-align:center; grid-column: 1/-1; padding:40px; color:var(--text-tertiary);">⏳ Inapakia bidhaa...</p>
@@ -1571,6 +1522,34 @@
                     <div class="stat-card"><span class="stat-num" id="stat-stories-count">0</span><span class="stat-label">Hadithi</span></div>
                 </div>
 
+                <!-- ✅ UBAO WA MATANGAZO (ADMIN - Super Admin pekee) -->
+                <div id="admin-announcements-section" style="display:none; background: linear-gradient(135deg, rgba(79,70,229,0.08), rgba(124,58,237,0.08)); border: 1px solid rgba(79,70,229,0.3); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 24px;">
+                    <h3 style="color: var(--text-primary); font-weight:700; margin-bottom: 12px;">📢 Ubao wa Matangazo</h3>
+                    <p style="font-size:0.85em; color:var(--text-secondary); margin-bottom:12px;">Andika tangazo — watumiaji wote wataona.</p>
+
+                    <form onsubmit="handleCreateAnnouncement(event)">
+                        <input type="text" id="announcement-title" placeholder="Kichwa cha tangazo" required>
+                        <textarea id="announcement-message" placeholder="Andika ujumbe wako..." rows="3" required></textarea>
+                        <button type="submit" class="btn btn-primary" style="margin-top:10px;">📢 Tuma Tangazo</button>
+                    </form>
+
+                    <div id="admin-announcements-list" style="margin-top:20px;">
+                        <p style="font-size:0.85em; color:var(--text-tertiary);">Inapakia matangazo...</p>
+                    </div>
+                </div>
+
+                <!-- ✅ TUMA UJUMBE KWA MTU (Super Admin pekee) -->
+                <div id="admin-message-section" style="display:none; background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.08)); border: 1px solid rgba(16,185,129,0.3); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 24px;">
+                    <h3 style="color: var(--text-primary); font-weight:700; margin-bottom: 12px;">📩 Tuma Ujumbe kwa Mtumiaji</h3>
+                    <p style="font-size:0.85em; color:var(--text-secondary); margin-bottom:12px;">Tuma ujumbe wa moja kwa moja kwa mtumiaji maalum.</p>
+
+                    <form onsubmit="handleSendMessage(event)">
+                        <input type="text" id="message-username" placeholder="Jina la mtumiaji (username)" required>
+                        <textarea id="message-content" placeholder="Andika ujumbe wako..." rows="3" required></textarea>
+                        <button type="submit" class="btn" style="background: linear-gradient(135deg, var(--success), var(--success-dark)); margin-top:10px;">📩 Tuma Ujumbe</button>
+                    </form>
+                </div>
+
                 <div class="admin-mgmt-card" id="admin-management-section" style="display:none;">
                     <h3 style="color: var(--text-primary); margin-bottom: 12px; font-weight:700;">🛠️ Usimamizi wa Maadmin</h3>
                     <p style="font-size:0.85em; color: var(--text-secondary); margin-top:0;">Ongeza au futa maadmin wasaidizi.</p>
@@ -1635,7 +1614,6 @@
         </div>
     </div>
 
-    <!-- ============ BOTTOM NAVIGATION ============ -->
     <nav class="bottom-nav" id="bottom-nav-bar" style="display:none;">
         <button class="bottom-nav-item active" id="nav-btn-market" onclick="switchTab('market')">
             <span class="icon">🏠</span>
@@ -1655,7 +1633,6 @@
         </button>
     </nav>
 
-    <!-- ============ ADMIN LOGIN MODAL ============ -->
     <div id="admin-login-modal" class="modal">
         <div class="modal-content" style="max-width: 440px;">
             <span class="close-modal" onclick="closeAdminLoginModal()">&times;</span>
@@ -1681,7 +1658,6 @@
         </div>
     </div>
 
-    <!-- ============ ADMIN PRODUCT DETAIL MODAL ============ -->
     <div id="admin-detail-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAdminModal()">&times;</span>
@@ -1704,7 +1680,6 @@
         </div>
     </div>
 
-    <!-- ============ ADMIN SELLER DETAIL MODAL ============ -->
     <div id="admin-seller-detail-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" onclick="closeAdminSellerModal()">&times;</span>
@@ -1719,13 +1694,11 @@
         </div>
     </div>
 
-    <!-- ============ LIGHTBOX ============ -->
     <div id="market-image-modal" onclick="closeMarketImageModal()">
         <span class="close-market-modal">&times;</span>
         <img id="market-modal-img" alt="Picha kubwa">
     </div>
 
-    <!-- ============ FOOTER ============ -->
     <footer>
         <p style="font-family:'Poppins'; font-weight:700; font-size:1.1em; color: var(--text-primary);">🛒 SokoSmart <span style="background: linear-gradient(135deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">TZ</span></p>
         <p>Soko Salama la Kidijitali na Hadithi Tanzania</p>
@@ -1735,7 +1708,6 @@
 
     <script>
         // ================== API CONFIG ==================
-        // Badilisha URL hii iwe ya Render yako
         const API_BASE_URL = 'https://full-backend-y8xi.onrender.com';
 
         // ================== STATE ==================
@@ -1780,7 +1752,6 @@
             }, duration);
         }
 
-        // Override alert() with toast for better UX
         const originalAlert = window.alert;
         window.alert = function(msg) {
             const lowerMsg = String(msg).toLowerCase();
@@ -1947,6 +1918,7 @@
                 hero.style.display = 'block';
                 searchBarContainer.style.display = 'block';
                 loadDesigns();
+                loadAnnouncements();
             } else if (tabId === 'stories-feed') {
                 hero.style.display = 'none';
                 searchBarContainer.style.display = 'none';
@@ -1956,7 +1928,6 @@
                 searchBarContainer.style.display = 'none';
             }
 
-            // Bottom nav active state
             document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
             if (tabId === 'market' && document.getElementById('nav-btn-market')) document.getElementById('nav-btn-market').classList.add('active');
             if (tabId === 'my-products' && document.getElementById('nav-btn-profile')) document.getElementById('nav-btn-profile').classList.add('active');
@@ -2481,15 +2452,22 @@
         function updateAdminLevelBadge() {
             const badge = document.getElementById('admin-level-badge');
             const mgmtSection = document.getElementById('admin-management-section');
+            const announcementsSection = document.getElementById('admin-announcements-section');
+            const messageSection = document.getElementById('admin-message-section');
+            
             if (!badge) return;
             if (currentAdminLevel === 'super') {
                 badge.innerText = '👑 Super Admin' + (currentAdminUsername ? ' — ' + currentAdminUsername : '');
                 badge.className = 'badge-super';
                 if (mgmtSection) mgmtSection.style.display = 'block';
+                if (announcementsSection) announcementsSection.style.display = 'block';
+                if (messageSection) messageSection.style.display = 'block';
             } else {
                 badge.innerText = '🛡️ Sub-Admin' + (currentAdminUsername ? ' — ' + currentAdminUsername : '');
                 badge.className = 'badge-sub';
                 if (mgmtSection) mgmtSection.style.display = 'none';
+                if (announcementsSection) announcementsSection.style.display = 'none';
+                if (messageSection) messageSection.style.display = 'none';
             }
         }
 
@@ -2521,7 +2499,7 @@
                                 <span class="${a.admin_level === 'super' ? 'badge-super' : 'badge-sub'}">${a.admin_level === 'super' ? '👑 Super' : '🛡️ Sub'}</span>
                             </div>
                             <div class="admin-item-actions">
-                                <button onclick="deleteAdminAccount(${a.id}, '${escapeHtml(a.username)}')" style="background:var(--danger);">🗑️ Futa</button>
+                                ${currentAdminLevel === 'super' ? `<button onclick="deleteAdminAccount(${a.id}, '${escapeHtml(a.username)}')" style="background:var(--danger);">🗑️ Futa</button>` : ''}
                             </div>
                         </div>
                     `).join('')}</div>`;
@@ -2559,6 +2537,121 @@
                 .then(data => {
                     showToast(data.message || 'Amefutwa.', 'success');
                     loadAdminManagementList();
+                })
+                .catch(err => console.error(err));
+        }
+
+        // ================== ANNOUNCEMENTS ==================
+        async function loadAnnouncements() {
+            try {
+                const res = await fetch(API_BASE_URL + '/api/announcements');
+                const data = await res.json();
+                const container = document.getElementById('announcements-container');
+                if (!container) return;
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                container.innerHTML = data.map(a => `
+                    <div style="background: linear-gradient(135deg, rgba(79,70,229,0.08), rgba(124,58,237,0.08)); 
+                                border-left: 4px solid var(--primary); padding: 16px; border-radius: var(--radius); 
+                                margin-bottom: 12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <strong style="color:var(--primary); font-size:1.05em;">📢 ${escapeHtml(a.title)}</strong>
+                            <small style="color:var(--text-tertiary); font-size:0.75em;">${a.created_at ? a.created_at.substring(0, 10) : ''}</small>
+                        </div>
+                        <p style="margin:0; color:var(--text-secondary); font-size:0.9em; white-space:pre-wrap;">${escapeHtml(a.message)}</p>
+                        <small style="color:var(--text-tertiary); font-size:0.75em; margin-top:6px; display:block;">— ${escapeHtml(a.posted_by)}</small>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Kosa la announcements:', e);
+            }
+        }
+
+        function handleCreateAnnouncement(e) {
+            e.preventDefault();
+            const title = document.getElementById('announcement-title').value.trim();
+            const message = document.getElementById('announcement-message').value.trim();
+
+            if (!title || !message) { showToast('Jaza kichwa na ujumbe!', 'warning'); return; }
+
+            adminFetch('/api/admin/create-announcement', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `title=${encodeURIComponent(title)}&message=${encodeURIComponent(message)}`
+            })
+                .then(res => res.json())
+                .then(data => {
+                    showToast(data.message, data.success ? 'success' : 'error');
+                    if (data.success) {
+                        document.getElementById('announcement-title').value = '';
+                        document.getElementById('announcement-message').value = '';
+                        loadAdminAnnouncements();
+                        loadAnnouncements();
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+
+        async function loadAdminAnnouncements() {
+            try {
+                const res = await fetch(API_BASE_URL + '/api/announcements');
+                const data = await res.json();
+                const container = document.getElementById('admin-announcements-list');
+                if (!container) return;
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p style="font-size:0.85em; color:var(--text-tertiary);">Hakuna matangazo.</p>';
+                    return;
+                }
+
+                container.innerHTML = data.map(a => `
+                    <div style="border-bottom:1px solid var(--border); padding:10px 0; display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                        <div>
+                            <strong style="color:var(--text-primary); font-size:0.9em;">${escapeHtml(a.title)}</strong><br>
+                            <small style="color:var(--text-tertiary);">${escapeHtml(a.posted_by)} | ${a.created_at ? a.created_at.substring(0, 10) : ''}</small>
+                        </div>
+                        ${currentAdminLevel === 'super' ? `<button onclick="deleteAnnouncement(${a.id})" style="background:var(--danger); color:#fff; border:none; padding:6px 10px; border-radius:var(--radius-sm); cursor:pointer; font-size:0.75em;">🗑️ Futa</button>` : ''}
+                    </div>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        function deleteAnnouncement(id) {
+            if (!confirm('Futa tangazo hili?')) return;
+            adminFetch('/api/admin/delete-announcement?id=' + id, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    showToast(data.message, 'success');
+                    loadAdminAnnouncements();
+                    loadAnnouncements();
+                })
+                .catch(err => console.error(err));
+        }
+
+        function handleSendMessage(e) {
+            e.preventDefault();
+            const username = document.getElementById('message-username').value.trim();
+            const message = document.getElementById('message-content').value.trim();
+
+            if (!username || !message) { showToast('Jaza jina na ujumbe!', 'warning'); return; }
+
+            adminFetch('/api/admin/send-message', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `username=${encodeURIComponent(username)}&message=${encodeURIComponent(message)}`
+            })
+                .then(res => res.json())
+                .then(data => {
+                    showToast(data.message, data.success ? 'success' : 'error');
+                    if (data.success) {
+                        document.getElementById('message-username').value = '';
+                        document.getElementById('message-content').value = '';
+                        loadAnnouncements();
+                    }
                 })
                 .catch(err => console.error(err));
         }
@@ -2642,6 +2735,7 @@
                 .then(data => {
                     allApprovedDesigns = data || [];
                     filterDesigns();
+                    loadAnnouncements();
                 })
                 .catch(err => console.error(err));
         }
@@ -2760,6 +2854,7 @@
             updateAdminLevelBadge();
             loadAdminManagementList();
             loadAdminSubscriptions();
+            loadAdminAnnouncements();
 
             adminFetch('/api/admin/stories')
                 .then(res => res.json())
@@ -2812,7 +2907,7 @@
                             <div class="admin-item-actions">
                                 <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary);">🔍 Angalia</button>
                                 <button onclick="approveUser(${u.id})" style="background:var(--success);">✅ Idhinisha</button>
-                                <button onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--danger);">🗑️ Futa</button>
+                                ${currentAdminLevel === 'super' ? `<button onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--danger);">🗑️ Futa</button>` : ''}
                             </div>
                         </div>
                     `}).join('');
@@ -2842,7 +2937,7 @@
                             <div class="admin-item-actions">
                                 <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary);">🔍 Angalia</button>
                                 <button onclick="approveUser(${u.id})" style="background:var(--success);">✅ Idhinisha</button>
-                                <button onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--danger);">🗑️ Futa</button>
+                                ${currentAdminLevel === 'super' ? `<button onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--danger);">🗑️ Futa</button>` : ''}
                             </div>
                         </div>
                     `}).join('');
@@ -2864,7 +2959,7 @@
                             <div class="admin-item-top">🛒 <strong style="color:var(--text-primary);">${escapeHtml(u.username)}</strong></div>
                             <div><span class="badge-success">✅ Verified Buyer</span></div>
                             <div class="admin-item-actions">
-                                <button onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--danger);">🗑️ Futa</button>
+                                ${currentAdminLevel === 'super' ? `<button onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--danger);">🗑️ Futa</button>` : ''}
                             </div>
                         </div>
                     `).join('');
@@ -3064,10 +3159,9 @@
             refreshUserProfile().then(() => switchTab('market'));
         }
 
-        // Initialize Lucide icons if needed
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
     </script>
 </body>
-</html> 
+</html>
