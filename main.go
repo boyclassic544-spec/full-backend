@@ -23,11 +23,13 @@ import (
 var db *sql.DB
 var jwtSecret []byte
 
+// ================== VALIDATION REGEX ==================
 var (
 	phoneRegex = regexp.MustCompile(`^0[67]\d{8}$`)
 	nidaRegex  = regexp.MustCompile(`^\d{20}$`)
 )
 
+// ================== STRUCTS ==================
 type Design struct {
 	ID              int     `json:"id"`
 	Title           string  `json:"title"`
@@ -84,9 +86,11 @@ type User struct {
 	CreatedAt          string `json:"created_at"`
 }
 
+// ================== MAIN ==================
 func main() {
 	var err error
 
+	// JWT Secret
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
 		secret = "sokosmart-tz-super-secret-key-2026-khalid-secure-fixed"
@@ -94,6 +98,7 @@ func main() {
 	}
 	jwtSecret = []byte(secret)
 
+	// Database
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" {
 		connStr = "postgres://postgres:password@localhost:5432/sokosmart?sslmode=disable"
@@ -119,7 +124,7 @@ func main() {
 	http.HandleFunc("/api/signin", signinHandler)
 	http.HandleFunc("/api/profile", profileHandler)
 	http.HandleFunc("/api/submit-subscription-payment", submitSubscriptionPaymentHandler)
-	http.HandleFunc("/api/announcements", getAnnouncementsHandler) // ✅ MPYA
+	http.HandleFunc("/api/announcements", getAnnouncementsHandler)
 
 	// ============ SELLER ROUTES ============
 	http.HandleFunc("/api/designs", getDesignsHandler)
@@ -138,13 +143,13 @@ func main() {
 	// ============ ADMIN ROUTES ============
 	http.HandleFunc("/api/admin/login", adminLoginHandler)
 
-	// Design management
+	// Design management (Super + Sub Admin wote)
 	http.HandleFunc("/api/admin/designs", adminAuthMiddleware(adminGetDesignsHandler))
 	http.HandleFunc("/api/admin/approve", adminAuthMiddleware(adminApproveDesignHandler))
 	http.HandleFunc("/api/admin/reject", adminAuthMiddleware(adminRejectDesignHandler))
 	http.HandleFunc("/api/admin/delete-design", adminAuthMiddleware(adminDeleteDesignHandler))
 
-	// Story management
+	// Story management (Super + Sub Admin wote)
 	http.HandleFunc("/api/admin/stories", adminAuthMiddleware(adminGetStoriesHandler))
 	http.HandleFunc("/api/admin/approve-story", adminAuthMiddleware(adminApproveStoryHandler))
 	http.HandleFunc("/api/admin/reject-story", adminAuthMiddleware(adminRejectStoryHandler))
@@ -159,17 +164,18 @@ func main() {
 	http.HandleFunc("/api/admin/approve-user", adminAuthMiddleware(adminApproveUserHandler))
 	http.HandleFunc("/api/admin/reject-user", adminAuthMiddleware(adminRejectUserHandler))
 
-	// ✅ MUHIMU: Kufuta watumiaji ni Super Admin PEKEE
-	http.HandleFunc("/api/admin/delete-user", adminAuthMiddleware(superAdminOnlyDeleteUser(adminDeleteUserHandler)))
+	// ✅ Kufuta watumiaji ni Super Admin PEKEE
+	http.HandleFunc("/api/admin/delete-user", adminAuthMiddleware(superAdminOnly(adminDeleteUserHandler)))
 
-	http.HandleFunc("/api/admin/approve-subscription", adminAuthMiddleware(adminApproveSubscriptionHandler))
+	// ✅ MUHIMU: Ku-approve malipo ni Super Admin PEKEE
+	http.HandleFunc("/api/admin/approve-subscription", adminAuthMiddleware(superAdminOnly(adminApproveSubscriptionHandler)))
 
-	// Admin management
+	// Admin management (Super Admin pekee)
 	http.HandleFunc("/api/admin/add-admin", adminAuthMiddleware(superAdminOnly(adminAddAdminHandler)))
 	http.HandleFunc("/api/admin/list-admins", adminAuthMiddleware(superAdminOnly(adminListAdminsHandler)))
 	http.HandleFunc("/api/admin/delete-admin", adminAuthMiddleware(superAdminOnly(adminDeleteAdminHandler)))
 
-	// ✅ MPYA: Announcements (Super Admin pekee)
+	// ✅ Announcements (Super Admin pekee)
 	http.HandleFunc("/api/admin/create-announcement", adminAuthMiddleware(superAdminOnly(adminCreateAnnouncementHandler)))
 	http.HandleFunc("/api/admin/delete-announcement", adminAuthMiddleware(superAdminOnly(adminDeleteAnnouncementHandler)))
 	http.HandleFunc("/api/admin/send-message", adminAuthMiddleware(superAdminOnly(adminSendMessageHandler)))
@@ -282,7 +288,6 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la admins: %v", err)
 	}
 
-	// ✅ Announcements table
 	queryAnnouncements := `
 	CREATE TABLE IF NOT EXISTS announcements (
 		id SERIAL PRIMARY KEY,
@@ -296,6 +301,7 @@ func initDB() {
 		log.Fatalf("Imeshindikana kutengeneza jedwali la announcements: %v", err)
 	}
 
+	// Safe column additions
 	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS cover_image TEXT DEFAULT '';")
 	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS price NUMERIC DEFAULT 0;")
 	db.Exec("ALTER TABLE stories ADD COLUMN IF NOT EXISTS is_paid BOOLEAN DEFAULT FALSE;")
@@ -370,6 +376,7 @@ func seedSuperAdmin() {
 }
 
 // ================== MIDDLEWARE ==================
+
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -455,24 +462,8 @@ func superAdminOnly(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// ✅ MPYA: Kufuta watumiaji ni Super Admin PEKEE
-func superAdminOnlyDeleteUser(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		level := r.Header.Get("X-Admin-Level")
-		if level != "super" {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusForbidden)
-			json.NewEncoder(w).Encode(map[string]interface{}{
-				"success": false,
-				"message": "Kufuta watumiaji inaruhusiwa kwa Super Admin pekee!",
-			})
-			return
-		}
-		next(w, r)
-	}
-}
-
 // ================== UTILITIES ==================
+
 func saveBase64Media(dataURL string) (string, error) {
 	cloudinaryURL := os.Getenv("CLOUDINARY_URL")
 	if cloudinaryURL == "" {
@@ -512,6 +503,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ================== AUTH ==================
+
 func signupHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
@@ -806,6 +798,7 @@ func submitSubscriptionPaymentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ================== SUBSCRIPTION CHECK ==================
+
 func checkSubscriptionAndVerification(username string) (bool, string) {
 	var role, vStatus, subStatus string
 	var trialEnds sql.NullTime
@@ -833,6 +826,7 @@ func checkSubscriptionAndVerification(username string) (bool, string) {
 }
 
 // ================== DESIGNS ==================
+
 func getDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, title, description, price, image_url, COALESCE(image_url2,''), COALESCE(image_url3,''), COALESCE(image_url4,''), video_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs WHERE status = 'approved' ORDER BY id DESC")
 	if err != nil {
@@ -1100,6 +1094,7 @@ func buyDesignHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ================== STORIES ==================
+
 func getStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, COALESCE(rejection_reason, ''), created_at, price, is_paid FROM stories WHERE status = 'approved' ORDER BY id DESC")
 	if err != nil {
@@ -1297,6 +1292,7 @@ func deleteMyStoryHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ================== ADMIN LOGIN (JWT) ==================
+
 func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
@@ -1381,6 +1377,7 @@ func adminLoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ================== ADMIN MANAGEMENT ==================
+
 func adminAddAdminHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)
@@ -1557,6 +1554,7 @@ func adminApproveSubscriptionHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ================== ADMIN DESIGN HANDLERS ==================
+
 func adminGetDesignsHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, title, description, price, image_url, COALESCE(image_url2,''), COALESCE(image_url3,''), COALESCE(image_url4,''), video_url, category, designer_name, location, vendor_phone, status, rejection_reason FROM designs ORDER BY id DESC")
 	if err != nil {
@@ -1647,6 +1645,7 @@ func adminDeleteDesignHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ================== ADMIN STORY HANDLERS ==================
+
 func adminGetStoriesHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, title, content, COALESCE(cover_image, ''), storyteller_name, status, COALESCE(rejection_reason, ''), created_at, price, is_paid FROM stories ORDER BY id DESC")
 	if err != nil {
@@ -1737,6 +1736,7 @@ func adminDeleteStoryHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ================== ADMIN ORDERS & USERS ==================
+
 func adminGetOrdersHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query("SELECT id, design_id, phone, amount, payment_status, created_at FROM orders ORDER BY id DESC")
 	if err != nil {
@@ -1946,7 +1946,8 @@ func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{"success": true, "message": "Mtumiaji amefutwa kikamilifu na Admin!"})
 }
 
-// ================== ANNOUNCEMENTS (UBAO WA MATANGAZO) ==================
+// ================== ANNOUNCEMENTS ==================
+
 func getAnnouncementsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	rows, err := db.Query("SELECT id, title, message, posted_by, created_at FROM announcements WHERE is_active = TRUE ORDER BY id DESC LIMIT 20")
@@ -2011,6 +2012,7 @@ func adminDeleteAnnouncementHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ================== TUMA UJUMBE KWA MTU ==================
+
 func adminSendMessageHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method haikubaliwi", http.StatusMethodNotAllowed)

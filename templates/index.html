@@ -1200,7 +1200,6 @@
                 Tafadhali fanya <a href="#" onclick="switchTab('signin')" style="color:var(--primary); font-weight:700;">Sign In</a> au <a href="#" onclick="switchTab('signup')" style="color:var(--primary); font-weight:700;">Sign Up</a> kwanza ili uone bidhaa!
             </div>
 
-            <!-- ✅ UBAO WA MATANGAZO (KWA WOTE) -->
             <div id="announcements-section" style="margin-bottom: 24px;">
                 <div id="announcements-container"></div>
             </div>
@@ -1477,6 +1476,12 @@
                         ⏳ Akaunti yako inasubiri ithibati kutoka kwa Admin
                     </div>
 
+                    <div id="seller-rejection-warning" style="display:none; background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(220,38,38,0.1)); border: 1px solid var(--danger); color: var(--danger-dark); padding: 16px; border-radius: var(--radius); margin-bottom: 24px;">
+                        <h4 style="margin: 0 0 8px 0;">❌ Akaunti Yako Imekataliwa</h4>
+                        <p style="margin: 0; font-size: 0.9em;"><b>Sababu:</b> <span id="rejection-reason-text"></span></p>
+                        <p style="margin: 8px 0 0 0; font-size: 0.85em;">Tafadhali wasiliana na Admin kwa msaada zaidi.</p>
+                    </div>
+
                     <div id="seller-active-content" style="display:none;">
                         <div class="flex-between" style="margin-top: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); flex-wrap:wrap; gap:10px;">
                             <h3 id="profile-section-title" style="margin:0; color: var(--text-primary); font-family:'Poppins'; font-weight:700; letter-spacing:-0.5px;">Bidhaa Zangu</h3>
@@ -1522,7 +1527,6 @@
                     <div class="stat-card"><span class="stat-num" id="stat-stories-count">0</span><span class="stat-label">Hadithi</span></div>
                 </div>
 
-                <!-- ✅ UBAO WA MATANGAZO (ADMIN - Super Admin pekee) -->
                 <div id="admin-announcements-section" style="display:none; background: linear-gradient(135deg, rgba(79,70,229,0.08), rgba(124,58,237,0.08)); border: 1px solid rgba(79,70,229,0.3); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 24px;">
                     <h3 style="color: var(--text-primary); font-weight:700; margin-bottom: 12px;">📢 Ubao wa Matangazo</h3>
                     <p style="font-size:0.85em; color:var(--text-secondary); margin-bottom:12px;">Andika tangazo — watumiaji wote wataona.</p>
@@ -1538,7 +1542,6 @@
                     </div>
                 </div>
 
-                <!-- ✅ TUMA UJUMBE KWA MTU (Super Admin pekee) -->
                 <div id="admin-message-section" style="display:none; background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.08)); border: 1px solid rgba(16,185,129,0.3); padding: 20px; border-radius: var(--radius-lg); margin-bottom: 24px;">
                     <h3 style="color: var(--text-primary); font-weight:700; margin-bottom: 12px;">📩 Tuma Ujumbe kwa Mtumiaji</h3>
                     <p style="font-size:0.85em; color:var(--text-secondary); margin-bottom:12px;">Tuma ujumbe wa moja kwa moja kwa mtumiaji maalum.</p>
@@ -1947,11 +1950,14 @@
                     const secTitle = document.getElementById('profile-section-title');
                     const secBtn = document.getElementById('profile-action-btn');
                     const storytellerOrdersBox = document.getElementById('storyteller-orders-box');
+                    const pendingWarning = document.getElementById('seller-pending-warning');
+                    const rejectionWarning = document.getElementById('seller-rejection-warning');
 
                     if (currentUserRole === 'seller' || currentUserRole === 'storyteller') {
                         if (currentUserStatus === 'approved') {
                             roleDisplay.innerHTML = `${currentUserRole === 'seller' ? '🏪 Muuzaji Rasmi' : '✍️ Mwandishi Rasmi'} ✅`;
-                            document.getElementById('seller-pending-warning').style.display = 'none';
+                            if (pendingWarning) pendingWarning.style.display = 'none';
+                            if (rejectionWarning) rejectionWarning.style.display = 'none';
                             document.getElementById('seller-active-content').style.display = 'block';
 
                             if (currentUserRole === 'storyteller') {
@@ -1972,9 +1978,28 @@
                                 if (storytellerOrdersBox) storytellerOrdersBox.style.display = 'none';
                                 loadMyProducts();
                             }
+                        } else if (currentUserStatus === 'rejected') {
+                            roleDisplay.innerHTML = `❌ Imekataliwa`;
+                            if (pendingWarning) pendingWarning.style.display = 'none';
+                            document.getElementById('seller-active-content').style.display = 'none';
+                            if (rejectionWarning) rejectionWarning.style.display = 'block';
+
+                            // Pata sababu kutoka profile
+                            fetch(API_BASE_URL + '/api/profile?username=' + encodeURIComponent(currentUser))
+                                .then(res => res.json())
+                                .then(data => {
+                                    const reasonText = document.getElementById('rejection-reason-text');
+                                    if (data.success && data.rejection_reason) {
+                                        reasonText.innerText = data.rejection_reason;
+                                    } else {
+                                        reasonText.innerText = "Hakuna sababu iliyotolewa. Wasiliana na Admin.";
+                                    }
+                                })
+                                .catch(err => console.error(err));
                         } else {
                             roleDisplay.innerHTML = `⏳ Inasubiri Ithibati`;
-                            document.getElementById('seller-pending-warning').style.display = 'block';
+                            if (pendingWarning) pendingWarning.style.display = 'block';
+                            if (rejectionWarning) rejectionWarning.style.display = 'none';
                             document.getElementById('seller-active-content').style.display = 'none';
                         }
                         sellerSection.style.display = 'block';
@@ -2899,14 +2924,18 @@
                     sellersList.innerHTML = data.map(u => {
                         let statusBadge = u.verification_status === 'approved'
                             ? `<span class="badge-success">✅ Imethibitishwa</span>`
-                            : `<span class="badge">⏳ Inasubiri</span>`;
+                            : (u.verification_status === 'rejected' 
+                                ? `<span class="badge" style="background:var(--danger);">❌ Imekataliwa</span>` 
+                                : `<span class="badge">⏳ Inasubiri</span>`);
                         return `
                         <div class="admin-item-card">
                             <div class="admin-item-top">🏪 <strong style="color:var(--text-primary);">${escapeHtml(u.username)}</strong></div>
                             <div style="font-size:0.85em; color:var(--text-tertiary);">NIDA: ${escapeHtml(u.id_number || 'N/A')} — ${statusBadge}</div>
+                            ${u.rejection_reason ? `<div style="font-size:0.8em; color:var(--danger); background:rgba(239,68,68,0.1); padding:6px 10px; border-radius:var(--radius-sm);"><b>Sababu:</b> ${escapeHtml(u.rejection_reason)}</div>` : ''}
                             <div class="admin-item-actions">
                                 <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary);">🔍 Angalia</button>
                                 <button onclick="approveUser(${u.id})" style="background:var(--success);">✅ Idhinisha</button>
+                                <button onclick="rejectUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--accent);">❌ Kataa</button>
                                 ${currentAdminLevel === 'super' ? `<button onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--danger);">🗑️ Futa</button>` : ''}
                             </div>
                         </div>
@@ -2929,14 +2958,18 @@
                     storyList.innerHTML = data.map(u => {
                         let statusBadge = u.verification_status === 'approved'
                             ? `<span class="badge-success">✅ Imethibitishwa</span>`
-                            : `<span class="badge">⏳ Inasubiri</span>`;
+                            : (u.verification_status === 'rejected' 
+                                ? `<span class="badge" style="background:var(--danger);">❌ Imekataliwa</span>` 
+                                : `<span class="badge">⏳ Inasubiri</span>`);
                         return `
                         <div class="admin-item-card">
                             <div class="admin-item-top">✍️ <strong style="color:var(--text-primary);">${escapeHtml(u.username)}</strong></div>
                             <div style="font-size:0.85em; color:var(--text-tertiary);">ID: ${escapeHtml(u.id_number || 'N/A')} — ${statusBadge}</div>
+                            ${u.rejection_reason ? `<div style="font-size:0.8em; color:var(--danger); background:rgba(239,68,68,0.1); padding:6px 10px; border-radius:var(--radius-sm);"><b>Sababu:</b> ${escapeHtml(u.rejection_reason)}</div>` : ''}
                             <div class="admin-item-actions">
                                 <button onclick="openAdminSellerModal(${u.id})" style="background:var(--primary);">🔍 Angalia</button>
                                 <button onclick="approveUser(${u.id})" style="background:var(--success);">✅ Idhinisha</button>
+                                <button onclick="rejectUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--accent);">❌ Kataa</button>
                                 ${currentAdminLevel === 'super' ? `<button onclick="deleteUser(${u.id}, '${escapeHtml(u.username)}')" style="background:var(--danger);">🗑️ Futa</button>` : ''}
                             </div>
                         </div>
@@ -3023,7 +3056,9 @@
                                 <b>👤</b> ${escapeHtml(user.payment_name || 'Hajatuma')}
                             </td>
                             <td>
-                                <button onclick="approveSub(${user.id})" style="background: var(--success); color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: var(--radius-sm); font-weight: 600; font-family: inherit; font-size: 0.8em;">✅ Ongeza 30d</button>
+                                ${currentAdminLevel === 'super' 
+                                    ? `<button onclick="approveSub(${user.id})" style="background: var(--success); color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: var(--radius-sm); font-weight: 600; font-family: inherit; font-size: 0.8em;">✅ Ongeza 30d</button>` 
+                                    : `<span style="color: var(--text-tertiary); font-size: 0.75em; font-style: italic;">👁️ Kuona tu</span>`}
                             </td>
                         </tr>`;
                         tbody.innerHTML += row;
@@ -3033,6 +3068,11 @@
         }
 
         function approveSub(userId) {
+            if (currentAdminLevel !== 'super') {
+                showToast('Hii operesheni inaruhusiwa kwa Super Admin pekee!', 'error');
+                return;
+            }
+            
             if (confirm("Ongeza mwezi 1 kwa mtumiaji huyu?")) {
                 adminFetch('/api/admin/approve-subscription?id=' + userId, { method: 'POST' })
                     .then(res => res.json())
@@ -3061,6 +3101,31 @@
                 .then(res => res.json())
                 .then(() => { showToast('Mtumiaji ameidhinishwa!', 'success'); loadAdminData(); })
                 .catch(err => console.error(err));
+        }
+
+        function rejectUser(id, username) {
+            const reason = prompt(`Kataa mtumiaji "${username}".\n\nWeka sababu (itamfikia mtumiaji):\n\nMfano:\n- NIDA haijajazwa vizuri\n- Jina halifanani na NIDA\n- Picha ya kitambulisho haionekani\n- Taarifa hazijakamilika`);
+            
+            if (reason === null) return;
+            if (!reason.trim()) {
+                showToast('Tafadhali weka sababu ya kukataa!', 'warning');
+                return;
+            }
+
+            adminFetch('/api/admin/reject-user?id=' + id, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `reason=${encodeURIComponent(reason.trim())}`
+            })
+                .then(res => res.json())
+                .then(data => {
+                    showToast(data.message || 'Imekataliwa!', data.success ? 'warning' : 'error');
+                    if (data.success) loadAdminData();
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast('Hitilafu ya mtandao!', 'error');
+                });
         }
 
         function deleteUser(id, username) {
@@ -3164,4 +3229,4 @@
         }
     </script>
 </body>
-</html>
+</html> 
